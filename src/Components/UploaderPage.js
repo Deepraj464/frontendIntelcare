@@ -194,7 +194,7 @@ const UploaderPage = () => {
                 });
             }, 1000);
 
-            const response = await axios.post('http://127.0.0.1:5000/', formData);
+            const response = await axios.post('https://intelcaredashboard.onrender.com/', formData);
 
             clearInterval(interval);
             setProgress(100); // Set to 100% when done
@@ -240,7 +240,7 @@ const UploaderPage = () => {
       
         try {
           // Call Flask Q&A API
-          const response = await axios.post('http://127.0.0.1:5000/qanda', {
+          const response = await axios.post('https://intelcaredashboard.onrender.com/qanda', {
             document: documentString,
             query: input
           });
