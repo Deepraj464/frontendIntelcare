@@ -1,0 +1,26 @@
+.main-heading {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.number-heading {
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 15px;
+}
+
+.sub-heading {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.bullet {
+  margin-left: 20px;
+  margin-top: 5px;
+}
+
+.sub-bullet {
+  margin-left: 40px;
+  margin-top: 2px;
+}

@@ -1,0 +1,50 @@
+/* Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(4, 4, 4, 0.651);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+  }
+  
+  /* Modal box */
+  .modal {
+    background: white;
+    padding: 20px 30px;
+    border-radius: 14px;
+    width: 90%;
+    max-width:750px;
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid black;
+  }
+  
+  /* Close button */
+  .closes-btn {
+    top: 12px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 26px;
+    color: #333;
+    cursor: pointer;
+    margin-bottom: 12px;
+    font-weight: bold;
+  }
+  
+  /* Modal content */
+  .modal-content p {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 16px;
+    font-family: 'Roboto';
+    text-align: justify;
+  }
+  
