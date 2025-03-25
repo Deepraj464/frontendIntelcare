@@ -7,7 +7,6 @@ import BlackExpandIcon from '../../src/Images/BlackExpandIcon.png';
 import ExcelSheetsLogo from '../../src/Images/ExcelSheetsLogo.png';
 import CrossIcon from '../../src/Images/CrossIcon.png';
 import PersonIcon from '../../src/Images/Personicon.png';
-import ReportImage from '../../src/Images/Graph.png'; // Replace with your actual image
 import axios from 'axios';
 import { FaPaperPlane } from 'react-icons/fa';
 import { BiLinkExternal } from "react-icons/bi";
@@ -15,7 +14,6 @@ import { BiLockAlt } from "react-icons/bi";
 import Modal from "./Modal";
 import ReportViewer from "./ReportViewer";
 import SignIn from "./SignIn";
-import ReactMarkdown from "react-markdown";
 import MarkdownParser from "./MarkdownParser";
 
 
@@ -30,7 +28,7 @@ const Sidebar = ({ onCollapse }) => {
         <div className="sidebar">
             {/* Expand/Collapse Sidebar */}
             <div className="logo" onClick={onCollapse} style={{ cursor: 'pointer' }}>
-                <img src={ExpandIcon} height={27} width={28} />
+                <img src={ExpandIcon} height={27} width={28} alt='expandicon'/>
             </div>
 
             {/* Explore Roles Button */}
@@ -39,7 +37,7 @@ const Sidebar = ({ onCollapse }) => {
                 onClick={toggleRoles}
                 style={{ cursor: 'pointer' }}
             >
-                <img src={ExploreIcon} height={20} width={20} style={{ marginRight: 10 }} />
+                <img src={ExploreIcon} height={20} width={20} style={{ marginRight: 10 }} alt="explore icon"/>
                 Explore Roles
             </div>
 
@@ -96,7 +94,7 @@ const UploaderBox = ({ file, setFile, title, removeFile }) => {
             <div className="upload-area">
                 <label htmlFor={`file-upload-${title}`} className="upload-label">
                     <div className="upload-icon">
-                        <img src={UploadIcon} height={42} width={42} />
+                        <img src={UploadIcon} height={42} width={42} alt="Upload icon"/>
                     </div>
                     <div className="uploaddiv">Upload</div>
                     <input
@@ -113,11 +111,11 @@ const UploaderBox = ({ file, setFile, title, removeFile }) => {
             {file && (
                 <div className="file-info" onClick={removeFile}>
                     <div className="file-icon">
-                        <img src={ExcelSheetsLogo} height={28} width={21} />
+                        <img src={ExcelSheetsLogo} height={28} width={21} alt="excel"/>
                     </div>
                     <div style={{ fontSize: '15px', fontFamily: 'Roboto', fontWeight: '600' }}>{file.name}</div>
                     <div className="remove-btn">
-                        <img src={CrossIcon} height={24} width={24} />
+                        <img src={CrossIcon} height={24} width={24} alt="cross"/>
                     </div>
                 </div>
             )}
@@ -278,12 +276,12 @@ const UploaderPage = () => {
                 <Sidebar onCollapse={toggleSidebar} />
             ) : (
                 <div className="collapsed-button" onClick={toggleSidebar}>
-                    <img src={BlackExpandIcon} height={27} width={28} />
+                    <img src={BlackExpandIcon} height={27} width={28} alt="blackexpand"/>
                 </div>
             )}
             <div className="main-content" style={{ padding: showReport && '8px 10% 40px 10%' }}>
                 <div className="top-bar">
-                    <img src={PersonIcon} height={40} width={40} style={{ cursor: 'pointer', marginRight: '-40px' }} onClick={()=>{setShowSignIn(true)}}/>
+                    <img src={PersonIcon} height={40} width={40} style={{ cursor: 'pointer', marginRight: '-40px' }} onClick={()=>{setShowSignIn(true)}} alt="person"/>
                 </div>
                 <SignIn show={showSignIn} onClose={() => setShowSignIn(false)} />
 
