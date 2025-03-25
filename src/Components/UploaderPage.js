@@ -194,7 +194,7 @@ const UploaderPage = () => {
                 });
             }, 1000);
 
-            const response = await axios.post('https://intelcaredashboard.onrender.com/', formData);
+            const response = await axios.post('https://intel-api-backend-etf4axahdsghc5d7.australiaeast-01.azurewebsites.net/', formData);
 
             clearInterval(interval);
             setProgress(100); // Set to 100% when done
@@ -240,7 +240,7 @@ const UploaderPage = () => {
       
         try {
           // Call Flask Q&A API
-          const response = await axios.post('https://intelcaredashboard.onrender.com/qanda', {
+          const response = await axios.post('https://intel-api-backend-etf4axahdsghc5d7.australiaeast-01.azurewebsites.net/qanda', {
             document: documentString,
             query: input
           });
