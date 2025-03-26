@@ -302,7 +302,7 @@ const UploaderPage = () => {
                             <UploaderBox
                                 file={file3}
                                 setFile={setFile3}
-                                title="1. Upload Your Financial Data"
+                                title="1. Upload Your Financial Report"
                                 subtitle="(Include Income, Interest, Taxes, Depreciation, Amortization)"
                                 removeFile={() => setFile3(null)}
                             />
@@ -310,7 +310,7 @@ const UploaderPage = () => {
                                 file={file4}
                                 setFile={setFile4}
                                 title="2. Upload Your Wages Report"
-                                subtitle="(Include Total Revenue, Total Wages, Wage Percentage %"
+                                subtitle="(Include Total Revenue, Total Wages, Wage Percentage %)"
                                 removeFile={() => setFile4(null)}
                             />
                             <UploaderBox
@@ -323,7 +323,7 @@ const UploaderPage = () => {
                             <UploaderBox
                                 file={file2}
                                 setFile={setFile2}
-                                title="4. Upload Your Client Acquisition & Retention Rate"
+                                title="4. Upload Your Client Acquisition & Retention Rate Report"
                                 subtitle="(Include Total Clients, New Clients, Lost Clients, Retention Rate %, Acquistion Rate %)"
                                 removeFile={() => setFile2(null)}
                             />
