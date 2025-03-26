@@ -66,7 +66,7 @@ const Sidebar = ({ onCollapse }) => {
 
 
 
-const UploaderBox = ({ file, setFile, title, removeFile }) => {
+const UploaderBox = ({ file, setFile, title,subtitle, removeFile }) => {
     const [loading, setLoading] = useState(false);
 
     const handleFileChange = (e) => {
@@ -89,7 +89,7 @@ const UploaderBox = ({ file, setFile, title, removeFile }) => {
             )}
             <p className="uploader-title">{title}</p>
             <p className="uploader-subtitle">
-                (Include Total Available Hours, Billable Hours, and Utilization Rate %)
+                {subtitle}
             </p>
             <div className="upload-area">
                 <label htmlFor={`file-upload-${title}`} className="upload-label">
@@ -303,24 +303,28 @@ const UploaderPage = () => {
                                 file={file3}
                                 setFile={setFile3}
                                 title="1. Upload Your Financial Data"
+                                subtitle="(Include Income, Interest, Taxes, Depreciation, Amortization)"
                                 removeFile={() => setFile3(null)}
                             />
                             <UploaderBox
                                 file={file4}
                                 setFile={setFile4}
-                                title="2. Upload Your Wages"
+                                title="2. Upload Your Wages Report"
+                                subtitle="(Include Total Revenue, Total Wages, Wage Percentage %"
                                 removeFile={() => setFile4(null)}
                             />
                             <UploaderBox
                                 file={file1}
                                 setFile={setFile1}
                                 title="3. Upload Your Caregiver Utilization Report"
+                                subtitle="(Include Total Available Hours, Billable Hours, Utilization Rate %)"
                                 removeFile={() => setFile1(null)}
                             />
                             <UploaderBox
                                 file={file2}
                                 setFile={setFile2}
                                 title="4. Upload Your Client Acquisition & Retention Rate"
+                                subtitle="(Include Total Clients, New Clients, Lost Clients, Retention Rate %, Acquistion Rate %)"
                                 removeFile={() => setFile2(null)}
                             />
                         </div>
