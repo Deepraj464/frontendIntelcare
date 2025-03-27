@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../Styles/UploaderPage.css";
 import UploadIcon from '../../src/Images/upload.png';
 import ExpandIcon from '../../src/Images/ExpandIcon.png';
@@ -15,7 +15,7 @@ import Modal from "./Modal";
 import ReportViewer from "./ReportViewer";
 import SignIn from "./SignIn";
 import MarkdownParser from "./MarkdownParser";
-
+import { auth, signOut } from "../firebase";
 
 const Sidebar = ({ onCollapse }) => {
     const [showRoles, setShowRoles] = useState(false);
@@ -28,7 +28,7 @@ const Sidebar = ({ onCollapse }) => {
         <div className="sidebar">
             {/* Expand/Collapse Sidebar */}
             <div className="logo" onClick={onCollapse} style={{ cursor: 'pointer' }}>
-                <img src={ExpandIcon} height={27} width={28} alt='expandicon'/>
+                <img src={ExpandIcon} height={27} width={28} alt='expandicon' />
             </div>
 
             {/* Explore Roles Button */}
@@ -37,7 +37,7 @@ const Sidebar = ({ onCollapse }) => {
                 onClick={toggleRoles}
                 style={{ cursor: 'pointer' }}
             >
-                <img src={ExploreIcon} height={20} width={20} style={{ marginRight: 10 }} alt="explore icon"/>
+                <img src={ExploreIcon} height={20} width={20} style={{ marginRight: 10 }} alt="explore icon" />
                 Explore Roles
             </div>
 
@@ -66,7 +66,7 @@ const Sidebar = ({ onCollapse }) => {
 
 
 
-const UploaderBox = ({ file, setFile, title,subtitle, removeFile }) => {
+const UploaderBox = ({ file, setFile, title, subtitle, removeFile }) => {
     const [loading, setLoading] = useState(false);
 
     const handleFileChange = (e) => {
@@ -94,7 +94,7 @@ const UploaderBox = ({ file, setFile, title,subtitle, removeFile }) => {
             <div className="upload-area">
                 <label htmlFor={`file-upload-${title}`} className="upload-label">
                     <div className="upload-icon">
-                        <img src={UploadIcon} height={42} width={42} alt="Upload icon"/>
+                        <img src={UploadIcon} height={42} width={42} alt="Upload icon" />
                     </div>
                     <div className="uploaddiv">Upload</div>
                     <input
@@ -111,11 +111,11 @@ const UploaderBox = ({ file, setFile, title,subtitle, removeFile }) => {
             {file && (
                 <div className="file-info" onClick={removeFile}>
                     <div className="file-icon">
-                        <img src={ExcelSheetsLogo} height={28} width={21} alt="excel"/>
+                        <img src={ExcelSheetsLogo} height={28} width={21} alt="excel" />
                     </div>
                     <div style={{ fontSize: '15px', fontFamily: 'Roboto', fontWeight: '600' }}>{file.name}</div>
                     <div className="remove-btn">
-                        <img src={CrossIcon} height={24} width={24} alt="cross"/>
+                        <img src={CrossIcon} height={24} width={24} alt="cross" />
                     </div>
                 </div>
             )}
@@ -132,7 +132,7 @@ const UploaderPage = () => {
     const [file4, setFile4] = useState(null);
     const [showReport, setShowReport] = useState(false); // NEW STATE
     const [visualizations, setVisualizations] = useState([]);
-    const [documentString,setDocumentString]=useState('');
+    const [documentString, setDocumentString] = useState('');
     const [report, setReport] = useState('');
     const [progress, setProgress] = useState(0);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -141,6 +141,8 @@ const UploaderPage = () => {
     const [messages, setMessages] = useState([]);
     const [isModalVisible, setModalVisible] = useState(false);
     const [showSignIn, setShowSignIn] = useState(false);
+    const [user, setUser] = useState(null);
+    const [showDropdown, setShowDropdown] = useState(false);
 
     const handleModalOpen = () => {
         setModalVisible(true);
@@ -149,7 +151,7 @@ const UploaderPage = () => {
     const handleModalClose = () => {
         setModalVisible(false);
     };
-  
+
 
     const isButtonDisabled = !file1 && !file2 && !file3 && !file4;
 
@@ -234,40 +236,61 @@ const UploaderPage = () => {
         if (!input.trim()) return;
         // Add user message ONCE
         setMessages(prevMessages => [
-          ...prevMessages,
-          { sender: "user", text: input }
+            ...prevMessages,
+            { sender: "user", text: input }
         ]);
-      
+
         try {
-          // Call Flask Q&A API
-          const response = await axios.post('https://intel-api-backend-etf4axahdsghc5d7.australiaeast-01.azurewebsites.net/qanda', {
-            document: documentString,
-            query: input
-          });
-      
-          console.log("API Response:", response.data.response.text);
-      
-          // Add bot reply ONLY
-          setMessages(prevMessages => [
-            ...prevMessages,
-            { sender: "bot", text:  response.data.response.text || "No response from server." }
-          ]);
-      
-          setInput(''); // Clear input
-      
+            // Call Flask Q&A API
+            const response = await axios.post('https://intel-api-backend-etf4axahdsghc5d7.australiaeast-01.azurewebsites.net/qanda', {
+                document: documentString,
+                query: input
+            });
+
+            console.log("API Response:", response.data.response.text);
+
+            // Add bot reply ONLY
+            setMessages(prevMessages => [
+                ...prevMessages,
+                { sender: "bot", text: response.data.response.text || "No response from server." }
+            ]);
+
+            setInput(''); // Clear input
+
         } catch (error) {
-          console.error("Error calling API:", error);
-      
-          // Add bot error reply ONLY
-          setMessages(prevMessages => [
-            ...prevMessages,
-            { sender: "bot", text: "Sorry, something went wrong!" }
-          ]);
-      
-          setInput('');
+            console.error("Error calling API:", error);
+
+            // Add bot error reply ONLY
+            setMessages(prevMessages => [
+                ...prevMessages,
+                { sender: "bot", text: "Sorry, something went wrong!" }
+            ]);
+
+            setInput('');
         }
-      };
-      
+    };
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+            setUser(currentUser);
+            if (currentUser) {
+                setShowSignIn(false); // Ensure sign-in doesn't show if user exists
+            } else {
+                setShowSignIn(true);
+            }
+        });
+    
+        return () => unsubscribe(); // Cleanup function
+    }, []);
+    
+    console.log(user);
+
+    // Handle Logout
+    const handleLogout = async () => {
+        await signOut(auth);
+        setUser(null);
+        setShowDropdown(false);
+    };
+
 
 
     return (
@@ -276,14 +299,36 @@ const UploaderPage = () => {
                 <Sidebar onCollapse={toggleSidebar} />
             ) : (
                 <div className="collapsed-button" onClick={toggleSidebar}>
-                    <img src={BlackExpandIcon} height={27} width={28} alt="blackexpand"/>
+                    <img src={BlackExpandIcon} height={27} width={28} alt="blackexpand" />
                 </div>
             )}
             <div className="main-content" style={{ padding: showReport && '8px 10% 40px 10%' }}>
                 <div className="top-bar">
-                    <img src={PersonIcon} height={40} width={40} style={{ cursor: 'pointer', marginRight: '-40px' }} onClick={()=>{setShowSignIn(true)}} alt="person"/>
+                    <img
+                        src={PersonIcon}
+                        height={40}
+                        width={40}
+                        style={{ cursor: 'pointer', marginRight: '-40px' }}
+                        onClick={() => {
+                            if (!user) {
+                                setShowSignIn(true);
+                            } else {
+                                setShowDropdown((prev) => !prev); 
+                            }
+                        }}
+                        alt="person"
+                    />
+
                 </div>
                 <SignIn show={showSignIn} onClose={() => setShowSignIn(false)} />
+                {showDropdown && (
+                    <div style={{ display: 'flex', justifyContent: 'end' }}>
+                        <div className="profile-dropdown" style={{ marginRight: '-90px' }}>
+                            <p style={{ fontSize: '14px' }}>{user.email}</p>
+                            <button onClick={handleLogout} className="logout-button" >Logout</button>
+                        </div>
+                    </div>
+                )}
 
                 {!showReport ? (
                     <>
@@ -402,10 +447,10 @@ const UploaderPage = () => {
                                         }}>
                                             <div style={{
                                                 backgroundColor: msg.sender === 'user' ? '#FFFFFF' : '#FFFFFF',
-                                                padding: '10px', borderRadius: '10px', maxWidth: '75%',fontSize:'14px',textAlign:'left',
+                                                padding: '10px', borderRadius: '10px', maxWidth: '75%', fontSize: '14px', textAlign: 'left',
                                                 color: 'black'
                                             }}>
-                                                <MarkdownParser text={msg.text}/>
+                                                <MarkdownParser text={msg.text} />
                                             </div>
                                         </div>
                                     ))}

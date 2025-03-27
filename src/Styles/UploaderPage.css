@@ -287,3 +287,11 @@ body, html, * {
   margin-bottom: 8px;
   cursor: pointer;
 }
+.logout-button{
+  padding: 8px 14px;
+  background-color: black;
+  color: white;
+  border:none;
+  border-radius: 6px;
+  cursor: pointer;
+}
