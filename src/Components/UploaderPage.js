@@ -57,7 +57,7 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                                 key={role}
                                 className={`role-item ${selectedRole === role ? 'active-role' : ''} ${isLocked ? 'locked-role' : ''}`}
                                 onClick={
-                                    !isLocked
+                                    !isLocked  
                                         ? () => {
                                             setSelectedRole(role);
                                             if (showReport) setShowReport(false);
