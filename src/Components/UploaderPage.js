@@ -62,7 +62,7 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                                             setSelectedRole(role);
                                             if (showReport) setShowReport(false);
                                             if (showFinalZipReport) setShowFinalZipReport(false);  
-                                        }
+                                        }  
                                         : null
                                 }
                                 style={{ cursor: isLocked ? 'not-allowed' : 'pointer', opacity: isLocked ? 0.6 : 1 }}
