@@ -22,8 +22,8 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
 const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setShowReport, showFinalZipReport, setShowFinalZipReport, setShowUploadReport, setActiveReportType }) => {
-    const [showRoles, setShowRoles] = useState(true);
-
+    const [showRoles, setShowRoles] = useState(true); 
+ 
     const toggleRoles = () => {
         // setShowRoles(!showRoles);
         setShowUploadReport(false);
