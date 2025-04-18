@@ -21,13 +21,15 @@ import JSZip from "jszip";
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
-const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setShowReport, showFinalZipReport, setShowFinalZipReport }) => {
-    const [showRoles, setShowRoles] = useState(false);
+const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setShowReport, showFinalZipReport, setShowFinalZipReport, setShowUploadReport, setActiveReportType }) => {
+    const [showRoles, setShowRoles] = useState(true);
 
     const toggleRoles = () => {
-        setShowRoles(!showRoles);
+        // setShowRoles(!showRoles);
+        setShowUploadReport(false);
     };
     const roles = ['Owner/Director/Finance', 'Care manager', 'Operations manager', 'HR', 'Incident Management'];
+    const reportButtons = ["Quality and Safety Report", "Financial and Operational Report", "Service Delivery Report", "Workforce Report", "Incident Management Report", "Participant Outcomes Report"];
 
 
     return (
@@ -46,8 +48,6 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                 <img src={ExploreIcon} height={20} width={20} style={{ marginRight: 10 }} alt="explore icon" />
                 Explore Roles
             </div>
-
-            {/* Roles List */}
             {showRoles && (
                 <div className="roles-list">
                     {roles.map(role => {
@@ -57,12 +57,12 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                                 key={role}
                                 className={`role-item ${selectedRole === role ? 'active-role' : ''} ${isLocked ? 'locked-role' : ''}`}
                                 onClick={
-                                    !isLocked  
+                                    !isLocked
                                         ? () => {
                                             setSelectedRole(role);
                                             if (showReport) setShowReport(false);
-                                            if (showFinalZipReport) setShowFinalZipReport(false);  
-                                        }  
+                                            if (showFinalZipReport) setShowFinalZipReport(false);
+                                        }
                                         : null
                                 }
                                 style={{ cursor: isLocked ? 'not-allowed' : 'pointer', opacity: isLocked ? 0.6 : 1 }}
@@ -74,6 +74,23 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                     })}
                 </div>
             )}
+            {reportButtons.map(report => (
+                <div
+                    key={report}
+                    className="sidebar-btn explore"
+                    style={{ cursor: 'pointer', marginTop: '0px' }}
+                    onClick={() => {
+                        setActiveReportType(report);
+                        setShowReport(false);
+                        setShowFinalZipReport(false);
+                        setShowUploadReport(true);
+                    }}                >
+                    {report}
+                </div>
+            ))}
+
+            {/* Roles List */}
+
             {/* New Chat */}
             <button className="sidebar-btn new-chat">+ New chat</button>
         </div>
@@ -139,6 +156,62 @@ const UploaderCSVBox = ({ file, setFile, title, subtitle, removeFile }) => {
         </div>
     );
 };
+const UploadReports = ({ files, setFiles, title, subtitle, removeFile }) => {
+    const [loading, setLoading] = useState(false);
+
+    const handleFileChange = (e) => {
+        const selectedFiles = Array.from(e.target.files);
+        if (selectedFiles.length > 0) {
+            setLoading(true);
+            setTimeout(() => {
+                setFiles(prev => [...prev, ...selectedFiles]);
+                setLoading(false);
+            }, 1000);
+        }
+    };
+
+    return (
+        <div className={`uploader-box ${loading ? "loading" : ""}`}>
+            {loading && (
+                <div className="loader-overlay">
+                    <div className="spinner"></div>
+                </div>
+            )}
+            <p className="uploader-title">{title}</p>
+            <p className="uploader-subtitle">{subtitle}</p>
+            <div className="upload-area">
+                <label htmlFor={`file-upload-${title}`} className="upload-label">
+                    <div className="upload-icon">
+                        <img src={UploadIcon} height={42} width={42} alt="Upload icon" />
+                    </div>
+                    <div className="uploaddiv">Upload</div>
+                    <input
+                        type="file"
+                        id={`file-upload-${title}`}
+                        accept=".zip, .pdf, .docx , .xlsx"
+                        multiple
+                        onChange={handleFileChange}
+                        style={{ display: "none" }}
+                        disabled={loading}
+                    />
+                </label>
+            </div>
+            <div className="files-lists">
+                {files.map((file, index) => (
+                    <div className="files-infos" key={index} onClick={() => removeFile(index)}>
+                        <div style={{ fontSize: '15px', fontFamily: 'Roboto', fontWeight: '600' }}>
+                            {file.name}
+                        </div>
+                        <div className="remove-btn">
+                            <img src={CrossIcon} height={24} width={24} alt="remove" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
 const UploaderZipBox = ({ file, setFile, title, subtitle, removeFile, disabled = false }) => {
     const [loading, setLoading] = useState(false);
 
@@ -229,6 +302,11 @@ const UploaderPage = () => {
     const [showDropdown, setShowDropdown] = useState(false);
     const [selectedRole, setSelectedRole] = useState('Owner/Director/Finance');
     const [reportZipData, setReportZipdata] = useState([])
+    const [activeReportType, setActiveReportType] = useState(null);
+    const [reportFiles, setReportFiles] = useState([]);
+    const [showUploadedReport, setShowUploadReport] = useState(false);
+    const [isAnalysingReportLoading, setIsAnalysingReportLoading] = useState(false);
+    const [analysedReportdata, setAnalysedReportdata] = useState(null);
 
     const handleModalOpen = () => {
         setModalVisible(true);
@@ -399,6 +477,48 @@ const UploaderPage = () => {
         }
     };
 
+    const handleAnalyseReports = async () => {
+        if (!activeReportType || reportFiles.length === 0) {
+            alert("Please enter a metric name and select at least one file.");
+            return;
+        }
+
+        const formData = new FormData();
+
+        // Append files
+        Array.from(reportFiles).forEach((file) => {
+            formData.append("files", file); // Match backend key
+        });
+
+        // Append metric name
+        formData.append("metric_name", activeReportType);
+
+        try {
+            setIsAnalysingReportLoading(true); // Show loader
+            const response = await axios.post(
+                "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/aged_care_reporting",
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+
+            // Axios automatically parses JSON response by default
+            console.log("Success:", JSON.parse(response.data.reports));
+            setAnalysedReportdata(JSON.parse(response.data.reports));
+            alert("Reports analysed successfully!");
+        } catch (error) {
+            console.error("Upload error:", error);
+            alert("Failed to connect to the server or analyse the reports.");
+        } finally {
+            setIsAnalysingReportLoading(false);
+        }
+    };
+
+
+
 
     const handleSend = async () => {
         if (!input.trim()) return;
@@ -447,6 +567,15 @@ const UploaderPage = () => {
 
         saveAs(blob, 'Incident_Report.csv');
     };
+    const handleDownloadAnalyedReportCSV = () => {
+        if (!analysedReportdata || typeof analysedReportdata !== 'object') return;
+
+        const worksheet = XLSX.utils.json_to_sheet([analysedReportdata]);
+        const csv = XLSX.utils.sheet_to_csv(worksheet);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
+        saveAs(blob, 'Analysed_Report.csv');
+    };
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((currentUser) => {
@@ -470,12 +599,13 @@ const UploaderPage = () => {
         setShowDropdown(false);
     };
 
+    console.log(analysedReportdata);
 
 
     return (
         <div className="page-container">
             {sidebarVisible ? (
-                <Sidebar onCollapse={toggleSidebar} selectedRole={selectedRole} setSelectedRole={setSelectedRole} showReport={showReport} setShowReport={setShowReport} showFinalZipReport={showFinalZipReport} setShowFinalZipReport={setShowFinalZipReport} />
+                <Sidebar onCollapse={toggleSidebar} selectedRole={selectedRole} setSelectedRole={setSelectedRole} showReport={showReport} setShowReport={setShowReport} showFinalZipReport={showFinalZipReport} setShowFinalZipReport={setShowFinalZipReport} showUploadedReport={showUploadedReport} setShowUploadReport={setShowUploadReport} setActiveReportType={setActiveReportType} />
             ) : (
                 <div className="collapsed-button" onClick={toggleSidebar}>
                     <img src={BlackExpandIcon} height={27} width={28} alt="blackexpand" />
@@ -508,8 +638,88 @@ const UploaderPage = () => {
                         </div>
                     </div>
                 )}
+                {showUploadedReport && activeReportType && (
+                    <>
+                        {!analysedReportdata ? (
+                            <>
+                                <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }} onClick={handleModalOpen}>
+                                    <div className="page-title-btn">
+                                        <div style={{ marginRight: '10px' }}>
+                                            Types of report to upload
+                                        </div>
+                                        <BiLinkExternal size={28} color="#FFFFFF" />
+                                    </div>
+                                </div>
 
-                {(!showReport && !showFinalZipReport) ? (
+                                <UploadReports
+                                    files={reportFiles}
+                                    setFiles={setReportFiles}
+                                    title={activeReportType}
+                                    subtitle="Upload reports in ZIP, PDF, XLSX or DOCX format"
+                                    removeFile={(index) => {
+                                        setReportFiles(prev => prev.filter((_, i) => i !== index));
+                                    }}
+                                />
+
+                                <button
+                                    className="analyse-btn"
+                                    disabled={isAnalysingReportLoading}
+                                    style={{ backgroundColor: '#000', marginTop: '20px' }}
+                                    onClick={handleAnalyseReports}
+                                >
+                                    {isAnalysingReportLoading ? "Analysing..." : "Analyse Reports"}
+                                </button>
+                            </>
+                        ) : (
+                            <div className="reports-box" style={{ height: 'auto', marginTop: '30px' }}>
+                                <h3 style={{ textAlign: 'center', marginBottom: '20px' }}>📊 Analysed Report </h3>
+                                <div style={{ backgroundColor: '#f9f9f9', padding: '20px 30px', borderRadius: '10px' }}>
+                                    {analysedReportdata && Object.entries(analysedReportdata).map(([outerKey, outerValue]) => (
+                                        <div key={outerKey} style={{ marginBottom: '20px' }}>
+                                            {typeof outerValue === 'object' && !Array.isArray(outerValue) ? (
+                                                <>
+                                                    <h3 style={{ fontWeight: 'bold', marginBottom: '10px' }}>{outerKey}</h3>
+                                                    {Object.entries(outerValue).map(([key, value]) =>
+                                                        key === "Key Metrics" ? (
+                                                            <div key={key} style={{ marginTop: '20px' }}>
+                                                                <ul style={{ paddingLeft: '20px', lineHeight: '1.6' }}>
+                                                                    {Object.entries(value).map(([metricKey, metricVal]) => (
+                                                                        <li key={metricKey}>
+                                                                            <strong>{metricKey}:</strong> {JSON.stringify(metricVal)}
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            </div>
+                                                        ) : (
+                                                            <p key={key} style={{ margin: '10px 0', fontSize: '16px' }}>
+                                                                <strong>{key}:</strong> {value}
+                                                            </p>
+                                                        )
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <p style={{ margin: '10px 0', fontSize: '16px' }}>
+                                                    <strong>{outerKey}:</strong> {outerValue}
+                                                </p>
+                                            )}
+                                        </div>
+                                    ))}
+                                    <p style={{ textAlign: 'center', marginTop: '20px', fontWeight: 'bold', fontSize: '20px' }}>Click below to download Full Report</p>
+                                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', marginBottom: '10px' }}>
+                                    <button className="download-btn" style={{ padding: '14px', backgroundColor: 'black', color: 'white', border: 'none', outline: 'none', borderRadius: '12px', fontSize: '18px', cursor: 'pointer' }} onClick={handleDownloadAnalyedReportCSV}>
+                                        Download Excel Report
+                                    </button>
+                                </div>
+                                </div>
+                            </div>
+
+                        )}
+                    </>
+                )}
+
+
+
+                {(!showReport && !showFinalZipReport && !showUploadedReport) ? (
                     <>
                         <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }} onClick={handleModalOpen}>
                             <div className="page-title-btn">

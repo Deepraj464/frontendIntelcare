@@ -315,3 +315,21 @@ body, html, * {
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   text-align: justify !important;
 }
+.files-lists {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px; 
+  margin-top: 12px;
+}
+
+.files-infos {
+  flex: 0 0 calc(50% - 6px); 
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #eeecec;
+}
