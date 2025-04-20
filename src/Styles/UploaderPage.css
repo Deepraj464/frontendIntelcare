@@ -63,7 +63,7 @@ body, html, * {
   min-height: 100vh;
   box-sizing: border-box;
   text-align: center;
-  padding: 8px 15% 40px 15%;
+  padding: 8px 11% 40px 11%;
 }
 
 .page-title-btn {
@@ -119,7 +119,7 @@ body, html, * {
 }
 
 .uploader-subtitle {
-  font-size: 16px;
+  font-size: 14px;
   margin: 10px 0 15px;
   color: #555;
 }
@@ -272,8 +272,10 @@ body, html, * {
 .roles-list {
   display: flex;
   flex-direction: column;
-  margin: 10px 0 20px 0;
+  margin: 10px 0 14px 0;
+  padding-bottom: 10px;
   transition: all 0.3s ease;
+  border-bottom: 1px solid #DADADA;
 }
 .role-item{
   font-size: 14px;
