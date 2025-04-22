@@ -1,0 +1,101 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+/* styles.css */
+.summary-report-container {
+    padding: 16px;
+    background-color: white;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.title {
+    font-size: 30px;
+    font-weight: bolder;
+}
+
+.download-button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.download-btn {
+    padding: 14px 20px;
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 24px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.section-container {
+    margin-bottom: 16px;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+.section-title.green {
+    color: green;
+}
+
+.section-title.red {
+    color: red;
+}
+
+.section-title.black {
+    color: black;
+}
+
+.section-content {
+    padding-left: 24px;
+    list-style-type: disc;
+}
+
+.bullet-item {
+    padding-left: 20px;
+    list-style-type: disc;
+}
+
+.text-item {
+    margin-bottom: 8px;
+    font-size: 16px;
+}
+
+.compliance-level-container {
+    margin-top: 16px;
+}
+
+.compliance-level-text {
+    font-weight: bold;
+    font-family: 'Roboto';
+    font-size: 18px;
+    color: orange;
+}
+
+.compliance-high {
+    color: green;
+}
+
+.compliance-moderate {
+    color: orange;
+}
+
+.compliance-low {
+    color: red;
+}
+
+.compliance-normal {
+    color: gray;
+}

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { auth, googleProvider,facebookProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup } from "../firebase";
 import "../Styles/SignIn.css";
+import emailjs from "@emailjs/browser";
 
 const SignIn = ({ show, onClose }) => {
   const [email, setEmail] = useState("");
@@ -17,10 +18,27 @@ const SignIn = ({ show, onClose }) => {
     e.preventDefault();
     setError("");
     setLoading(true); // Show loader
+    console.log(isSignUp);
 
     try {
       if (isSignUp) {
         await createUserWithEmailAndPassword(auth, email, password);
+        const templateParams = {
+          message: "A new user just signed up!",
+          email: email,
+        };
+      
+        try {
+          await emailjs.send(
+            "service_6otxz7o",
+            "template_fxslvkj",
+            templateParams,
+            "hp6wyNEGYtFRXcOSs"
+          );
+          console.log("Email sent successfully");
+        } catch (emailError) {
+          console.error("Failed to send email:", emailError);
+        }
         alert("Account created successfully!");
       }
       await signInWithEmailAndPassword(auth, email, password);
@@ -37,7 +55,27 @@ const SignIn = ({ show, onClose }) => {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      await signInWithPopup(auth, googleProvider);
+     const result= await signInWithPopup(auth, googleProvider);
+     console.log(result?.user?.email);
+     if(result._tokenResponse.isNewUser){
+      const templateParams = {
+        message: "A new user just signed up!",
+        email: result?.user?.email,
+      };
+    
+      try {
+        await emailjs.send(
+          "service_6otxz7o",
+          "template_fxslvkj",
+          templateParams,
+          "hp6wyNEGYtFRXcOSs"
+        );
+        console.log("Email sent successfully");
+      } catch (emailError) {
+        console.error("Failed to send email:", emailError);
+      }
+     }
+   
       alert("Google Sign-In successful!");
       onClose();
     } catch (err) {

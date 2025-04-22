@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
@@ -11,10 +12,15 @@
     "file-saver": "^2.0.5",
     "firebase": "^11.5.0",
     "jszip": "^3.10.1",
+    "markdown-parser-react": "^2.0.2",
+    "marked": "^15.0.9",
+    "nodemailer": "^6.10.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-icons": "^5.5.0",
+    "react-markdown": "^8.0.6",
     "react-scripts": "5.0.1",
+    "react-toastify": "^11.0.5",
     "web-vitals": "^2.1.4",
     "xlsx": "^0.18.5"
   },

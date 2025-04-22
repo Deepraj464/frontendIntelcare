@@ -104,6 +104,8 @@ body, html, * {
   border: 1px solid #000000;
   box-shadow: 5px 4px 4px 0px #B2B2B2;
   cursor: pointer;
+  max-width: 100%;
+  overflow: hidden;
 
 }
 
@@ -159,6 +161,18 @@ body, html, * {
   border-radius: 5px;
   border: 1px solid lightGrey;
   border-radius: 8px;
+}
+.file-info > div:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+  margin: 0 8px;
+  font-size: 15px;
+  font-family: Roboto, sans-serif;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
 }
 
 .file-icon {
@@ -325,8 +339,7 @@ body, html, * {
 }
 
 .files-infos {
-  flex: 0 0 calc(50% - 6px); 
-  box-sizing: border-box;
+  /* box-sizing: border-box; */
   border: 1px solid #ccc;
   padding: 8px;
   border-radius: 6px;
@@ -334,4 +347,14 @@ body, html, * {
   align-items: center;
   justify-content: space-between;
   background-color: #eeecec;
+  width: 100%;
+  text-align: left;
+}
+.files-infos > div:first-child {
+  flex: 1;
+  margin-right: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
 }

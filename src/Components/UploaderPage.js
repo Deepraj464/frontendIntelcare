@@ -24,8 +24,10 @@ import FeedbackModal from "./FeedbackModal";
 import SummaryReport from "./SummaryReportViewer";
 
 
-const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setShowReport, showFinalZipReport, setShowFinalZipReport, showUploadedReport, setShowUploadReport, setActiveReportType,analysedReportdata,setAnalysedReportdata }) => {
+const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setShowReport, showFinalZipReport, setShowFinalZipReport, showUploadedReport, setShowUploadReport,activeReportType, setActiveReportType, analysedReportdata, setAnalysedReportdata }) => {
+    console.log(activeReportType);
     const [showRoles, setShowRoles] = useState(true);
+    const [activeItem, setActiveItem] = useState("Owner/Director/Finance")
 
     const toggleRoles = () => {
         // setShowRoles(!showRoles);
@@ -58,11 +60,12 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                         return (
                             <div
                                 key={role}
-                                className={`role-item ${selectedRole === role ? 'active-role' : ''} ${isLocked ? 'locked-role' : ''}`}
+                                className={`role-item ${activeItem === role ? 'active-role' : ''} ${isLocked ? 'locked-role' : ''}`}
                                 onClick={
                                     !isLocked
                                         ? () => {
                                             setSelectedRole(role);
+                                            setActiveItem(role);
                                             if (showReport) setShowReport(false);
                                             if (showFinalZipReport) setShowFinalZipReport(false);
                                             if (showUploadedReport) setShowUploadReport(false)
@@ -82,15 +85,17 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
             {reportButtons.map(report => (
                 <div
                     key={report}
-                    className="role-item"
+                    className={`role-item ${activeItem === report ? 'active-role' : ''}`}
                     style={{ cursor: 'pointer', marginTop: '4px' }}
                     onClick={() => {
                         setActiveReportType(report);
+                        setActiveItem(report);
                         setShowReport(false);
                         setShowFinalZipReport(false);
                         setShowUploadReport(true);
-                        if(analysedReportdata) setAnalysedReportdata(null)
-                    }}                >
+                        if (analysedReportdata) setAnalysedReportdata(null)
+                    }}
+                >
                     {report}
                 </div>
             ))}
@@ -312,10 +317,11 @@ const UploaderPage = () => {
     const [reportFiles, setReportFiles] = useState([]);
     const [showUploadedReport, setShowUploadReport] = useState(false);
     const [isAnalysingReportLoading, setIsAnalysingReportLoading] = useState(false);
+    const [isAnalyseReportProgress, setIsAnalysedReportProgress] = useState(0);
     const [analysedReportdata, setAnalysedReportdata] = useState(null);
     const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
     const [template, setTemplate] = useState(null);
-    const [parsedReports,setParsedReports]=useState(null);
+    const [parsedReports, setParsedReports] = useState(null);
 
     const handleModalOpen = () => {
         setModalVisible(true);
@@ -506,9 +512,19 @@ const UploaderPage = () => {
 
         // Append metric name
         formData.append("metric_name", activeReportType);
+        let progressInterval;
 
         try {
             setIsAnalysingReportLoading(true); // Show loader
+            setIsAnalysedReportProgress(1);
+            progressInterval = setInterval(() => {
+                setIsAnalysedReportProgress((prevProgress) => {
+                    if (prevProgress < 90) {
+                        return prevProgress + 4; // Increase by 4% every interval
+                    }
+                    return prevProgress;
+                });
+            }, 4000); //
 
             const response = await axios.post(
                 "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/aged_care_reporting",
@@ -519,6 +535,8 @@ const UploaderPage = () => {
                     },
                 }
             );
+            clearInterval(progressInterval);
+            setIsAnalysedReportProgress(100);
 
             const responseData = response.data;
             console.log(responseData);
@@ -528,10 +546,11 @@ const UploaderPage = () => {
 
             setAnalysedReportdata(responseData.summary);
             setParsedReports(parsedReports)
-            alert("Reports analysed successfully!");
+            // alert("Reports analysed successfully!");
         } catch (error) {
             console.error("Upload error:", error);
             alert("Failed to connect to the server or analyse the reports.");
+            clearInterval(progressInterval);
         } finally {
             setIsAnalysingReportLoading(false);
         }
@@ -590,16 +609,16 @@ const UploaderPage = () => {
     };
     const handleDownloadAnalyedReportCSV = () => {
         if (!parsedReports || typeof parsedReports !== 'object') return;
-      
+
         const incidentsArray = Object.values(parsedReports); // ✅ Convert object to array
-      
+
         const worksheet = XLSX.utils.json_to_sheet(incidentsArray);
         const csv = XLSX.utils.sheet_to_csv(worksheet);
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      
+
         saveAs(blob, 'completed_template.csv');
-      };
-      
+    };
+
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((currentUser) => {
@@ -624,8 +643,6 @@ const UploaderPage = () => {
         }
     }, [analysedReportdata]);
 
-
-
     // Handle Logout
     const handleLogout = async () => {
         await signOut(auth);
@@ -633,13 +650,13 @@ const UploaderPage = () => {
         setShowDropdown(false);
     };
 
-    
+
 
 
     return (
         <div className="page-container">
             {sidebarVisible ? (
-                <Sidebar onCollapse={toggleSidebar} selectedRole={selectedRole} setSelectedRole={setSelectedRole} showReport={showReport} setShowReport={setShowReport} showFinalZipReport={showFinalZipReport} setShowFinalZipReport={setShowFinalZipReport} showUploadedReport={showUploadedReport} setShowUploadReport={setShowUploadReport} setActiveReportType={setActiveReportType} analysedReportdata={analysedReportdata} setAnalysedReportdata={setAnalysedReportdata}/>
+                <Sidebar onCollapse={toggleSidebar} selectedRole={selectedRole} setSelectedRole={setSelectedRole} showReport={showReport} setShowReport={setShowReport} showFinalZipReport={showFinalZipReport} setShowFinalZipReport={setShowFinalZipReport} showUploadedReport={showUploadedReport} setShowUploadReport={setShowUploadReport} activeReportType={activeReportType} setActiveReportType={setActiveReportType} analysedReportdata={analysedReportdata} setAnalysedReportdata={setAnalysedReportdata} />
             ) : (
                 <div className="collapsed-button" onClick={toggleSidebar}>
                     <img src={BlackExpandIcon} height={27} width={28} alt="blackexpand" />
@@ -667,12 +684,12 @@ const UploaderPage = () => {
                 {showDropdown && (
                     <div style={{ display: 'flex', justifyContent: 'end' }}>
                         <div className="profile-dropdown" style={{ marginRight: '-90px' }}>
-                            <p style={{ fontSize: '14px' }}>{user.email}</p>
+                            <p style={{ fontSize: '14px' }}>{user?.email}</p>
                             <button onClick={handleLogout} className="logout-button" >Logout</button>
                         </div>
                     </div>
                 )}
-                {showFeedbackPopup && <FeedbackModal />}
+                {showFeedbackPopup && <FeedbackModal userEmail={user?.email} />}
                 {showUploadedReport && activeReportType && (
                     <>
                         {!analysedReportdata ? (
@@ -709,13 +726,15 @@ const UploaderPage = () => {
                                     style={{ backgroundColor: '#000', marginTop: '20px' }}
                                     onClick={handleAnalyseReports}
                                 >
-                                    {isAnalysingReportLoading ? "Analysing..." : "Analyse Reports"}
+                                    {isAnalysingReportLoading
+                                        ? `Analysing... ${isAnalyseReportProgress}%`
+                                        : "Analyse Reports"}
                                 </button>
                             </>
                         ) : (
-                            <div className="reports-box" style={{ height: 'auto', marginTop: '30px',padding:'10px' }}>
+                            <div className="reports-box" style={{ height: 'auto', marginTop: '30px', padding: '10px' }}>
                                 <div style={{ backgroundColor: '#FFFFFF', padding: '10px 30px', borderRadius: '10px' }}>
-                                    <SummaryReport summaryText={analysedReportdata} handleDownloadAnalyedReportCSV={handleDownloadAnalyedReportCSV}/>
+                                    <SummaryReport summaryText={analysedReportdata} handleDownloadAnalyedReportCSV={handleDownloadAnalyedReportCSV} />
                                 </div>
                             </div>
 
