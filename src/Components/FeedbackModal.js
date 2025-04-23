@@ -18,7 +18,7 @@ const FeedbackModal = (props) => {
       return;
     }
     if (!feedback.trim()) {
-      setErrorMessage("Please enter your feedback before submitting.");
+      setErrorMessage("Please enter your feedback before submitting."); 
       return;
     }
     
