@@ -17,9 +17,9 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportCSV }) => {
 
         // Parse the markdown title and content into HTML
         const markdownTitle = marked(title); // Convert markdown to HTML (e.g., **text** becomes <strong>text</strong>)
-        console.log(title);
         const titleClass = title === '**Strengths**:' ? 'green' :
         (title === '**Concerns or Non-compliance**:' || title === '**Summary of Overall Compliance Level**:' || title==='**Summary of the Overall Compliance Level**:')? 'red' : 'black';
+        console.log(titleClass);
 
         const complianceLevelClass = compliance_level === "High" ? "compliance-high" :
             compliance_level === "Moderate" ? "compliance-moderate" :
