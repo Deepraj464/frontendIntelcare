@@ -24,8 +24,8 @@ import FeedbackModal from "./FeedbackModal";
 import SummaryReport from "./SummaryReportViewer";
 
 
-const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setShowReport, showFinalZipReport, setShowFinalZipReport, showUploadedReport, setShowUploadReport,activeReportType, setActiveReportType, analysedReportdata, setAnalysedReportdata }) => {
-    console.log(activeReportType);
+const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setShowReport, showFinalZipReport, setShowFinalZipReport, showUploadedReport, setShowUploadReport, activeReportType, setActiveReportType, analysedReportdata, setAnalysedReportdata, majorTypeofReport, setMajorTypeOfReport }) => {
+    // console.log(activeReportType);
     const [showRoles, setShowRoles] = useState(true);
     const [activeItem, setActiveItem] = useState("Owner/Director/Finance")
 
@@ -35,6 +35,8 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
     };
     const roles = ['Owner/Director/Finance', 'Care manager', 'Operations manager', 'HR', 'Incident Management'];
     const reportButtons = ["Quality and Safety Report", "Financial and Operational Report", "Service Delivery Report", "Workforce Report", "Incident Management Report", "Participant Outcomes Report"];
+    const NDISButton = ["Audit & Registration Manager", "Incident & Complaint Reporter", "Restrictive Practice & Behaviour Support", "Worker-Screening & HR Compliance", "Financial & Claims Compliance", "Participant Outcomes & Capacity-Building"]
+    // console.log(majorTypeofReport);
 
 
     return (
@@ -81,8 +83,29 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                     })}
                 </div>
             )}
-            <div style={{ color: 'white', fontSize: '15px', fontWeight: 'bold', textAlign: 'left', marginLeft: '30px', fontFamily: 'Roboto', marginBottom: '12px' }}>SUPPORT AT HOME</div>
-            {reportButtons.map(report => (
+            <div className="roles-list">
+                <div style={{ color: 'white', fontSize: '15px', fontWeight: 'bold', textAlign: 'left', marginLeft: '30px', fontFamily: 'Roboto', marginBottom: '12px' }}>SUPPORT AT HOME</div>
+                {reportButtons.map(report => (
+                    <div
+                        key={report}
+                        className={`role-item ${activeItem === report ? 'active-role' : ''}`}
+                        style={{ cursor: 'pointer', marginTop: '4px' }}
+                        onClick={() => {
+                            setActiveReportType(report);
+                            setActiveItem(report);
+                            setShowReport(false);
+                            setShowFinalZipReport(false);
+                            setShowUploadReport(true);
+                            setMajorTypeOfReport('SUPPORT AT HOME');
+                            if (analysedReportdata) setAnalysedReportdata(null)
+                        }}
+                    >
+                        {report}
+                    </div>
+                ))}
+            </div>
+            <div style={{ color: 'white', fontSize: '15px', fontWeight: 'bold', textAlign: 'left', marginLeft: '30px', fontFamily: 'Roboto', marginBottom: '12px', }}>NDIS</div>
+            {NDISButton.map(report => (
                 <div
                     key={report}
                     className={`role-item ${activeItem === report ? 'active-role' : ''}`}
@@ -93,6 +116,7 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                         setShowReport(false);
                         setShowFinalZipReport(false);
                         setShowUploadReport(true);
+                        setMajorTypeOfReport('NDIS')
                         if (analysedReportdata) setAnalysedReportdata(null)
                     }}
                 >
@@ -107,8 +131,6 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
         </div>
     );
 };
-
-
 
 
 const UploaderCSVBox = ({ file, setFile, title, subtitle, removeFile }) => {
@@ -322,6 +344,7 @@ const UploaderPage = () => {
     const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
     const [template, setTemplate] = useState(null);
     const [parsedReports, setParsedReports] = useState(null);
+    const [majorTypeofReport, setMajorTypeOfReport] = useState('');
 
     const handleModalOpen = () => {
         setModalVisible(true);
@@ -514,6 +537,17 @@ const UploaderPage = () => {
         formData.append("metric_name", activeReportType);
         let progressInterval;
 
+        // Determine the correct API endpoint
+        let apiUrl = "";
+        if (majorTypeofReport === "SUPPORT AT HOME") {
+            apiUrl = "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/aged_care_reporting";
+        } else if (majorTypeofReport === "NDIS") {
+            apiUrl = "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/NDIS_reporting";
+        } else {
+            alert("Invalid report type.");
+            return;
+        }
+
         try {
             setIsAnalysingReportLoading(true); // Show loader
             setIsAnalysedReportProgress(1);
@@ -524,28 +558,25 @@ const UploaderPage = () => {
                     }
                     return prevProgress;
                 });
-            }, 4000); //
+            }, 4000);
 
-            const response = await axios.post(
-                "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/aged_care_reporting",
-                formData,
-                {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
-                }
-            );
+            const response = await axios.post(apiUrl, formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+
             clearInterval(progressInterval);
             setIsAnalysedReportProgress(100);
 
             const responseData = response.data;
             console.log(responseData);
             console.log("Summary:", responseData.summary);
-            // const parsedSummary = JSON.parse(responseData.summary);
-            const parsedReports = JSON.parse(responseData.response);
 
+            const parsedReports = JSON.parse(responseData.response);
+            setDocumentString(responseData.documents);
             setAnalysedReportdata(responseData.summary);
-            setParsedReports(parsedReports)
+            setParsedReports(parsedReports);
             // alert("Reports analysed successfully!");
         } catch (error) {
             console.error("Upload error:", error);
@@ -555,48 +586,53 @@ const UploaderPage = () => {
             setIsAnalysingReportLoading(false);
         }
     };
-
-
-
-
+    console.log(parsedReports);
 
     const handleSend = async () => {
         if (!input.trim()) return;
-        // Add user message ONCE
+
+        // Add user message to chat
         setMessages(prevMessages => [
             ...prevMessages,
             { sender: "user", text: input }
         ]);
 
+        // Prepare payload
+        const payload = {
+            query: input
+        };
+
+        if (documentString) {
+            payload.document = documentString;
+        }
+
         try {
-            // Call Flask Q&A API
-            const response = await axios.post('https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/qanda', {
-                document: documentString,
-                query: input
-            });
+            const response = await axios.post(
+                'https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/askai',
+                payload
+            );
 
-            console.log("API Response:", response.data.response.text);
+            console.log("API Response:", response.data);
 
-            // Add bot reply ONLY
+            const botReply = response.data?.response?.text || response.data?.response || "No response from server.";
+
             setMessages(prevMessages => [
                 ...prevMessages,
-                { sender: "bot", text: response.data.response.text || "No response from server." }
+                { sender: "bot", text: botReply }
             ]);
-
-            setInput(''); // Clear input
 
         } catch (error) {
             console.error("Error calling API:", error);
 
-            // Add bot error reply ONLY
             setMessages(prevMessages => [
                 ...prevMessages,
                 { sender: "bot", text: "Sorry, something went wrong!" }
             ]);
-
-            setInput('');
         }
+
+        setInput('');
     };
+
 
     const handleDownloadCSV = () => {
         if (!Array.isArray(reportZipData) || reportZipData?.length === 0) return;
@@ -611,7 +647,7 @@ const UploaderPage = () => {
         if (!parsedReports || typeof parsedReports !== 'object') return;
 
         const incidentsArray = Object.values(parsedReports); // ✅ Convert object to array
-
+       console.log(incidentsArray);
         const worksheet = XLSX.utils.json_to_sheet(incidentsArray);
         const csv = XLSX.utils.sheet_to_csv(worksheet);
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -649,6 +685,7 @@ const UploaderPage = () => {
         setUser(null);
         setShowDropdown(false);
     };
+    console.log(documentString);
 
 
 
@@ -656,7 +693,7 @@ const UploaderPage = () => {
     return (
         <div className="page-container">
             {sidebarVisible ? (
-                <Sidebar onCollapse={toggleSidebar} selectedRole={selectedRole} setSelectedRole={setSelectedRole} showReport={showReport} setShowReport={setShowReport} showFinalZipReport={showFinalZipReport} setShowFinalZipReport={setShowFinalZipReport} showUploadedReport={showUploadedReport} setShowUploadReport={setShowUploadReport} activeReportType={activeReportType} setActiveReportType={setActiveReportType} analysedReportdata={analysedReportdata} setAnalysedReportdata={setAnalysedReportdata} />
+                <Sidebar onCollapse={toggleSidebar} selectedRole={selectedRole} setSelectedRole={setSelectedRole} showReport={showReport} setShowReport={setShowReport} showFinalZipReport={showFinalZipReport} setShowFinalZipReport={setShowFinalZipReport} showUploadedReport={showUploadedReport} setShowUploadReport={setShowUploadReport} activeReportType={activeReportType} setActiveReportType={setActiveReportType} analysedReportdata={analysedReportdata} setAnalysedReportdata={setAnalysedReportdata} majorTypeofReport={majorTypeofReport} setMajorTypeOfReport={setMajorTypeOfReport} />
             ) : (
                 <div className="collapsed-button" onClick={toggleSidebar}>
                     <img src={BlackExpandIcon} height={27} width={28} alt="blackexpand" />
@@ -870,34 +907,6 @@ const UploaderPage = () => {
                                     <ReportViewer report={report} />
                                     <p style={{ marginTop: "20px", fontStyle: "italic" }}>This report is auto-generated using Intelcare's proprietary AI technology, ensuring accuracy and personalized recommendations.</p>
                                 </div>
-
-                                <div style={{ position: 'fixed', bottom: '30px', right: '30px', backgroundColor: '#000', color: '#fff', borderRadius: '40px', width: '100px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '16px', cursor: 'pointer', boxShadow: '0px 4px 12px rgba(0,0,0,0.2)', zIndex: 999 }} onClick={() => setShowAIChat(!showAIChat)}>
-                                    Ask AI
-                                </div>
-
-                                {showAIChat && (
-                                    <div style={{ position: 'fixed', bottom: '100px', right: '30px', width: '500px', height: '550px', backgroundColor: '#000', borderRadius: '10px', boxShadow: '0px 4px 12px rgba(0,0,0,0.2)', padding: '15px', zIndex: 999, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                            <button onClick={() => setShowAIChat(false)} style={{ background: 'none', border: 'none', fontSize: '26px', cursor: 'pointer', color: '#fff' }}>×</button>
-                                        </div>
-
-                                        <div style={{ flex: 1, marginTop: '10px', overflowY: 'auto', padding: '10px' }}>
-                                            {messages.map((msg, index) => (
-                                                <div key={index} style={{ display: 'flex', justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start', marginBottom: '8px' }}>
-                                                    <div style={{ backgroundColor: '#fff', padding: '10px', borderRadius: '10px', maxWidth: '75%', fontSize: '14px', textAlign: 'left', color: 'black' }}>
-                                                        <MarkdownParser text={msg.text} />
-                                                    </div>
-                                                </div>
-                                            ))}
-                                            {messages.length === 0 && <p style={{ color: '#999' }}>How can I assist you today?</p>}
-                                        </div>
-
-                                        <div style={{ position: 'relative', marginTop: '10px' }}>
-                                            <input type="text" placeholder="Type your question..." value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()} style={{ width: '100%', padding: '8px 40px 8px 8px', borderRadius: '5px', border: '1px solid #ccc' }} />
-                                            <FaPaperPlane onClick={handleSend} size={18} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: 'white' }} />
-                                        </div>
-                                    </div>
-                                )}
                             </>
                         )}
 
@@ -925,7 +934,33 @@ const UploaderPage = () => {
                         )}
 
                     </>
+                )}
+                <div style={{ position: 'fixed', bottom: '30px', right: '30px', backgroundColor: '#000', color: '#fff', borderRadius: '40px', width: '100px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '16px', cursor: 'pointer', boxShadow: '0px 4px 12px rgba(0,0,0,0.2)', zIndex: 999 }} onClick={() => setShowAIChat(!showAIChat)}>
+                    Ask AI
+                </div>
 
+                {showAIChat && (
+                    <div style={{ position: 'fixed', bottom: '100px', right: '30px', width: '500px', height: '550px', backgroundColor: '#000', borderRadius: '10px', boxShadow: '0px 4px 12px rgba(0,0,0,0.2)', padding: '15px', zIndex: 999, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <button onClick={() => setShowAIChat(false)} style={{ background: 'none', border: 'none', fontSize: '26px', cursor: 'pointer', color: '#fff' }}>×</button>
+                        </div>
+
+                        <div style={{ flex: 1, marginTop: '10px', overflowY: 'auto', padding: '10px' }}>
+                            {messages.map((msg, index) => (
+                                <div key={index} style={{ display: 'flex', justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start', marginBottom: '8px' }}>
+                                    <div style={{ backgroundColor: '#fff', padding: '10px', borderRadius: '10px', maxWidth: '75%', fontSize: '14px', textAlign: 'left', color: 'black' }}>
+                                        <MarkdownParser text={msg.text} />
+                                    </div>
+                                </div>
+                            ))}
+                            {messages.length === 0 && <p style={{ color: '#999' }}>How can I assist you today?</p>}
+                        </div>
+
+                        <div style={{ position: 'relative', marginTop: '10px' }}>
+                            <input type="text" placeholder="Type your question..." value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()} style={{ width: '100%', padding: '8px 40px 8px 8px', borderRadius: '5px', border: '1px solid #ccc' }} />
+                            <FaPaperPlane onClick={handleSend} size={18} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: 'white' }} />
+                        </div>
+                    </div>
                 )}
             </div>
         </div>

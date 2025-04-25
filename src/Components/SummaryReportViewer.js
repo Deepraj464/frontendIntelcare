@@ -17,13 +17,10 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportCSV }) => {
 
         // Parse the markdown title and content into HTML
         const markdownTitle = marked(title); // Convert markdown to HTML (e.g., **text** becomes <strong>text</strong>)
-        const titleClass = title === '**Strengths**:' ? 'green' :
-        (title === '**Concerns or Non-compliance**:' || title === '**Summary of Overall Compliance Level**:' || title==='**Summary of the Overall Compliance Level**:')? 'red' : 'black';
-        console.log(titleClass);
+        const titleClass = title === '**Strengths:**' ? 'green' :
+        (title === '**Areas of Concern or Non-Compliance:**' || title === '**Summary of Overall Compliance Level:**' || title==='**Summary of the Overall Compliance Level:**' || title==='**Concerns or Non-Compliance:**')? 'red' : 'black';
+        // console.log(title);
 
-        const complianceLevelClass = compliance_level === "High" ? "compliance-high" :
-            compliance_level === "Moderate" ? "compliance-moderate" :
-                compliance_level === "Low" ? "compliance-low" : "compliance-normal";
 
         const markdownContent = lines.slice(1).map((line, i) => {
             if (line.startsWith(" - ")) {
