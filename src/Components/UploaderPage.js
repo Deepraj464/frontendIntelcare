@@ -27,7 +27,7 @@ import SummaryReport from "./SummaryReportViewer";
 const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setShowReport, showFinalZipReport, setShowFinalZipReport, showUploadedReport, setShowUploadReport, activeReportType, setActiveReportType, analysedReportdata, setAnalysedReportdata, majorTypeofReport, setMajorTypeOfReport }) => {
     // console.log(activeReportType);
     const [showRoles, setShowRoles] = useState(true);
-    const [activeItem, setActiveItem] = useState("Owner/Director/Finance")
+    const [activeItem, setActiveItem] = useState("Quality and Safety Report");
 
     const toggleRoles = () => {
         // setShowRoles(!showRoles);
@@ -47,6 +47,7 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
             </div>
 
             {/* Explore Roles Button */}
+            <div className="sidebar-scroll-content" style={{ overflowY: 'auto', flex: 1 }}>
             <div
                 className="sidebar-btn explore"
                 onClick={toggleRoles}
@@ -55,37 +56,57 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                 <img src={ExploreIcon} height={20} width={20} style={{ marginRight: 10 }} alt="explore icon" />
                 Explore Roles
             </div>
-            {showRoles && (
+                {showRoles && (
+                    <div className="roles-list">
+                        {roles.map(role => {
+                            const isLocked = ['Care manager', 'Operations manager', 'HR'].includes(role);
+                            return (
+                                <div
+                                    key={role}
+                                    className={`role-item ${activeItem === role ? 'active-role' : ''} ${isLocked ? 'locked-role' : ''}`}
+                                    onClick={
+                                        !isLocked
+                                            ? () => {
+                                                setSelectedRole(role);
+                                                setActiveItem(role);
+                                                if (showReport) setShowReport(false);
+                                                if (showFinalZipReport) setShowFinalZipReport(false);
+                                                if (showUploadedReport) setShowUploadReport(false)
+                                            }
+                                            : null
+                                    }
+                                    style={{ cursor: isLocked ? 'not-allowed' : 'pointer', opacity: isLocked ? 0.6 : 1 }}
+                                >
+                                    <p>{role}</p>
+                                    {isLocked && <BiLockAlt size={15} color="white" />}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
                 <div className="roles-list">
-                    {roles.map(role => {
-                        const isLocked = ['Care manager', 'Operations manager', 'HR'].includes(role);
-                        return (
-                            <div
-                                key={role}
-                                className={`role-item ${activeItem === role ? 'active-role' : ''} ${isLocked ? 'locked-role' : ''}`}
-                                onClick={
-                                    !isLocked
-                                        ? () => {
-                                            setSelectedRole(role);
-                                            setActiveItem(role);
-                                            if (showReport) setShowReport(false);
-                                            if (showFinalZipReport) setShowFinalZipReport(false);
-                                            if (showUploadedReport) setShowUploadReport(false)
-                                        }
-                                        : null
-                                }
-                                style={{ cursor: isLocked ? 'not-allowed' : 'pointer', opacity: isLocked ? 0.6 : 1 }}
-                            >
-                                <p>{role}</p>
-                                {isLocked && <BiLockAlt size={15} color="white" />}
-                            </div>
-                        );
-                    })}
+                    <div style={{ color: 'white', fontSize: '15px', fontWeight: 'bold', textAlign: 'left', marginLeft: '30px', fontFamily: 'Roboto', marginBottom: '12px' }}>SUPPORT AT HOME</div>
+                    {reportButtons.map(report => (
+                        <div
+                            key={report}
+                            className={`role-item ${activeItem === report ? 'active-role' : ''}`}
+                            style={{ cursor: 'pointer', marginTop: '4px' }}
+                            onClick={() => {
+                                setActiveReportType(report);
+                                setActiveItem(report);
+                                setShowReport(false);
+                                setShowFinalZipReport(false);
+                                setShowUploadReport(true);
+                                setMajorTypeOfReport('SUPPORT AT HOME');
+                                if (analysedReportdata) setAnalysedReportdata(null)
+                            }}
+                        >
+                            {report}
+                        </div>
+                    ))}
                 </div>
-            )}
-            <div className="roles-list">
-                <div style={{ color: 'white', fontSize: '15px', fontWeight: 'bold', textAlign: 'left', marginLeft: '30px', fontFamily: 'Roboto', marginBottom: '12px' }}>SUPPORT AT HOME</div>
-                {reportButtons.map(report => (
+                <div style={{ color: 'white', fontSize: '15px', fontWeight: 'bold', textAlign: 'left', marginLeft: '30px', fontFamily: 'Roboto', marginBottom: '12px', }}>NDIS</div>
+                {NDISButton.map(report => (
                     <div
                         key={report}
                         className={`role-item ${activeItem === report ? 'active-role' : ''}`}
@@ -96,7 +117,7 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                             setShowReport(false);
                             setShowFinalZipReport(false);
                             setShowUploadReport(true);
-                            setMajorTypeOfReport('SUPPORT AT HOME');
+                            setMajorTypeOfReport('NDIS')
                             if (analysedReportdata) setAnalysedReportdata(null)
                         }}
                     >
@@ -104,26 +125,6 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                     </div>
                 ))}
             </div>
-            <div style={{ color: 'white', fontSize: '15px', fontWeight: 'bold', textAlign: 'left', marginLeft: '30px', fontFamily: 'Roboto', marginBottom: '12px', }}>NDIS</div>
-            {NDISButton.map(report => (
-                <div
-                    key={report}
-                    className={`role-item ${activeItem === report ? 'active-role' : ''}`}
-                    style={{ cursor: 'pointer', marginTop: '4px' }}
-                    onClick={() => {
-                        setActiveReportType(report);
-                        setActiveItem(report);
-                        setShowReport(false);
-                        setShowFinalZipReport(false);
-                        setShowUploadReport(true);
-                        setMajorTypeOfReport('NDIS')
-                        if (analysedReportdata) setAnalysedReportdata(null)
-                    }}
-                >
-                    {report}
-                </div>
-            ))}
-
             {/* Roles List */}
 
             {/* New Chat */}
@@ -131,6 +132,7 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
         </div>
     );
 };
+
 
 
 const UploaderCSVBox = ({ file, setFile, title, subtitle, removeFile }) => {
@@ -361,6 +363,14 @@ const UploaderPage = () => {
     const toggleSidebar = () => {
         setSidebarVisible(!sidebarVisible);
     };
+    useEffect(() => {
+        setActiveReportType("Quality and Safety Report");
+        setMajorTypeOfReport("SUPPORT AT HOME");
+        setShowUploadReport(true);
+        setShowReport(false);
+        setShowFinalZipReport(false);
+        if (analysedReportdata) setAnalysedReportdata(null);
+    }, []);
 
     const handleAnalyse = async () => {
         const files = [
@@ -647,7 +657,7 @@ const UploaderPage = () => {
         if (!parsedReports || typeof parsedReports !== 'object') return;
 
         const incidentsArray = Object.values(parsedReports); // ✅ Convert object to array
-       console.log(incidentsArray);
+        console.log(incidentsArray);
         const worksheet = XLSX.utils.json_to_sheet(incidentsArray);
         const csv = XLSX.utils.sheet_to_csv(worksheet);
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -699,7 +709,7 @@ const UploaderPage = () => {
                     <img src={BlackExpandIcon} height={27} width={28} alt="blackexpand" />
                 </div>
             )}
-            <div className="main-content" style={{ padding: showReport && '8px 10% 40px 10%' }}>
+            <div className="main-content" style={{ padding: showReport && '8px 10% 40px 10%', overflowY: 'auto', flex: 1, }}>
                 <div className="top-bar">
                     <img
                         src={PersonIcon}
@@ -731,8 +741,8 @@ const UploaderPage = () => {
                     <>
                         {!analysedReportdata ? (
                             <>
-                                <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }} onClick={handleModalOpen}>
-                                    <div className="page-title-btn">
+                                <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }} >
+                                    <div className="page-title-btn" onClick={handleModalOpen}>
                                         <div style={{ marginRight: '10px' }}>
                                             Types of report to upload
                                         </div>
@@ -791,8 +801,6 @@ const UploaderPage = () => {
                                 <BiLinkExternal size={28} color="#FFFFFF" />
                             </div>
                         </div>
-                        <Modal isVisible={isModalVisible} onClose={handleModalClose}>
-                        </Modal>
                         {selectedRole === 'Owner/Director/Finance' ? (
                             <div className="uploader-grid">
                                 {/* Uploader boxes - same as before */}
@@ -935,14 +943,17 @@ const UploaderPage = () => {
 
                     </>
                 )}
+                <Modal isVisible={isModalVisible} onClose={handleModalClose}>
+                </Modal>
                 <div style={{ position: 'fixed', bottom: '30px', right: '30px', backgroundColor: '#000', color: '#fff', borderRadius: '40px', width: '100px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '16px', cursor: 'pointer', boxShadow: '0px 4px 12px rgba(0,0,0,0.2)', zIndex: 999 }} onClick={() => setShowAIChat(!showAIChat)}>
                     Ask AI
                 </div>
 
                 {showAIChat && (
-                    <div style={{ position: 'fixed', bottom: '100px', right: '30px', width: '500px', height: '550px', backgroundColor: '#000', borderRadius: '10px', boxShadow: '0px 4px 12px rgba(0,0,0,0.2)', padding: '15px', zIndex: 999, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                            <button onClick={() => setShowAIChat(false)} style={{ background: 'none', border: 'none', fontSize: '26px', cursor: 'pointer', color: '#fff' }}>×</button>
+                    <div style={{ position: 'fixed', bottom: '100px', right: '30px', width: '350px', height: '400px', backgroundColor: '#000', borderRadius: '10px', boxShadow: '0px 4px 12px rgba(0,0,0,0.2)', padding: '15px', zIndex: 999, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between',alignItems:'center',gap:'10px' }}>
+                        <p style={{ color: '#FFFFFF',fontSize:'12px', }}>I can help with Support at Home, NDIS, compliance and reporting</p>
+                            <button onClick={() => setShowAIChat(false)} style={{ background: 'none', border: 'none', fontSize: '26px', cursor: 'pointer', color: '#fff',marginTop:'-4px' }}>×</button>
                         </div>
 
                         <div style={{ flex: 1, marginTop: '10px', overflowY: 'auto', padding: '10px' }}>
@@ -953,7 +964,6 @@ const UploaderPage = () => {
                                     </div>
                                 </div>
                             ))}
-                            {messages.length === 0 && <p style={{ color: '#999' }}>How can I assist you today?</p>}
                         </div>
 
                         <div style={{ position: 'relative', marginTop: '10px' }}>

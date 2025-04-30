@@ -22,6 +22,12 @@ body, html, * {
   flex-direction: column;
   /* align-items: center; */
   padding: 14px 10px;
+  height: 100vh;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+}
+.sidebar-content::-webkit-scrollbar {
+  display: none;
 }
 
 .logo {
@@ -60,7 +66,9 @@ body, html, * {
 
 .main-content {
   flex: 1;
-  min-height: 100vh;
+  /* min-height: 100vh;
+  max-height: 100vh; */
+  height: 100vh;
   box-sizing: border-box;
   text-align: center;
   padding: 8px 11% 40px 11%;
