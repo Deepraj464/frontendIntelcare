@@ -16,7 +16,7 @@ import Modal from "./Modal";
 import ReportViewer from "./ReportViewer";
 import SignIn from "./SignIn";
 import MarkdownParser from "./MarkdownParser";
-import { auth, signOut } from "../firebase";
+import { auth, getCount, incrementCount, signOut } from "../firebase";
 import JSZip from "jszip";
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -355,6 +355,9 @@ const UploaderPage = () => {
     const handleModalClose = () => {
         setModalVisible(false);
     };
+    useEffect(()=>{
+        getCount();
+    },[]);
 
 
     const isButtonDisabled = !file1 && !file2 && !file3 && !file4;
@@ -379,6 +382,7 @@ const UploaderPage = () => {
             { file: file3, metric_name: "EBITDA Margin" },
             { file: file4, metric_name: "Wages as a Percentage of Revenue" }
         ];
+        handleClick();
 
         const filesData = [];
         const formData = new FormData();
@@ -450,7 +454,7 @@ const UploaderPage = () => {
             alert("Please upload a zip file");
             return;
         }
-
+        handleClick();
         setIsZipProcessing(true);
         setZipProgress(0);
         setShowFinalZipReport(false);
@@ -530,6 +534,7 @@ const UploaderPage = () => {
             alert("Please enter a metric name and select at least one file.");
             return;
         }
+        handleClick();
 
         const formData = new FormData();
 
@@ -654,16 +659,18 @@ const UploaderPage = () => {
         saveAs(blob, 'Incident_Report.csv');
     };
     const handleDownloadAnalyedReportCSV = () => {
-        if (!parsedReports || typeof parsedReports !== 'object') return;
-
-        const incidentsArray = Object.values(parsedReports); // ✅ Convert object to array
-        console.log(incidentsArray);
+        if (!parsedReports || !Array.isArray(parsedReports.data)) return;
+    
+        const incidentsArray = parsedReports.data; // ✅ Directly use the array
         const worksheet = XLSX.utils.json_to_sheet(incidentsArray);
         const csv = XLSX.utils.sheet_to_csv(worksheet);
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-
+    
         saveAs(blob, 'completed_template.csv');
     };
+    const handleClick = async () => {
+        await incrementCount();
+      };
 
 
     useEffect(() => {
@@ -695,10 +702,7 @@ const UploaderPage = () => {
         setUser(null);
         setShowDropdown(false);
     };
-    console.log(documentString);
-
-
-
+   
 
     return (
         <div className="page-container">
