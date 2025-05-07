@@ -22,6 +22,7 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import FeedbackModal from "./FeedbackModal";
 import SummaryReport from "./SummaryReportViewer";
+import ReactMarkdown from "react-markdown";
 
 
 const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setShowReport, showFinalZipReport, setShowFinalZipReport, showUploadedReport, setShowUploadReport, activeReportType, setActiveReportType, analysedReportdata, setAnalysedReportdata, majorTypeofReport, setMajorTypeOfReport }) => {
@@ -48,14 +49,14 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
 
             {/* Explore Roles Button */}
             <div className="sidebar-scroll-content" style={{ overflowY: 'auto', flex: 1 }}>
-            <div
-                className="sidebar-btn explore"
-                onClick={toggleRoles}
-                style={{ cursor: 'pointer' }}
-            >
-                <img src={ExploreIcon} height={20} width={20} style={{ marginRight: 10 }} alt="explore icon" />
-                Explore Roles
-            </div>
+                <div
+                    className="sidebar-btn explore"
+                    onClick={toggleRoles}
+                    style={{ cursor: 'pointer' }}
+                >
+                    <img src={ExploreIcon} height={20} width={20} style={{ marginRight: 10 }} alt="explore icon" />
+                    Explore Roles
+                </div>
                 {showRoles && (
                     <div className="roles-list">
                         {roles.map(role => {
@@ -355,9 +356,9 @@ const UploaderPage = () => {
     const handleModalClose = () => {
         setModalVisible(false);
     };
-    useEffect(()=>{
+    useEffect(() => {
         getCount();
-    },[]);
+    }, []);
 
 
     const isButtonDisabled = !file1 && !file2 && !file3 && !file4;
@@ -660,17 +661,17 @@ const UploaderPage = () => {
     };
     const handleDownloadAnalyedReportCSV = () => {
         if (!parsedReports || !Array.isArray(parsedReports.data)) return;
-    
+
         const incidentsArray = parsedReports.data; // ✅ Directly use the array
         const worksheet = XLSX.utils.json_to_sheet(incidentsArray);
         const csv = XLSX.utils.sheet_to_csv(worksheet);
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    
+
         saveAs(blob, 'completed_template.csv');
     };
     const handleClick = async () => {
         await incrementCount();
-      };
+    };
 
 
     useEffect(() => {
@@ -702,7 +703,7 @@ const UploaderPage = () => {
         setUser(null);
         setShowDropdown(false);
     };
-   
+
 
     return (
         <div className="page-container">
@@ -915,9 +916,11 @@ const UploaderPage = () => {
                                 </div>
 
                                 <div className="report-box">
-                                    <h2 style={{ marginBottom: '6px', fontFamily: 'sans-serif' }}>REPORT</h2>
-                                    <ReportViewer report={report} />
-                                    <p style={{ marginTop: "20px", fontStyle: "italic" }}>This report is auto-generated using Intelcare's proprietary AI technology, ensuring accuracy and personalized recommendations.</p>
+                                    {/* <h2 style={{ marginBottom: '6px', fontFamily: 'sans-serif' }}>REPORT</h2> */}
+                                    <div className="report-markdown">
+                                        <ReactMarkdown>{report}</ReactMarkdown>
+                                    </div>
+                                    <p style={{ marginTop: "20px", fontStyle: "italic" }}>This report is auto-generated using Curki.ai's proprietary AI technology, ensuring accuracy and personalized recommendations.</p>
                                 </div>
                             </>
                         )}
@@ -955,9 +958,9 @@ const UploaderPage = () => {
 
                 {showAIChat && (
                     <div style={{ position: 'fixed', bottom: '100px', right: '30px', width: '350px', height: '400px', backgroundColor: '#000', borderRadius: '10px', boxShadow: '0px 4px 12px rgba(0,0,0,0.2)', padding: '15px', zIndex: 999, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between',alignItems:'center',gap:'10px' }}>
-                        <p style={{ color: '#FFFFFF',fontSize:'12px', }}>I can help with Support at Home, NDIS, compliance and reporting</p>
-                            <button onClick={() => setShowAIChat(false)} style={{ background: 'none', border: 'none', fontSize: '26px', cursor: 'pointer', color: '#fff',marginTop:'-4px' }}>×</button>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
+                            <p style={{ color: '#FFFFFF', fontSize: '12px', }}>I can help with Support at Home, NDIS, compliance and reporting</p>
+                            <button onClick={() => setShowAIChat(false)} style={{ background: 'none', border: 'none', fontSize: '26px', cursor: 'pointer', color: '#fff', marginTop: '-4px' }}>×</button>
                         </div>
 
                         <div style={{ flex: 1, marginTop: '10px', overflowY: 'auto', padding: '10px' }}>
