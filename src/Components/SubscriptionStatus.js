@@ -20,7 +20,7 @@ const SubscriptionStatus = (user, setShowPricingModal) => {
                         const paymentDate = new Date(paymentTime);
                         const daysSincePayment = (now - paymentDate) / (1000 * 60 * 60 * 24);
 
-                        if (daysSincePayment > 0) {
+                        if (daysSincePayment > 30) {
                             // Show modal and update status in Firebase
                             setShowPricingModal(true);
                             update(paymentRef, {
