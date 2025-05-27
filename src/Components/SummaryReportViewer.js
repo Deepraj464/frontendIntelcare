@@ -56,7 +56,7 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportCSV }) => {
                     <div className="title">AI SUMMARY</div>
                     <div className="download-button-container">
                         <button className="download-btn" onClick={handleDownloadAnalyedReportCSV}>
-                            Download Completed Template <MdOutlineFileDownload color="white" style={{ marginLeft: '4px' }} size={24} />
+                            Download Compliant Ready Template <MdOutlineFileDownload color="white" style={{ marginLeft: '4px' }} size={24} />
                         </button>
                     </div>
                 </div>

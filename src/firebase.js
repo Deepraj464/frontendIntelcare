@@ -23,11 +23,14 @@ const countRef = ref(db, "clickCount");
 
 // Functions to export
 const getCount = async () => {
-  console.log('getcount');
+  if (!auth.currentUser) {
+   return;
+  }
   const snapshot = await get(countRef);
   console.log(snapshot.exists() ? snapshot.val() : 0)
   return snapshot.exists() ? snapshot.val() : 0;
 };
+
 
 const incrementCount = async () => {
   const current = await getCount();
