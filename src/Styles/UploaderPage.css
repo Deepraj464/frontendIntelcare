@@ -102,6 +102,10 @@ body, html, * {
   margin-bottom: 30px;
   justify-content: space-between;
 }
+.uploader-grid.single {
+  grid-template-columns: 1fr;
+  justify-content: center;
+}
 
 .uploader-box {
   background-color: white;
@@ -114,6 +118,7 @@ body, html, * {
   cursor: pointer;
   max-width: 100%;
   overflow: hidden;
+  height: 100%;
 
 }
 

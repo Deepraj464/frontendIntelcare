@@ -27,14 +27,14 @@ import SubscriptionStatus from "./SubscriptionStatus";
 const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setShowReport, showFinalZipReport, setShowFinalZipReport, showUploadedReport, setShowUploadReport, activeReportType, setActiveReportType, analysedReportdata, setAnalysedReportdata, majorTypeofReport, setMajorTypeOfReport }) => {
     // console.log(activeReportType);
     const [showRoles, setShowRoles] = useState(true);
-    const [activeItem, setActiveItem] = useState("Quality and Safety Report");
+    const [activeItem, setActiveItem] = useState("Care Plan Analysis");
 
     const toggleRoles = () => {
         // setShowRoles(!showRoles);
         setShowUploadReport(false);
     };
     const roles = ['Financial - Monthly Care Statements', 'SIRS Reporting', 'Quarterly Financial Reporting', 'Annual Financial Reporting', 'Incident Management'];
-    const reportButtons = ["Quality and Safety Report", "Financial and Operational Report", "Service Delivery Report", "Workforce Report", "Incident Management Report", "Participant Outcomes Report"];
+    const reportButtons = ["Care Plan Analysis", "Incident Report", "Quality and Risk Reporting", "HR Analysis"];
     const NDISButton = ["Audit & Registration Manager", "Incident & Complaint Reporter", "Restrictive Practice & Behaviour Support", "Worker-Screening & HR Compliance", "Financial & Claims Compliance", "Participant Outcomes & Capacity-Building"]
     // console.log(majorTypeofReport);
 
@@ -87,7 +87,10 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                             className={`role-item ${activeItem === report ? 'active-role' : ''}`}
                             style={{ cursor: 'pointer', marginTop: '4px' }}
                             onClick={() => {
-                                setActiveReportType(report);
+                                let reportType = report;
+                                if (report === "HR Analysis") reportType = "HR Document";
+                                else if (report === "Care Plan Analysis") reportType = "Care Plan Document";
+                                setActiveReportType(reportType);
                                 setActiveItem(report);
                                 setShowReport(false);
                                 setShowFinalZipReport(false);
@@ -99,6 +102,7 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                             {report}
                         </div>
                     ))}
+
                 </div>
                 <div style={{ color: 'white', fontSize: '15px', fontWeight: 'bold', textAlign: 'left', marginLeft: '30px', fontFamily: 'Roboto', marginBottom: '12px', }}>NDIS</div>
                 {NDISButton.map(report => (
@@ -120,10 +124,6 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                     </div>
                 ))}
             </div>
-            {/* Roles List */}
-
-            {/* New Chat */}
-            {/* <button className="sidebar-btn new-chat">+ New chat</button> */}
         </div>
     );
 };
@@ -186,7 +186,7 @@ const UploaderCSVBox = ({ file, setFile, title, subtitle, removeFile }) => {
         </div>
     );
 };
-const UploadReports = ({ files, setFiles, title, subtitle, removeFile }) => {
+const UploadReports = ({ files, setFiles, title, subtitle, removeFile, fileformat }) => {
     const [loading, setLoading] = useState(false);
 
     const handleFileChange = (e) => {
@@ -218,7 +218,7 @@ const UploadReports = ({ files, setFiles, title, subtitle, removeFile }) => {
                     <input
                         type="file"
                         id={`file-upload-${title}`}
-                        accept=".zip, .pdf, .docx , .xlsx"
+                        accept={fileformat}
                         multiple
                         onChange={handleFileChange}
                         style={{ display: "none" }}
@@ -339,7 +339,7 @@ const UploaderPage = () => {
     const [template, setTemplate] = useState(null);
     const [parsedReports, setParsedReports] = useState(null);
     const [majorTypeofReport, setMajorTypeOfReport] = useState('');
-    const [mergedExcelFile,setMergedExcelFile]=useState('');
+    const [mergedExcelFile, setMergedExcelFile] = useState('');
 
     const handleModalOpen = () => {
         setModalVisible(true);
@@ -360,7 +360,7 @@ const UploaderPage = () => {
         setSidebarVisible(!sidebarVisible);
     };
     useEffect(() => {
-        setActiveReportType("Quality and Safety Report");
+        setActiveReportType("Care Plan Document");
         setMajorTypeOfReport("SUPPORT AT HOME");
         setShowUploadReport(true);
         setShowReport(false);
@@ -468,7 +468,7 @@ const UploaderPage = () => {
             // Now call visualization API with merged file
             const vizFormData = new FormData();
             vizFormData.append("files", mergedFile);
-            
+
             const vizResponse = await axios.post(
                 "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/visualization",
                 vizFormData // ✅ DO NOT set Content-Type manually
@@ -530,7 +530,7 @@ const UploaderPage = () => {
             alert("No merged Excel file to download.");
             return;
         }
-    
+
         const url = URL.createObjectURL(mergedExcelFile);
         const link = document.createElement("a");
         link.href = url;
@@ -856,24 +856,56 @@ const UploaderPage = () => {
                                                 <BiLinkExternal size={28} color="#FFFFFF" />
                                             </div>
                                         </div>
-                                        <div className="uploader-grid">
-                                            <UploaderCSVBox
-                                                file={template}
-                                                setFile={setTemplate}
-                                                title='Upload your template to be filled'
-                                                subtitle=".XLSX Format Only"
-                                                removeFile={() => setTemplate(null)}
-                                            />
-                                            <UploadReports
-                                                files={reportFiles}
-                                                setFiles={setReportFiles}
-                                                title={activeReportType}
-                                                subtitle="Upload reports in ZIP, PDF, XLSX or DOCX format"
-                                                removeFile={(index) => {
-                                                    setReportFiles(prev => prev.filter((_, i) => i !== index));
-                                                }}
-                                            />
+                                        <div
+                                            className="uploader-grid"
+                                            style={
+                                                activeReportType === "Care Plan Document" || activeReportType === "HR Document"
+                                                    ? { display: 'flex', justifyContent: 'center' }
+                                                    : {}
+                                            }
+                                        >
+                                            {activeReportType !== "Care Plan Document" && activeReportType !== "HR Document" && (
+                                                <UploaderCSVBox
+                                                    file={template}
+                                                    setFile={setTemplate}
+                                                    title="Upload your template to be filled"
+                                                    subtitle=".XLSX Format Only"
+                                                    removeFile={() => setTemplate(null)}
+                                                />
+                                            )}
+
+                                            <div
+                                                style={
+                                                    activeReportType === "Care Plan Document" || activeReportType === "HR Document"
+                                                        ? { width: '50%' }
+                                                        : { width: '100%' }
+                                                }
+                                            >
+                                                <UploadReports
+                                                    files={reportFiles}
+                                                    setFiles={setReportFiles}
+                                                    title={activeReportType}
+                                                    subtitle={
+                                                        activeReportType === "Care Plan Document"
+                                                            ? "Upload reports in ZIP or XLSX format"
+                                                            : activeReportType === "HR Document"
+                                                                ? "Upload reports in ZIP format"
+                                                                : "Upload reports in ZIP, PDF, XLSX or DOCX format"
+                                                    }
+                                                    fileformat={
+                                                        activeReportType === "Care Plan Document"
+                                                            ? ".zip, .xlsx"
+                                                            : activeReportType === "HR Document"
+                                                                ? ".zip"
+                                                                : ".zip, .pdf, .docx, .xlsx"
+                                                    }
+                                                    removeFile={(index) => {
+                                                        setReportFiles(prev => prev.filter((_, i) => i !== index));
+                                                    }}
+                                                />
+                                            </div>
                                         </div>
+
                                         <button
                                             className="analyse-btn"
                                             disabled={isAnalysingReportLoading}
@@ -891,8 +923,8 @@ const UploaderPage = () => {
                                             <SummaryReport summaryText={analysedReportdata} handleDownloadAnalyedReportCSV={handleDownloadAnalyedReportCSV} />
                                         </div>
                                     </div>
-
                                 )}
+
                             </>
                         )}
 
@@ -924,6 +956,7 @@ const UploaderPage = () => {
                                                 setFiles={setReportFiles}
                                                 title={selectedRole} // Dynamically set title based on selectedRole
                                                 subtitle="Upload reports in ZIP, PDF, XLSX or DOCX format"
+                                                fileformat=".zip, .pdf, .docx , .xlsx"
                                                 removeFile={(index) => {
                                                     setReportFiles(prev => prev.filter((_, i) => i !== index));
                                                 }}
