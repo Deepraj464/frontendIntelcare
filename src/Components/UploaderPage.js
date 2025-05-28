@@ -22,12 +22,14 @@ import FeedbackModal from "./FeedbackModal";
 import SummaryReport from "./SummaryReportViewer";
 import PricingModal from "./PricingModal";
 import SubscriptionStatus from "./SubscriptionStatus";
+import { FaLock } from 'react-icons/fa';
 
 
 const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setShowReport, showFinalZipReport, setShowFinalZipReport, showUploadedReport, setShowUploadReport, activeReportType, setActiveReportType, analysedReportdata, setAnalysedReportdata, majorTypeofReport, setMajorTypeOfReport }) => {
     // console.log(activeReportType);
     const [showRoles, setShowRoles] = useState(true);
-    const [activeItem, setActiveItem] = useState("Care Plan Analysis");
+    // const [activeItem, setActiveItem] = useState("Care Plan Analysis"); careplan
+    const [activeItem, setActiveItem] = useState("Financial - Monthly Care Statements");
 
     const toggleRoles = () => {
         // setShowRoles(!showRoles);
@@ -79,14 +81,18 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                     </div>
                 )}
 
+                {/* SUPPORT AT HOME (Locked) */}
                 <div className="roles-list">
-                    <div style={{ color: 'white', fontSize: '15px', fontWeight: 'bold', textAlign: 'left', marginLeft: '30px', fontFamily: 'Roboto', marginBottom: '12px' }}>SUPPORT AT HOME</div>
+                    <div style={{ color: 'white', fontSize: '15px', fontWeight: 'bold', textAlign: 'left', marginLeft: '30px', fontFamily: 'Roboto', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        SUPPORT AT HOME <FaLock size={12} />
+                    </div>
                     {reportButtons.map(report => (
                         <div
                             key={report}
                             className={`role-item ${activeItem === report ? 'active-role' : ''}`}
-                            style={{ cursor: 'pointer', marginTop: '4px' }}
+                            style={{ cursor: 'not-allowed', marginTop: '4px', opacity: 0.5, pointerEvents: 'none' }}
                             onClick={() => {
+                                // This will not trigger due to pointerEvents: 'none', but logic is preserved
                                 let reportType = report;
                                 if (report === "HR Analysis") reportType = "HR Document";
                                 else if (report === "Care Plan Analysis") reportType = "Care Plan Document";
@@ -96,38 +102,43 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                                 setShowFinalZipReport(false);
                                 setShowUploadReport(true);
                                 setMajorTypeOfReport('SUPPORT AT HOME');
-                                if (analysedReportdata) setAnalysedReportdata(null)
+                                if (analysedReportdata) setAnalysedReportdata(null);
                             }}
                         >
                             {report}
                         </div>
                     ))}
-
                 </div>
-                <div style={{ color: 'white', fontSize: '15px', fontWeight: 'bold', textAlign: 'left', marginLeft: '30px', fontFamily: 'Roboto', marginBottom: '12px', }}>NDIS</div>
-                {NDISButton.map(report => (
-                    <div
-                        key={report}
-                        className={`role-item ${activeItem === report ? 'active-role' : ''}`}
-                        style={{ cursor: 'pointer', marginTop: '4px' }}
-                        onClick={() => {
-                            setActiveReportType(report);
-                            setActiveItem(report);
-                            setShowReport(false);
-                            setShowFinalZipReport(false);
-                            setShowUploadReport(true);
-                            setMajorTypeOfReport('NDIS')
-                            if (analysedReportdata) setAnalysedReportdata(null)
-                        }}
-                    >
-                        {report}
+
+                {/* NDIS (Locked) */}
+                <div className="roles-list">
+                    <div style={{ color: 'white', fontSize: '15px', fontWeight: 'bold', textAlign: 'left', marginLeft: '30px', fontFamily: 'Roboto', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        NDIS <FaLock size={12} />
                     </div>
-                ))}
+                    {NDISButton.map(report => (
+                        <div
+                            key={report}
+                            className={`role-item ${activeItem === report ? 'active-role' : ''}`}
+                            style={{ cursor: 'not-allowed', marginTop: '4px', opacity: 0.5, pointerEvents: 'none' }}
+                            onClick={() => {
+                                // Logic is preserved, but click is disabled visually
+                                setActiveReportType(report);
+                                setActiveItem(report);
+                                setShowReport(false);
+                                setShowFinalZipReport(false);
+                                setShowUploadReport(true);
+                                setMajorTypeOfReport('NDIS');
+                                if (analysedReportdata) setAnalysedReportdata(null);
+                            }}
+                        >
+                            {report}
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );
 };
-
 
 
 const UploaderCSVBox = ({ file, setFile, title, subtitle, removeFile }) => {
@@ -352,6 +363,8 @@ const UploaderPage = () => {
         getCount();
     }, []);
 
+    console.log(activeReportType);
+    console.log(selectedRole);
 
     const isButtonDisabled = !template && reportFiles.length === 0;
     const isZipButtonDisabled = !zipFile1
@@ -360,12 +373,20 @@ const UploaderPage = () => {
         setSidebarVisible(!sidebarVisible);
     };
     useEffect(() => {
-        setActiveReportType("Care Plan Document");
-        setMajorTypeOfReport("SUPPORT AT HOME");
-        setShowUploadReport(true);
+        // setActiveReportType("Care Plan Document");
+        // setMajorTypeOfReport("SUPPORT AT HOME");
+        // setShowUploadReport(true);
+        // setShowReport(false);
+        // setShowFinalZipReport(false);
+        // if (analysedReportdata) setAnalysedReportdata(null);
+
+        // for financial thing to show when other is locked......
+        setSelectedRole('Financial - Monthly Care Statements');
         setShowReport(false);
         setShowFinalZipReport(false);
-        if (analysedReportdata) setAnalysedReportdata(null);
+        if (showUploadedReport) setShowUploadReport(false);
+        // ..................
+
     }, []);
 
 
