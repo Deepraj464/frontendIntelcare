@@ -263,7 +263,7 @@ body, html, * {
   display: flex;
   flex-wrap: wrap;
   margin-top: 20px;
-  gap: 2%;
+  gap: 8%;
 }
 
 .data-card {
@@ -271,8 +271,9 @@ body, html, * {
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   padding: 14px 8px;
-  width: 23.5%;
+  width: 46%;
   cursor: pointer;
+  margin-bottom: 20px;
 }
 
 .report-box {

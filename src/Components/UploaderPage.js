@@ -494,6 +494,7 @@ const UploaderPage = () => {
                 "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/visualization",
                 vizFormData // ✅ DO NOT set Content-Type manually
             );
+            console.log(vizResponse);
 
             const visualArray = [];
 
@@ -969,15 +970,15 @@ const UploaderPage = () => {
                                                 file={template}
                                                 setFile={setTemplate}
                                                 title="Upload your template to be filled"
-                                                subtitle=".XLSX Format Only"
+                                                subtitle=".XLSX or .CSV Format Only"
                                                 removeFile={() => setTemplate(null)}
                                             />
                                             <UploadReports
                                                 files={reportFiles}
                                                 setFiles={setReportFiles}
                                                 title={selectedRole} // Dynamically set title based on selectedRole
-                                                subtitle="Upload reports in ZIP, PDF, XLSX or DOCX format"
-                                                fileformat=".zip, .pdf, .docx , .xlsx"
+                                                subtitle="Upload .XLSX, .CSV or .XLS format"
+                                                fileformat=".xlsx, .csv, .xls"
                                                 removeFile={(index) => {
                                                     setReportFiles(prev => prev.filter((_, i) => i !== index));
                                                 }}
