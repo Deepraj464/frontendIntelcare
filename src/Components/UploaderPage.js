@@ -400,12 +400,12 @@ const UploaderPage = () => {
 
         handleClick();
         setIsProcessing(true);
-        setProgress(5);
+        setProgress(1);
 
         // Start dummy progress bar increment
         const interval = setInterval(() => {
-            setProgress((prev) => (prev < 90 ? prev + 5 : prev));
-        }, 500);
+            setProgress((prev) => (prev < 90 ? prev + 2 : prev));
+        }, 5000);
 
         try {
             // Read the template file as workbook (to access sheets)
@@ -1022,6 +1022,7 @@ const UploaderPage = () => {
                                 )}
 
                                 {['Financial - Monthly Care Statements', 'SIRS Reporting', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) ? (
+                                    <>
                                     <button
                                         className="analyse-btn"
                                         disabled={isButtonDisabled || isProcessing}
@@ -1033,6 +1034,8 @@ const UploaderPage = () => {
                                     >
                                         {isProcessing ? `${progress}% Processing...` : 'Analyse'}
                                     </button>
+                                    <div style={{fontSize:'12px',color:'grey',fontFamily:'Inter',fontWeight:'400',textAlign:'center',marginTop:'12px'}}>**Estimated Time to Analyse 4 min**</div>
+                                    </>
                                 ) : (
                                     <button
                                         className="analyse-btn"
