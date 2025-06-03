@@ -28,15 +28,15 @@ import { FaLock } from 'react-icons/fa';
 const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setShowReport, showFinalZipReport, setShowFinalZipReport, showUploadedReport, setShowUploadReport, activeReportType, setActiveReportType, analysedReportdata, setAnalysedReportdata, majorTypeofReport, setMajorTypeOfReport }) => {
     // console.log(activeReportType);
     const [showRoles, setShowRoles] = useState(true);
-    // const [activeItem, setActiveItem] = useState("Care Plan Analysis"); careplan
-    const [activeItem, setActiveItem] = useState("Financial - Monthly Care Statements");
+    // const [activeItem, setActiveItem] = useState("Care Services & elgibility Analysis"); careplan
+    const [activeItem, setActiveItem] = useState("Monthly Financial Health");
 
     const toggleRoles = () => {
         // setShowRoles(!showRoles);
         setShowUploadReport(false);
     };
-    const roles = ['Financial - Monthly Care Statements', 'SIRS Reporting', 'Quarterly Financial Reporting', 'Annual Financial Reporting', 'Incident Management'];
-    const reportButtons = ["Care Plan Analysis", "Incident Report", "Quality and Risk Reporting", "HR Analysis"];
+    const roles = ['Monthly Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting', 'Incident Management'];
+    const reportButtons = ["Care Services & eligibility Analysis", "Incident Report", "Quality and Risk Reporting", "HR Analysis"];
     const NDISButton = ["Audit & Registration Manager", "Incident & Complaint Reporter", "Restrictive Practice & Behaviour Support", "Worker-Screening & HR Compliance", "Financial & Claims Compliance", "Participant Outcomes & Capacity-Building"]
     // console.log(majorTypeofReport);
 
@@ -95,7 +95,7 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                                 // This will not trigger due to pointerEvents: 'none', but logic is preserved
                                 let reportType = report;
                                 if (report === "HR Analysis") reportType = "HR Document";
-                                else if (report === "Care Plan Analysis") reportType = "Care Plan Document";
+                                else if (report === "Care Services & eligibility Analysis") reportType = "Care Plan Document";
                                 setActiveReportType(reportType);
                                 setActiveItem(report);
                                 setShowReport(false);
@@ -338,7 +338,7 @@ const UploaderPage = () => {
     const [user, setUser] = useState(null);
     const [showDropdown, setShowDropdown] = useState(false);
     const [showPricingModal, setShowPricingModal] = useState(false);
-    const [selectedRole, setSelectedRole] = useState('Financial - Monthly Care Statements');
+    const [selectedRole, setSelectedRole] = useState('Monthly Financial Health');
     const [reportZipData, setReportZipdata] = useState([])
     const [activeReportType, setActiveReportType] = useState(null);
     const [reportFiles, setReportFiles] = useState([]);
@@ -381,7 +381,7 @@ const UploaderPage = () => {
         // if (analysedReportdata) setAnalysedReportdata(null);
 
         // for financial thing to show when other is locked......
-        setSelectedRole('Financial - Monthly Care Statements');
+        setSelectedRole('Monthly Financial Health');
         setShowReport(false);
         setShowFinalZipReport(false);
         if (showUploadedReport) setShowUploadReport(false);
@@ -494,7 +494,7 @@ const UploaderPage = () => {
                 "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/visualization",
                 vizFormData // ✅ DO NOT set Content-Type manually
             );
-            console.log(vizResponse);
+            console.log('Deepak',vizResponse);
 
             const visualArray = [];
 
@@ -962,27 +962,41 @@ const UploaderPage = () => {
                                         <BiLinkExternal size={28} color="#FFFFFF" />
                                     </div>
                                 </div>
-                                {['Financial - Monthly Care Statements', 'SIRS Reporting', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) ? (
+                                {['Monthly Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) ? (
                                     <div>
-                                        <div className="uploader-grid">
-                                            {/* Uploader boxes */}
-                                            <UploaderCSVBox
-                                                file={template}
-                                                setFile={setTemplate}
-                                                title="Upload your template to be filled"
-                                                subtitle=".XLSX or .CSV Format Only"
-                                                removeFile={() => setTemplate(null)}
-                                            />
-                                            <UploadReports
-                                                files={reportFiles}
-                                                setFiles={setReportFiles}
-                                                title={selectedRole} // Dynamically set title based on selectedRole
-                                                subtitle="Upload .XLSX, .CSV or .XLS format"
-                                                fileformat=".xlsx, .csv, .xls"
-                                                removeFile={(index) => {
-                                                    setReportFiles(prev => prev.filter((_, i) => i !== index));
-                                                }}
-                                            />
+                                        <div className="uploader-grid"
+                                            style={
+                                                selectedRole === "Monthly Financial Health"
+                                                    ? {}
+                                                    : { display: 'flex', justifyContent: 'center' }
+                                            }>
+                                            {selectedRole === 'Monthly Financial Health' && (
+                                                <UploaderCSVBox
+                                                    file={template}
+                                                    setFile={setTemplate}
+                                                    title="Upload your template to be filled"
+                                                    subtitle=".XLSX or .CSV Format Only"
+                                                    removeFile={() => setTemplate(null)}
+                                                />
+                                            )}
+                                            <div
+                                                style={
+                                                    selectedRole === "Monthly Financial Health"
+                                                        ? { width: '100%' }
+                                                        : { width: '50%' }
+                                                }
+                                            >
+                                                <UploadReports
+                                                    files={reportFiles}
+                                                    setFiles={setReportFiles}
+                                                    title={selectedRole}
+                                                    subtitle="Upload .XLSX, .CSV or .XLS format"
+                                                    fileformat=".xlsx, .csv, .xls"
+                                                    removeFile={(index) => {
+                                                        setReportFiles(prev => prev.filter((_, i) => i !== index));
+                                                    }}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 ) : (
@@ -1022,20 +1036,20 @@ const UploaderPage = () => {
                                     </div>
                                 )}
 
-                                {['Financial - Monthly Care Statements', 'SIRS Reporting', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) ? (
+                                {['Monthly Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) ? (
                                     <>
-                                    <button
-                                        className="analyse-btn"
-                                        disabled={isButtonDisabled || isProcessing}
-                                        style={{
-                                            backgroundColor: isButtonDisabled || isProcessing ? '#A1A1AA' : '#000',
-                                            cursor: isProcessing ? 'not-allowed' : 'pointer'
-                                        }}
-                                        onClick={handleAnalyse}
-                                    >
-                                        {isProcessing ? `${progress}% Processing...` : 'Analyse'}
-                                    </button>
-                                    <div style={{fontSize:'12px',color:'grey',fontFamily:'Inter',fontWeight:'400',textAlign:'center',marginTop:'12px'}}>**Estimated Time to Analyse 4 min**</div>
+                                        <button
+                                            className="analyse-btn"
+                                            disabled={isButtonDisabled || isProcessing}
+                                            style={{
+                                                backgroundColor: isButtonDisabled || isProcessing ? '#A1A1AA' : '#000',
+                                                cursor: isProcessing ? 'not-allowed' : 'pointer'
+                                            }}
+                                            onClick={handleAnalyse}
+                                        >
+                                            {isProcessing ? `${progress}% Processing...` : 'Analyse'}
+                                        </button>
+                                        <div style={{ fontSize: '12px', color: 'grey', fontFamily: 'Inter', fontWeight: '400', textAlign: 'center', marginTop: '12px' }}>**Estimated Time to Analyse 4 min**</div>
                                     </>
                                 ) : (
                                     <button
@@ -1055,7 +1069,7 @@ const UploaderPage = () => {
                             </>
                         ) : (
                             <>
-                                {showReport && ['Financial - Monthly Care Statements', 'SIRS Reporting', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) && (
+                                {showReport && ['Monthly Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) && (
                                     <>
                                         <div className="card-grid">
                                             {visualizations.map((viz, index) => (
@@ -1069,7 +1083,7 @@ const UploaderPage = () => {
 
                                         <div className="reports-box" style={{ height: 'auto', marginTop: '30px', padding: '10px' }}>
                                             <div style={{ backgroundColor: '#FFFFFF', padding: '10px 30px', borderRadius: '10px' }}>
-                                                <SummaryReport summaryText={report} handleDownloadAnalyedReportCSV={handleDownloadExcel} />
+                                                <SummaryReport summaryText={report} handleDownloadAnalyedReportCSV={handleDownloadExcel} selectedRole={selectedRole}/>
                                             </div>
                                         </div>
                                     </>

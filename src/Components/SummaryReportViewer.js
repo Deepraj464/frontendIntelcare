@@ -3,7 +3,7 @@ import { MdOutlineFileDownload } from "react-icons/md";
 import { marked } from "marked"; // Import the marked library for markdown parsing
 import '../Styles/SummaryReportViwer.css'; // Import your CSS file
 
-const SummaryReport = ({ summaryText, handleDownloadAnalyedReportCSV }) => {
+const SummaryReport = ({ summaryText, handleDownloadAnalyedReportCSV, selectedRole }) => {
     const parsedResponse = summaryText && typeof summaryText === "string" ? JSON.parse(summaryText) : summaryText;
 
     const { review_response, compliance_level } = parsedResponse;
@@ -18,7 +18,7 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportCSV }) => {
         // Parse the markdown title and content into HTML
         const markdownTitle = marked(title); // Convert markdown to HTML (e.g., **text** becomes <strong>text</strong>)
         const titleClass = title === '**Strengths:**' ? 'green' :
-        (title === '**Areas of Concern or Non-Compliance:**' || title === '**Summary of Overall Compliance Level:**' || title==='**Summary of the Overall Compliance Level:**' || title==='**Concerns or Non-Compliance:**')? 'red' : 'black';
+            (title === '**Areas of Concern or Non-Compliance:**' || title === '**Summary of Overall Compliance Level:**' || title === '**Summary of the Overall Compliance Level:**' || title === '**Concerns or Non-Compliance:**') ? 'red' : 'black';
         // console.log(title);
 
 
@@ -52,22 +52,44 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportCSV }) => {
     return (
         <>
             <div className="summary-report-container">
-                <div className="header-container">
-                    <div className="title">AI SUMMARY</div>
-                    <div className="download-button-container">
-                        <button className="download-btn" onClick={handleDownloadAnalyedReportCSV}>
-                            Download Compliant Ready Template <MdOutlineFileDownload color="white" style={{ marginLeft: '4px' }} size={24} />
-                        </button>
+                {selectedRole === 'Monthly Financial Health' ?
+                    <div>
+                        <div className="title" style={{ textAlign: 'center' }}>AI SUMMARY</div>
+                        <div className="download-report-div">
+                            <div style={{ fontSize: '18px', fontWeight: '500', textAlign: 'center',marginBottom:'20px',marginTop:'12px' }}>
+                                Download Reports
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'center',marginBottom:'18px' }}>
+                                <div style={{ width: '60%', display: 'flex', justifyContent: 'space-between' }}>
+                                <button className="download-report-btn" onClick={handleDownloadAnalyedReportCSV}>
+                                    Approved Standard Format <MdOutlineFileDownload color="white" style={{ marginLeft: '4px' }} size={24} />
+                                </button>
+                                <button className="download-report-btn" onClick={handleDownloadAnalyedReportCSV}>
+                                    Your Uploaded Format <MdOutlineFileDownload color="white" style={{ marginLeft: '4px' }} size={24} />
+                                </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                {sections.map(formatSection)}
-                <div className="compliance-level-container">
-                    <strong className={`${levelTextClass} compliance-level-text`} >Overall Compliance Level:</strong>{" "}
-                    <span className={`${levelTextClass} compliance-level-text`}>
-                        {compliance_level}
-                    </span>
+            :
+            <div className="header-container">
+                <div className="title">AI SUMMARY</div>
+                <div className="download-button-container">
+                    <button className="download-btn" onClick={handleDownloadAnalyedReportCSV}>
+                        Download Compliant Ready Template <MdOutlineFileDownload color="white" style={{ marginLeft: '4px' }} size={24} />
+                    </button>
                 </div>
             </div>
+                }
+
+            {sections.map(formatSection)}
+            <div className="compliance-level-container">
+                <strong className={`${levelTextClass} compliance-level-text`} >Overall Compliance Level:</strong>{" "}
+                <span className={`${levelTextClass} compliance-level-text`}>
+                    {compliance_level}
+                </span>
+            </div>
+        </div>
         </>
     );
 };
