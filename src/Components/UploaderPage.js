@@ -393,82 +393,72 @@ const UploaderPage = () => {
 
 
     const handleAnalyse = async () => {
-        if (!template || reportFiles.length === 0) {
-            alert("Please upload both the template and report files.");
+        if (reportFiles.length === 0) {
+            alert("Please upload the report files.");
             return;
         }
-
+    
         handleClick();
         setIsProcessing(true);
         setProgress(1);
-
-        // Start dummy progress bar increment
+    
         const interval = setInterval(() => {
             setProgress((prev) => (prev < 90 ? prev + 2 : prev));
         }, 5000);
-
+    
         try {
-            // Read the template file as workbook (to access sheets)
-            const data = await template.arrayBuffer();
-            const workbook = XLSX.read(data);
-
-            // Array to collect base64 results from API calls for each sheet
+            // Fetch template CSV from public folder
+            const templateResponse = await fetch('/StandardFormatFinancial.csv');
+            const templateBlob = await templateResponse.blob();
+            const templateArrayBuffer = await templateBlob.arrayBuffer();
+    
+            // Read the CSV as workbook
+            const workbook = XLSX.read(templateArrayBuffer);
+    
             const sheetResults = [];
-
-            // Loop through each sheet in template workbook
+    
             for (const sheetName of workbook.SheetNames) {
-                // Create a new workbook with only the current sheet
-                console.log('in for loop');
+                console.log('Processing sheet:', sheetName);
                 const newWorkbook = XLSX.utils.book_new();
                 const worksheet = workbook.Sheets[sheetName];
                 XLSX.utils.book_append_sheet(newWorkbook, worksheet, sheetName);
-
-                // Convert new workbook to binary string or array buffer
+    
                 const wbout = XLSX.write(newWorkbook, { bookType: 'xlsx', type: 'array' });
                 const sheetBlob = new Blob([wbout], {
                     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 });
-
-                // Create FormData for this single sheet
+    
                 const formData = new FormData();
                 formData.append("template", sheetBlob, `template_${sheetName.replace(/[^a-zA-Z0-9]/g, "_")}.xlsx`);
                 reportFiles.forEach(file => formData.append("files", file));
                 formData.append("context", "None");
-
-                // Call financial reporting API for this sheet
+    
                 const response = await axios.post(
                     "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/financial_reporting",
                     formData
                 );
                 console.log(response);
-
+    
                 if (!response.data.file_base64) {
-                    throw new Error(`No file returned from analysis for sheet ${sheetName}`);
+                    throw new Error(`No file returned for sheet ${sheetName}`);
                 }
-
+    
                 sheetResults.push({
                     filename: response.data.filename,
                     base64: response.data.file_base64,
                     summary: response.data.summary,
                 });
             }
-            console.log(sheetResults);
-
-            // Merge all returned excel files from API for all sheets into one workbook
+    
             const mergedWorkbook = XLSX.utils.book_new();
-
             for (let i = 0; i < sheetResults.length; i++) {
-                const { base64, filename } = sheetResults[i];
-
-                // Convert base64 to workbook
+                const { base64,filename } = sheetResults[i];
                 const binary = atob(base64.split(",")[1] || base64);
                 const bytes = new Uint8Array(binary.length);
                 for (let j = 0; j < binary.length; j++) bytes[j] = binary.charCodeAt(j);
                 const wb = XLSX.read(bytes, { type: "array" });
-
-                // Append sheets of this workbook to merged workbook
+    
                 wb.SheetNames.forEach((sheetName) => {
-                    // To avoid duplicate sheet names, append suffix with index
                     XLSX.utils.book_append_sheet(
                         mergedWorkbook,
                         wb.Sheets[sheetName],
@@ -476,8 +466,7 @@ const UploaderPage = () => {
                     );
                 });
             }
-
-            // Write merged workbook to Blob
+    
             const mergedWbOut = XLSX.write(mergedWorkbook, { bookType: "xlsx", type: "array" });
             const mergedBlob = new Blob([mergedWbOut], {
                 type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -485,19 +474,17 @@ const UploaderPage = () => {
             const mergedFile = new File([mergedBlob], "merged_report.xlsx", {
                 type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             });
-
-            // Now call visualization API with merged file
+    
             const vizFormData = new FormData();
             vizFormData.append("files", mergedFile);
-
+    
             const vizResponse = await axios.post(
                 "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/visualization",
-                vizFormData // ✅ DO NOT set Content-Type manually
+                vizFormData
             );
-            console.log('Deepak',vizResponse);
-
+            console.log('Viz:', vizResponse);
+    
             const visualArray = [];
-
             if (vizResponse.data && Array.isArray(vizResponse.data.attachments)) {
                 vizResponse.data.attachments.forEach((attachment) => {
                     visualArray.push({
@@ -522,23 +509,21 @@ const UploaderPage = () => {
                     });
                 });
             }
-
+    
             clearInterval(interval);
             setProgress(100);
-
-            // Set state with combined summary texts from all sheets (joined)
-            // const combinedSummary = sheetResults.map(r => r.summary).join("\n\n");
+    
             const firstSummary = sheetResults[0]?.summary || "No summary available.";
             setReport(firstSummary);
             setMergedExcelFile(mergedFile);
             setVisualizations(visualArray);
             setDocumentString("merged_report.xlsx");
-
+    
             setTimeout(() => {
                 setShowReport(true);
                 setIsProcessing(false);
             }, 500);
-
+    
         } catch (error) {
             console.error("Error:", error);
             alert("AI Overloading.");
@@ -547,6 +532,7 @@ const UploaderPage = () => {
             setIsProcessing(false);
         }
     };
+    
     const handleDownloadExcel = () => {
         if (!mergedExcelFile) {
             alert("No merged Excel file to download.");
