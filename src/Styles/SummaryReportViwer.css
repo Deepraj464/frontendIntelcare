@@ -110,3 +110,8 @@
 .compliance-normal {
     color: gray;
 }
+.disabled-r-btn{
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}

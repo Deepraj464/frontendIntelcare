@@ -61,7 +61,7 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportCSV, selectedRo
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'center',marginBottom:'18px' }}>
                                 <div style={{ width: '60%', display: 'flex', justifyContent: 'space-between' }}>
-                                <button className="download-report-btn" onClick={handleDownloadAnalyedReportCSV}>
+                                <button className="download-report-btn disabled-r-btn" disabled>
                                     Approved Standard Format <MdOutlineFileDownload color="white" style={{ marginLeft: '4px' }} size={24} />
                                 </button>
                                 <button className="download-report-btn" onClick={handleDownloadAnalyedReportCSV}>
