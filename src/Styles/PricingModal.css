@@ -14,10 +14,9 @@
 
 .pricing-popup {
     background-color: white;
-    padding: 30px;
     border-radius: 24px;
-    width: 30%;
-    height: 40%;
+    width: 35%;
+    height: auto;
     position: relative;
     box-shadow: 0 10px 12px rgba(62, 4, 236, 0.15);
     max-width: 50%;
@@ -35,30 +34,28 @@
 }
 
 .warning {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: red;
-    font-size: 22px;
+    text-align: center;
+    font-size: 30px;
     font-weight: 700;
     gap: 6px;
-    margin-bottom: 14px;
+    margin-bottom: 10px;
+    color: white;
 }
 
 .offer-tag {
-    background-color: black;
     color: white;
-    font-size: 13px;
-    padding: 6px 14px;
-    border-radius: 999px;
-    display: inline-block;
-    margin-bottom: 16px;
+    font-size: 18px;
+    margin-bottom: 20px;
+    font-weight: 500;
 }
 
-.price {
-    font-size: 32px;
-    font-weight: bold;
-    color: #5b36e1;
+.price-unlock {
+    font-size: 30px;
+    font-weight: 400;
+    color: #000000;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 18px;
 }
 
 .price-month {
@@ -67,36 +64,78 @@
     margin-left: 4px;
 }
 
-.features {
+.features-section{
     list-style: none;
     padding: 0;
     margin: 16px 0;
     font-size: 14px;
     color: #333;
+    text-align: justify;
+    margin-left: 78px;
 }
 
-.features li {
+.features-section li {
     margin: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    margin-bottom: 14px;
 }
 
 .buy-button {
-    width: 80%;
+    width: 70%;
     padding: 10px;
-    background-color: black;
+    background-color: #6548FF;
     color: white;
     font-weight: 600;
     border: none;
-    border-radius: 999px;
+    border-radius: 10px;
     cursor: pointer;
     transition: background 0.2s ease;
+    margin-top: 10px;
 }
 
 .buy-button:hover {
-    background-color: #333;
+    background-color: #7a64ff;
 }
 
-hr {
-    border: none;
-    border-top: 1px solid #eee;
-    margin: 20px 0;
+.pricing-context {
+    background-image: url('../Images/FreeTrialBg.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    /* Optional: prevents tiling */
+    background-position: center;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    padding: 30px 30px 14px 30px;
+}
+
+.logo-img-div {
+    height: 34px;
+    width: auto;
+    margin-bottom: 14px;
+}
+
+.logo-img {
+    height: 100%;
+    width: auto;
+}
+
+.trial-clock-div {
+    height: 150px;
+    width: auto;
+    margin-bottom: 10px;
+}
+
+.trial-clock-img {
+    height: 100%;
+    width: auto;
+}
+.feature-context{
+padding: 8px 30px 30px 30px;
+}
+.promotional-text{
+    margin-top: 10px;
+    font-size: 14px;
 }

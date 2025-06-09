@@ -3,6 +3,9 @@ import '../Styles/PricingModal.css';
 import { PiWarningBold } from "react-icons/pi";
 import { getDatabase, ref, set } from "firebase/database";
 import { getAuth } from "firebase/auth";
+import CurkiLogo from '../Images/CurkiAiLogo.png';
+import TrialClock from '../Images/TrialClock.png';
+import { IoIosArrowDropright } from "react-icons/io";
 
 const PricingModal = ({ email }) => {
     const [paymentStatus, setPaymentStatus] = useState(null);
@@ -55,27 +58,29 @@ const PricingModal = ({ email }) => {
     return (
         <div className='pricing-pop-up-layout'>
             <div className="pricing-popup">
-                <div className='warning'>
-                    <PiWarningBold size={24} color='red' />
-                    <div>Your Free trial has ended!</div>
+                <div className='pricing-context'>
+                    <div className='logo-img-div'>
+                        <img src={CurkiLogo} alt='curkiLogo' className='logo-img' />
+                    </div>
+                    <div className='warning'>
+                        Your Free Trial Just Ended
+                    </div>
+                    <div className="offer-tag">But don’t worry  you’re just one<br></br>click away from full, unlimited access.</div>
+                    <div className='trial-clock-div'>
+                        <img src={TrialClock} alt='trialClock' className='trial-clock-img' />
+                    </div>
                 </div>
-                <div className="offer-tag">Introductory offer</div>
-
-                <div className="price">
-                    $49<span className="price-month">/ Month</span>
-                </div>
-
-                <hr />
-
-                <ul className="features">
-                    <li>✔ 1 User</li>
-                    <li>✔ Unlimited use</li>
-                    <li>✔ Access to all features</li>
-                    <li>✔ No lock-in, Cancel anytime</li>
-                </ul>
-                <hr />
-
-                <button
+                <div className='feature-context'>
+                    <div className='price-unlock'>
+                        Unlock Everything for<br></br>Just $49/Month
+                    </div>
+                    <ul className="features-section">
+                        <li><IoIosArrowDropright color='#6548FF' size={20}/>1 User</li>
+                        <li><IoIosArrowDropright color='#6548FF' size={20}/>Unlimited use</li>
+                        <li><IoIosArrowDropright color='#6548FF' size={20}/>All Features Included</li>
+                        <li><IoIosArrowDropright color='#6548FF' size={20}/>No Commitment Cancel</li>
+                    </ul>
+                    <button
                     className="buy-button"
                     onClick={() => {
                         const emailParam = `?prefilled_email=${email}`;
@@ -84,8 +89,12 @@ const PricingModal = ({ email }) => {
                         window.location.href = isDevMode ? devUrl : prodUrl;
                     }}
                 >
-                    Buy Now
+                    Get Full Access
                 </button>
+                <div className='promotional-text'>
+                That’s less than $1.65 a day for unlimited power.
+                </div>
+                </div>
             </div>
         </div>
     );

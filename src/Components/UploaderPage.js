@@ -351,6 +351,8 @@ const UploaderPage = () => {
     const [parsedReports, setParsedReports] = useState(null);
     const [majorTypeofReport, setMajorTypeOfReport] = useState('');
     const [mergedExcelFile, setMergedExcelFile] = useState('');
+    const [standardExcelFile, setStandardExcelFile] = useState(null);
+    const [uploadedExcelFile, setUploadedExcelFile] = useState(null);
 
     const handleModalOpen = () => {
         setModalVisible(true);
@@ -394,163 +396,216 @@ const UploaderPage = () => {
 
     const handleAnalyse = async () => {
         if (reportFiles.length === 0) {
-            alert("Please upload the report files.");
-            return;
+          alert("Please upload the report files.");
+          return;
         }
-    
+      
+        if (selectedRole === "Monthly Financial Health" && !template) {
+          alert("Please upload your Monthly Financial Health template.");
+          // We still proceed with standard template processing only
+        }
+      
         handleClick();
         setIsProcessing(true);
         setProgress(1);
-    
+      
         const interval = setInterval(() => {
-            setProgress((prev) => (prev < 90 ? prev + 2 : prev));
+          setProgress((prev) => (prev < 90 ? prev + 2 : prev));
         }, 5000);
-    
+      
         try {
-            // Fetch template CSV from public folder
-            const templateResponse = await fetch('/StandardFormatFinancial.csv');
-            const templateBlob = await templateResponse.blob();
-            const templateArrayBuffer = await templateBlob.arrayBuffer();
-    
-            // Read the CSV as workbook
-            const workbook = XLSX.read(templateArrayBuffer);
-    
+          const generateProcessedFile = async (workbook, label) => {
             const sheetResults = [];
-    
+      
             for (const sheetName of workbook.SheetNames) {
-                console.log('Processing sheet:', sheetName);
-                const newWorkbook = XLSX.utils.book_new();
-                const worksheet = workbook.Sheets[sheetName];
-                XLSX.utils.book_append_sheet(newWorkbook, worksheet, sheetName);
-    
-                const wbout = XLSX.write(newWorkbook, { bookType: 'xlsx', type: 'array' });
-                const sheetBlob = new Blob([wbout], {
-                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                });
-    
-                const formData = new FormData();
-                formData.append("template", sheetBlob, `template_${sheetName.replace(/[^a-zA-Z0-9]/g, "_")}.xlsx`);
-                reportFiles.forEach(file => formData.append("files", file));
-                formData.append("context", "None");
-    
-                const response = await axios.post(
-                    "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/financial_reporting",
-                    formData
-                );
-                console.log(response);
-    
-                if (!response.data.file_base64) {
-                    throw new Error(`No file returned for sheet ${sheetName}`);
-                }
-    
-                sheetResults.push({
-                    filename: response.data.filename,
-                    base64: response.data.file_base64,
-                    summary: response.data.summary,
-                });
-            }
-    
-            const mergedWorkbook = XLSX.utils.book_new();
-            for (let i = 0; i < sheetResults.length; i++) {
-                const { base64,filename } = sheetResults[i];
-                const binary = atob(base64.split(",")[1] || base64);
-                const bytes = new Uint8Array(binary.length);
-                for (let j = 0; j < binary.length; j++) bytes[j] = binary.charCodeAt(j);
-                const wb = XLSX.read(bytes, { type: "array" });
-    
-                wb.SheetNames.forEach((sheetName) => {
-                    XLSX.utils.book_append_sheet(
-                        mergedWorkbook,
-                        wb.Sheets[sheetName],
-                        `${sheetName}_${i + 1}`
-                    );
-                });
-            }
-    
-            const mergedWbOut = XLSX.write(mergedWorkbook, { bookType: "xlsx", type: "array" });
-            const mergedBlob = new Blob([mergedWbOut], {
+              const newWorkbook = XLSX.utils.book_new();
+              const worksheet = workbook.Sheets[sheetName];
+              XLSX.utils.book_append_sheet(newWorkbook, worksheet, sheetName);
+      
+              const wbout = XLSX.write(newWorkbook, { bookType: "xlsx", type: "array" });
+              const sheetBlob = new Blob([wbout], {
                 type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            });
-            const mergedFile = new File([mergedBlob], "merged_report.xlsx", {
-                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            });
-    
-            const vizFormData = new FormData();
-            vizFormData.append("files", mergedFile);
-    
-            const vizResponse = await axios.post(
-                "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/visualization",
-                vizFormData
-            );
-            console.log('Viz:', vizResponse);
-    
-            const visualArray = [];
-            if (vizResponse.data && Array.isArray(vizResponse.data.attachments)) {
-                vizResponse.data.attachments.forEach((attachment) => {
-                    visualArray.push({
-                        metricName: attachment.filename,
-                        image: `data:image/png;base64,${attachment.file_base64}`,
-                    });
-                });
+              });
+      
+              const formData = new FormData();
+              formData.append("template", sheetBlob, `template_${sheetName.replace(/[^a-zA-Z0-9]/g, "_")}.xlsx`);
+              reportFiles.forEach((file) => formData.append("files", file));
+              formData.append("context", "None");
+      
+              const response = await axios.post(
+                "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/financial_reporting",
+                formData
+              );
+      
+              if (!response.data.file_base64) {
+                throw new Error(`No file returned for sheet ${sheetName}`);
+              }
+      
+              sheetResults.push({
+                base64: response.data.file_base64,
+                summary: response.data.summary,
+              });
             }
-
-            if (visualArray.length === 0) {
-                const fallbackMetrics = [
-                    "Hours of Service Delivered",
-                    "Wages Plotting",
-                    "Income Plotting",
-                    "Services Plotting",
-                ];
-
-                fallbackMetrics.forEach((metric) => {
-                    visualArray.push({
-                        metricName: metric,
-                        image: "/GraphPlacholder.png",
-                    });
-                });
-            }
-    
-            clearInterval(interval);
-            setProgress(100);
-    
-            const firstSummary = sheetResults[0]?.summary || "No summary available.";
-            setReport(firstSummary);
-            setMergedExcelFile(mergedFile);
-            setVisualizations(visualArray);
-            setDocumentString("merged_report.xlsx");
-    
-            setTimeout(() => {
-                setShowReport(true);
-                setIsProcessing(false);
-            }, 500);
-    
-        } catch (error) {
-            console.error("Error:", error);
-            alert("AI Overloading.");
-            clearInterval(interval);
-            setProgress(0);
+      
+            const outputWorkbook = XLSX.utils.book_new();
+            sheetResults.forEach((result, index) => {
+              const binary = atob(result.base64.split(",")[1] || result.base64);
+              const bytes = new Uint8Array(binary.length);
+              for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+              const wb = XLSX.read(bytes, { type: "array" });
+      
+              wb.SheetNames.forEach((sheetName) => {
+                XLSX.utils.book_append_sheet(outputWorkbook, wb.Sheets[sheetName], `${label}_${sheetName}_${index + 1}`);
+              });
+            });
+      
+            const workbookBlob = new Blob([XLSX.write(outputWorkbook, { bookType: "xlsx", type: "array" })], {
+              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            });
+      
+            const file = new File([workbookBlob], `${label}_report.xlsx`, {
+              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            });
+      
+            return { file, summary: sheetResults[0]?.summary || "No summary available." };
+          };
+      
+          // Standard template path based on role
+          const standardTemplatePath =
+            selectedRole === "Monthly Financial Health"
+              ? "/MonthlyReportTemp.csv"
+              : "/StandardFormatFinancial.csv";
+      
+          // Process standard template
+          const stdTemplateRes = await fetch(standardTemplatePath);
+          const stdBlob = await stdTemplateRes.blob();
+          const stdBuffer = await stdBlob.arrayBuffer();
+          const stdWorkbook = XLSX.read(stdBuffer);
+      
+          const stdResult = await generateProcessedFile(stdWorkbook, "Standard");
+          setStandardExcelFile(stdResult.file);
+          setReport(stdResult.summary);
+      
+          // Process uploaded template only if role is Monthly Financial Health and template is uploaded
+          let uploadedResult = null;
+          if (selectedRole === "Monthly Financial Health" && template) {
+            const uploadedBuffer = await template.arrayBuffer();
+            const uploadedWorkbook = XLSX.read(uploadedBuffer);
+            uploadedResult = await generateProcessedFile(uploadedWorkbook, "Uploaded");
+            console.log(uploadedResult,'Deepak');
+            setUploadedExcelFile(uploadedResult.file);
+          }
+      
+          // Merge for visualization API
+          const mergedWorkbook = XLSX.utils.book_new();
+      
+          // Helper to append sheets from File object
+          const appendSheetsFromFile = async (file, label) => {
+            const arrayBuffer = await file.arrayBuffer();
+            const wb = XLSX.read(arrayBuffer, { type: "array" });
+            wb.SheetNames.forEach((sheetName) => {
+              XLSX.utils.book_append_sheet(mergedWorkbook, wb.Sheets[sheetName], `${label}_${sheetName}`);
+            });
+          };
+      
+          await appendSheetsFromFile(stdResult.file, "Standard");
+          if (uploadedResult) {
+            await appendSheetsFromFile(uploadedResult.file, "Uploaded");
+          }
+      
+          const mergedWbOut = XLSX.write(mergedWorkbook, { bookType: "xlsx", type: "array" });
+          const mergedBlob = new Blob([mergedWbOut], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
+          const mergedFile = new File([mergedBlob], "merged_report.xlsx", {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
+      
+          const vizFormData = new FormData();
+          vizFormData.append("files", mergedFile);
+      
+          const vizResponse = await axios.post(
+            "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/visualization",
+            vizFormData
+          );
+          console.log("Viz:", vizResponse);
+      
+          const visualArray = [];
+          if (vizResponse.data && Array.isArray(vizResponse.data.attachments)) {
+            vizResponse.data.attachments.forEach((attachment) => {
+              visualArray.push({
+                metricName: attachment.filename,
+                image: `data:image/png;base64,${attachment.file_base64}`,
+              });
+            });
+          }
+      
+          if (visualArray.length === 0) {
+            const fallbackMetrics = [
+              "Hours of Service Delivered",
+              "Wages Plotting",
+              "Income Plotting",
+              "Services Plotting",
+            ];
+      
+            fallbackMetrics.forEach((metric) => {
+              visualArray.push({
+                metricName: metric,
+                image: "/GraphPlacholder.png",
+              });
+            });
+          }
+      
+          setVisualizations(visualArray);
+      
+          clearInterval(interval);
+          setProgress(100);
+      
+          setTimeout(() => {
+            setShowReport(true);
             setIsProcessing(false);
+          }, 500);
+        } catch (error) {
+          console.error("Error:", error);
+          alert("AI Overloading.");
+          clearInterval(interval);
+          setProgress(0);
+          setIsProcessing(false);
         }
-    };
-    
-    const handleDownloadExcel = () => {
-        if (!mergedExcelFile) {
-            alert("No merged Excel file to download.");
+      };
+      
+
+    const handleDownloadUploadedExcel = () => {
+        if (!uploadedExcelFile) {
+            alert("No Uploaded Excel file to download.");
             return;
         }
 
-        const url = URL.createObjectURL(mergedExcelFile);
+        const url = URL.createObjectURL(uploadedExcelFile);
         const link = document.createElement("a");
         link.href = url;
-        link.setAttribute("download", mergedExcelFile.name);
+        link.setAttribute("download", uploadedExcelFile.name);
         document.body.appendChild(link);
         link.click();
         link.remove();
         URL.revokeObjectURL(url);
     };
+    
+    const handleDownloadStandardExcel=()=>{
+        if (!standardExcelFile) {
+            alert("No Standard Excel file to download.");
+            return;
+        }
 
-
-
+        const url = URL.createObjectURL(standardExcelFile);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", standardExcelFile.name);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+    }
 
     const handleGenerate = async () => {
         if (!zipFile1) {
@@ -775,6 +830,7 @@ const UploaderPage = () => {
         await incrementCount();
     };
 
+    console.log(template);
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((currentUser) => {
@@ -1069,13 +1125,11 @@ const UploaderPage = () => {
 
                                         <div className="reports-box" style={{ height: 'auto', marginTop: '30px', padding: '10px' }}>
                                             <div style={{ backgroundColor: '#FFFFFF', padding: '10px 30px', borderRadius: '10px' }}>
-                                                <SummaryReport summaryText={report} handleDownloadAnalyedReportCSV={handleDownloadExcel} selectedRole={selectedRole}/>
+                                                <SummaryReport summaryText={report} handleDownloadAnalyedReportUploadedCSV={handleDownloadUploadedExcel}  handleDownloadAnalyedStandardReportCSV={handleDownloadStandardExcel} selectedRole={selectedRole} />
                                             </div>
                                         </div>
                                     </>
                                 )}
-
-
                                 {(showFinalZipReport && selectedRole === 'Incident Management') && (
                                     <div className="reports-box" style={{ height: 'auto' }}>
                                         <h2 style={{ marginBottom: '14px' }}>Summary Report</h2>

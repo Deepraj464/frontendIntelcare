@@ -3,7 +3,7 @@ import { MdOutlineFileDownload } from "react-icons/md";
 import { marked } from "marked"; // Import the marked library for markdown parsing
 import '../Styles/SummaryReportViwer.css'; // Import your CSS file
 
-const SummaryReport = ({ summaryText, handleDownloadAnalyedReportCSV, selectedRole }) => {
+const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV,handleDownloadAnalyedStandardReportCSV, selectedRole }) => {
     const parsedResponse = summaryText && typeof summaryText === "string" ? JSON.parse(summaryText) : summaryText;
 
     const { review_response, compliance_level } = parsedResponse;
@@ -61,10 +61,10 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportCSV, selectedRo
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'center',marginBottom:'18px' }}>
                                 <div style={{ width: '60%', display: 'flex', justifyContent: 'space-between' }}>
-                                <button className="download-report-btn disabled-r-btn" disabled>
+                                <button className="download-report-btn" onClick={handleDownloadAnalyedStandardReportCSV}>
                                     Approved Standard Format <MdOutlineFileDownload color="white" style={{ marginLeft: '4px' }} size={24} />
                                 </button>
-                                <button className="download-report-btn" onClick={handleDownloadAnalyedReportCSV}>
+                                <button className="download-report-btn" onClick={handleDownloadAnalyedReportUploadedCSV}>
                                     Your Uploaded Format <MdOutlineFileDownload color="white" style={{ marginLeft: '4px' }} size={24} />
                                 </button>
                                 </div>
@@ -75,7 +75,7 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportCSV, selectedRo
             <div className="header-container">
                 <div className="title">AI SUMMARY</div>
                 <div className="download-button-container">
-                    <button className="download-btn" onClick={handleDownloadAnalyedReportCSV}>
+                    <button className="download-btn" onClick={handleDownloadAnalyedStandardReportCSV}>
                         Download Compliant Ready Template <MdOutlineFileDownload color="white" style={{ marginLeft: '4px' }} size={24} />
                     </button>
                 </div>
