@@ -391,225 +391,230 @@ const UploaderPage = () => {
 
     }, []);
 
-   
+
 
     const handleAnalyse = async () => {
         if (reportFiles.length === 0) {
-          alert("Please upload the report files.");
-          return;
+            alert("Please upload the report files.");
+            return;
         }
-      
+
         handleClick();
         setIsProcessing(true);
         setProgress(1);
-      
+
         const interval = setInterval(() => {
-          setProgress((prev) => (prev < 90 ? prev + 2 : prev));
+            setProgress((prev) => (prev < 90 ? prev + 2 : prev));
         }, 5000);
-      
+
         const metricMap = {
-          "Hours Monthly": "hours",
-          "Wages Monthly": "wages",
-          "Income by Service Monthly": "income_by_service",
-          "Claimable per week": "claimables",
+            "Hours Monthly": "hours",
+            "Wages Monthly": "wages",
+            "Income by Service Monthly": "income_by_service",
+            "Claimable per week": "claimables",
         };
-      
+
         const getMetricFromSheetName = (sheetName) => {
-          for (let key in metricMap) {
-            if (sheetName.toLowerCase().includes(key.toLowerCase())) {
-              return metricMap[key];
+            for (let key in metricMap) {
+                if (sheetName.toLowerCase().includes(key.toLowerCase())) {
+                    return metricMap[key];
+                }
             }
-          }
-          return "claimables"; // default
+            return "claimables"; // default
         };
-      
+
         const generateSheetBlob = async (fileOrBlob, sheetName) => {
-          const buffer = await fileOrBlob.arrayBuffer();
-          const wb = XLSX.read(buffer, { type: "array" });
-          const newWb = XLSX.utils.book_new();
-          XLSX.utils.book_append_sheet(newWb, wb.Sheets[sheetName], sheetName);
-          const arrayBuffer = XLSX.write(newWb, { bookType: "xlsx", type: "array" });
-          return new Blob([arrayBuffer], {
-            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          });
+            const buffer = await fileOrBlob.arrayBuffer();
+            const wb = XLSX.read(buffer, { type: "array" });
+            const newWb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(newWb, wb.Sheets[sheetName], sheetName);
+            const arrayBuffer = XLSX.write(newWb, { bookType: "xlsx", type: "array" });
+            return new Blob([arrayBuffer], {
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            });
         };
-      
+
         const standardFiles = [];
         const uploadedFiles = [];
-      
-        try {
-          // 🔁 Loop through each sheet of the STANDARD template
-          const stdTemplatePath = "/MonthlyReportTemplate.xlsx";
-          const stdTemplateResponse = await fetch(stdTemplatePath);
-          const stdTemplateBlob = await stdTemplateResponse.blob();
-          const stdBuffer = await stdTemplateBlob.arrayBuffer();
-          const stdWorkbook = XLSX.read(stdBuffer, { type: "array" });
-      
-          for (const sheetName of stdWorkbook.SheetNames) {
-            const metric = getMetricFromSheetName(sheetName);
-            const sheetBlob = await generateSheetBlob(stdTemplateBlob, sheetName);
-      
-            const formData = new FormData();
-            formData.append("template", sheetBlob, `${sheetName}.xlsx`);
-            reportFiles.forEach((file) =>
-              formData.append("source_files", file, file.name)
-            );
-            formData.append("metric_name", metric);
-      
-            console.log('formdata',formData)
-            const stdAPIRes = await axios.post(
-                "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/monthly_financial_health",
-                formData,
-                { responseType: 'blob' } // ← This is critical
-              );
-              console.log('stad',stdAPIRes);
-              
-              const stdFile = new File(
-                [stdAPIRes.data],
-                `${sheetName}_Standard_Report.xlsx`,
-                { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
-              );
 
-            console.log('standardExcelFile',stdFile)
-            setStandardExcelFile(stdFile);
-      
-            standardFiles.push(stdFile);
-          }
-      
-          // 🔁 Loop through each sheet of the UPLOADED template
-          let uploadedExcelFileTemp = null;
-          if (template && selectedRole === "Monthly Financial Health") {
-            const buffer = await template.arrayBuffer();
-            const wb = XLSX.read(buffer, { type: "array" });
-      
-            for (const sheetName of wb.SheetNames) {
-              const metric = getMetricFromSheetName(sheetName);
-      
-              const newWb = XLSX.utils.book_new();
-              XLSX.utils.book_append_sheet(newWb, wb.Sheets[sheetName], sheetName);
-              const sheetBlob = new Blob(
-                [XLSX.write(newWb, { bookType: "xlsx", type: "array" })],
-                {
-                  type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                }
-              );
-      
-              const formData = new FormData();
-              formData.append("template", sheetBlob, `${sheetName}.xlsx`);
-              reportFiles.forEach((file) =>
-                formData.append("files", file, file.name)
-              );
-              formData.append("context", "None");
-      
-              const uploadRes = await axios.post(
-                "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/financial_reporting",
-                formData
-              );
-      
-              const base64Data = uploadRes.data?.file_base64;
-              if (base64Data) {
-                const binary = atob(base64Data.split(",")[1] || base64Data);
-                const byteArray = new Uint8Array(binary.length);
-                for (let i = 0; i < binary.length; i++)
-                  byteArray[i] = binary.charCodeAt(i);
-      
-                const blob = new Blob([byteArray], {
-                  type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                });
-      
-                const uploadedFile = new File(
-                  [blob],
-                  `${sheetName}_Uploaded_Report.xlsx`,
-                  {
-                    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                  }
+        try {
+            // 🔁 Loop through each sheet of the STANDARD template
+            const stdTemplatePath = "/MonthlyReportTemplate.xlsx";
+            const stdTemplateResponse = await fetch(stdTemplatePath);
+            const stdTemplateBlob = await stdTemplateResponse.blob();
+            const stdBuffer = await stdTemplateBlob.arrayBuffer();
+            const stdWorkbook = XLSX.read(stdBuffer, { type: "array" });
+
+            for (const sheetName of stdWorkbook.SheetNames) {
+                const metric = getMetricFromSheetName(sheetName);
+                const sheetBlob = await generateSheetBlob(stdTemplateBlob, sheetName);
+
+                const formData = new FormData();
+                formData.append("template", sheetBlob, `${sheetName}.xlsx`);
+                reportFiles.forEach((file) =>
+                    formData.append("source_files", file, file.name)
                 );
-      
-                uploadedFiles.push(uploadedFile);
-                uploadedExcelFileTemp = uploadedFile;
-              }
+                formData.append("metric_name", metric);
+
+                console.log('formdata', formData)
+                const stdAPIRes = await axios.post(
+                    "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/monthly_financial_health",
+                    formData,
+                    { responseType: 'blob' } // ← This is critical
+                );
+                console.log('stad', stdAPIRes);
+
+                const stdFile = new File(
+                    [stdAPIRes.data],
+                    `${sheetName}_Standard_Report.xlsx`,
+                    { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+                );
+
+                console.log('standardExcelFile', stdFile)
+                setStandardExcelFile(stdFile);
+
+                standardFiles.push(stdFile);
             }
-      
-            setUploadedExcelFile(uploadedExcelFileTemp);
-          }
-      
-          // 🔁 Merge all result files
-          const mergedWorkbook = XLSX.utils.book_new();
-      
-          const appendSheets = async (file, label) => {
-            const buffer = await file.arrayBuffer();
-            const wb = XLSX.read(buffer, { type: "array" });
-            wb.SheetNames.forEach((sheet) => {
-              XLSX.utils.book_append_sheet(
-                mergedWorkbook,
-                wb.Sheets[sheet],
-                `${label}_${sheet}`
-              );
+
+            // 🔁 Loop through each sheet of the UPLOADED template
+            let uploadedExcelFileTemp = null;
+            if (template && selectedRole === "Monthly Financial Health") {
+                const buffer = await template.arrayBuffer();
+                const wb = XLSX.read(buffer, { type: "array" });
+
+                for (const sheetName of wb.SheetNames) {
+                    const metric = getMetricFromSheetName(sheetName);
+
+                    const newWb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(newWb, wb.Sheets[sheetName], sheetName);
+                    const sheetBlob = new Blob(
+                        [XLSX.write(newWb, { bookType: "xlsx", type: "array" })],
+                        {
+                            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        }
+                    );
+
+                    const formData = new FormData();
+                    formData.append("template", sheetBlob, `${sheetName}.xlsx`);
+                    reportFiles.forEach((file) =>
+                        formData.append("files", file, file.name)
+                    );
+                    formData.append("context", "None");
+
+                    const uploadRes = await axios.post(
+                        "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/financial_reporting",
+                        formData
+                    );
+
+                    const base64Data = uploadRes.data?.file_base64;
+                    if (base64Data) {
+                        const binary = atob(base64Data.split(",")[1] || base64Data);
+                        const byteArray = new Uint8Array(binary.length);
+                        for (let i = 0; i < binary.length; i++)
+                            byteArray[i] = binary.charCodeAt(i);
+
+                        const blob = new Blob([byteArray], {
+                            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        });
+
+                        const uploadedFile = new File(
+                            [blob],
+                            `${sheetName}_Uploaded_Report.xlsx`,
+                            {
+                                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            }
+                        );
+
+                        uploadedFiles.push(uploadedFile);
+                        uploadedExcelFileTemp = uploadedFile;
+                    }
+                }
+
+                setUploadedExcelFile(uploadedExcelFileTemp);
+            }
+
+            // 🔁 Merge all result files
+            const mergedWorkbook = XLSX.utils.book_new();
+
+            let sheetCounter = 1;
+
+            const appendSheets = async (file, label) => {
+                const buffer = await file.arrayBuffer();
+                const wb = XLSX.read(buffer, { type: "array" });
+
+                wb.SheetNames.forEach((sheet) => {
+                    const safeSheetName = `${label}_${sheet}_${sheetCounter++}`;
+                    XLSX.utils.book_append_sheet(
+                        mergedWorkbook,
+                        wb.Sheets[sheet],
+                        safeSheetName
+                    );
+                });
+            };
+
+
+            for (const stdFile of standardFiles) {
+                await appendSheets(stdFile, "Standard");
+            }
+            for (const upFile of uploadedFiles) {
+                await appendSheets(upFile, "Uploaded");
+            }
+
+            const mergedBlob = new Blob(
+                [XLSX.write(mergedWorkbook, { bookType: "xlsx", type: "array" })],
+                {
+                    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                }
+            );
+
+            const mergedFile = new File([mergedBlob], "merged_report.xlsx", {
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             });
-          };
-      
-          for (const stdFile of standardFiles) {
-            await appendSheets(stdFile, "Standard");
-          }
-          for (const upFile of uploadedFiles) {
-            await appendSheets(upFile, "Uploaded");
-          }
-      
-          const mergedBlob = new Blob(
-            [XLSX.write(mergedWorkbook, { bookType: "xlsx", type: "array" })],
-            {
-              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            }
-          );
-      
-          const mergedFile = new File([mergedBlob], "merged_report.xlsx", {
-            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          });
-      
-          // 📤 Summary API
-          const summariseForm = new FormData();
-          summariseForm.append("file", mergedFile);
-          console.log('mergedFile',mergedFile)
-      
-          const summaryResponse = await axios.post(
-            "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/summarise_monthly_finance",
-            summariseForm
-          );
-      console.log('summaryResponse',summaryResponse);
-          setReport(summaryResponse.data?.analysis || "No summary available.");
-      
-          // Graphs (placeholder)
-          const fallbackMetrics = [
-            "Hours of Service Delivered",
-            "Wages Plotting",
-            "Income Plotting",
-            "Services Plotting",
-          ];
-          const visualArray = fallbackMetrics.map((metric) => ({
-            metricName: metric,
-            image: "/GraphPlacholder.png",
-          }));
-      
-          setVisualizations(visualArray);
-          clearInterval(interval);
-          setProgress(100);
-      
-          setTimeout(() => {
-            setShowReport(true);
-            setIsProcessing(false);
-          }, 500);
+
+            // 📤 Summary API
+            const summariseForm = new FormData();
+            summariseForm.append("file", mergedFile);
+            console.log('mergedFile', mergedFile)
+
+            const summaryResponse = await axios.post(
+                "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/summarise_monthly_finance",
+                summariseForm
+            );
+            console.log('summaryResponse', summaryResponse);
+            setReport(summaryResponse.data?.analysis || "No summary available.");
+
+            // Graphs (placeholder)
+            const fallbackMetrics = [
+                "Hours of Service Delivered",
+                "Wages Plotting",
+                "Income Plotting",
+                "Services Plotting",
+            ];
+            const visualArray = fallbackMetrics.map((metric) => ({
+                metricName: metric,
+                image: "/GraphPlacholder.png",
+            }));
+
+            setVisualizations(visualArray);
+            clearInterval(interval);
+            setProgress(100);
+
+            setTimeout(() => {
+                setShowReport(true);
+                setIsProcessing(false);
+            }, 500);
         } catch (error) {
-          console.error("Error:", error);
-          alert("AI Overloading or network issue.");
-          clearInterval(interval);
-          setProgress(0);
-          setIsProcessing(false);
+            console.error("Error:", error);
+            alert("AI Overloading or network issue.");
+            clearInterval(interval);
+            setProgress(0);
+            setIsProcessing(false);
         }
-      };
-      
-      
-      
-      
+    };
+
+
+
+
 
     const handleDownloadUploadedExcel = () => {
         if (!uploadedExcelFile) {
@@ -626,8 +631,8 @@ const UploaderPage = () => {
         link.remove();
         URL.revokeObjectURL(url);
     };
-    
-    const handleDownloadStandardExcel=()=>{
+
+    const handleDownloadStandardExcel = () => {
         if (!standardExcelFile) {
             alert("No Standard Excel file to download.");
             return;
@@ -1162,7 +1167,7 @@ const UploaderPage = () => {
 
                                         <div className="reports-box" style={{ height: 'auto', marginTop: '30px', padding: '10px' }}>
                                             <div style={{ backgroundColor: '#FFFFFF', padding: '10px 30px', borderRadius: '10px' }}>
-                                                <SummaryReport summaryText={report} handleDownloadAnalyedReportUploadedCSV={handleDownloadUploadedExcel}  handleDownloadAnalyedStandardReportCSV={handleDownloadStandardExcel} selectedRole={selectedRole} />
+                                                <SummaryReport summaryText={report} handleDownloadAnalyedReportUploadedCSV={handleDownloadUploadedExcel} handleDownloadAnalyedStandardReportCSV={handleDownloadStandardExcel} selectedRole={selectedRole} />
                                             </div>
                                         </div>
                                     </>
