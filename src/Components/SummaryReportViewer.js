@@ -1,97 +1,94 @@
 import React from "react";
 import { MdOutlineFileDownload } from "react-icons/md";
-import { marked } from "marked"; // Import the marked library for markdown parsing
-import '../Styles/SummaryReportViwer.css'; // Import your CSS file
+import '../Styles/SummaryReportViwer.css';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeHighlight from 'rehype-highlight';
+import 'highlight.js/styles/github.css';
 
-const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV,handleDownloadAnalyedStandardReportCSV, selectedRole }) => {
-    const parsedResponse = summaryText && typeof summaryText === "string" ? JSON.parse(summaryText) : summaryText;
+const SummaryReport = ({summaryText,handleDownloadAnalyedReportUploadedCSV,handleDownloadAnalyedStandardReportCSV,selectedRole}) => {
+  const parsedResponse =summaryText && typeof summaryText === "string"? JSON.parse(summaryText): summaryText;
 
-    const { review_response, compliance_level } = parsedResponse;
+  const compliance_level = parsedResponse?.compliance_level || '';
+  const review_response = parsedResponse?.review_response || '';
 
-    const sections = review_response.split(/\n\n\d+\.\s/).filter(Boolean);
+  const levelTextColors = {
+    High: "compliance-high",
+    Moderate: "compliance-moderate",
+    Low: "compliance-low"
+  };
 
-    // Function to properly format sections with lists and content
-    const formatSection = (text, index) => {
-        const lines = text.split("\n").filter(Boolean);
-        const title = lines[0].replace(/^\d+\.\s/, "").trim();
+  const levelTextClass = levelTextColors[compliance_level] || "compliance-normal";
 
-        // Parse the markdown title and content into HTML
-        const markdownTitle = marked(title); // Convert markdown to HTML (e.g., **text** becomes <strong>text</strong>)
-        const titleClass = title === '**Strengths:**' ? 'green' :
-            (title === '**Areas of Concern or Non-Compliance:**' || title === '**Summary of Overall Compliance Level:**' || title === '**Summary of the Overall Compliance Level:**' || title === '**Concerns or Non-Compliance:**') ? 'red' : 'black';
-        // console.log(title);
-
-
-        const markdownContent = lines.slice(1).map((line, i) => {
-            if (line.startsWith(" - ")) {
-                // If the line starts with a hyphen, it's a list item
-                return <li key={i} className="bullet-item">{line.replace(/^ - /, "")}</li>;
-            } else {
-                // Regular text content
-                const markdownText = marked(line); // Parse markdown for regular content as well
-                return <p key={i} className="text-item" dangerouslySetInnerHTML={{ __html: markdownText }} />;
-            }
-        });
-
-        return (
-            <div key={index} className="section-container">
-                <h3 className={`section-title ${titleClass}`} dangerouslySetInnerHTML={{ __html: markdownTitle }} />
-                <ul className="list-disc section-content">{markdownContent}</ul>
-            </div>
-        );
-    };
-
-    const levelTextColors = {
-        High: "compliance-high",
-        Moderate: "compliance-moderate",
-        Low: "compliance-low",
-    };
-
-    const levelTextClass = levelTextColors[compliance_level] || "compliance-normal";
-
-    return (
+  return (
+    <div className="summary-report-container">
+      {selectedRole === 'Financial Health' ? (
         <>
-            <div className="summary-report-container">
-                {selectedRole === 'Monthly Financial Health' ?
-                    <div>
-                        <div className="title" style={{ textAlign: 'center' }}>AI SUMMARY</div>
-                        <div className="download-report-div">
-                            <div style={{ fontSize: '18px', fontWeight: '500', textAlign: 'center',marginBottom:'20px',marginTop:'12px' }}>
-                                Download Reports
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'center',marginBottom:'18px' }}>
-                                <div style={{ width: '60%', display: 'flex', justifyContent: 'space-between' }}>
-                                <button className="download-report-btn" onClick={handleDownloadAnalyedStandardReportCSV}>
-                                    Approved Standard Format <MdOutlineFileDownload color="white" style={{ marginLeft: '4px' }} size={24} />
-                                </button>
-                                <button className="download-report-btn" onClick={handleDownloadAnalyedReportUploadedCSV}>
-                                    Your Uploaded Format <MdOutlineFileDownload color="white" style={{ marginLeft: '4px' }} size={24} />
-                                </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-            :
-            <div className="header-container">
-                <div className="title">AI SUMMARY</div>
-                <div className="download-button-container">
-                    <button className="download-btn" onClick={handleDownloadAnalyedStandardReportCSV}>
-                        Download Compliant Ready Template <MdOutlineFileDownload color="white" style={{ marginLeft: '4px' }} size={24} />
-                    </button>
-                </div>
-            </div>
-                }
+          <div className="title" style={{ textAlign: 'center' }}>AI SUMMARY</div>
 
-            {sections.map(formatSection)}
-            <div className="compliance-level-container">
-                <strong className={`${levelTextClass} compliance-level-text`} >Overall Compliance Level:</strong>{" "}
-                <span className={`${levelTextClass} compliance-level-text`}>
-                    {compliance_level}
-                </span>
+          <div className="download-report-div">
+            <div style={{ fontSize: '18px', fontWeight: '500', textAlign: 'center', marginBottom: '20px', marginTop: '12px' }}>
+              Download Reports
             </div>
-        </div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '18px' }}>
+              <div style={{ width: '60%', display: 'flex', justifyContent: 'space-between' }}>
+                <button className="download-report-btn" onClick={handleDownloadAnalyedStandardReportCSV}>
+                  Approved Standard Format <MdOutlineFileDownload color="white" style={{ marginLeft: '4px' }} size={24} />
+                </button>
+                <button className="download-report-btn" onClick={handleDownloadAnalyedReportUploadedCSV}>
+                  Your Uploaded Format <MdOutlineFileDownload color="white" style={{ marginLeft: '4px' }} size={24} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Render Markdown for review_response */}
+          <div className="financial-health-markdown">
+            <ReactMarkdown
+              children={review_response}
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeRaw, rehypeHighlight]}
+            />
+          </div>
+
+          {/* Compliance Level Display */}
+          <div className="compliance-level-container">
+            <strong className={`${levelTextClass} compliance-level-text`}>
+              Overall Compliance Level:
+            </strong>{" "}
+            <span className={`${levelTextClass} compliance-level-text`}>
+              {compliance_level}
+            </span>
+          </div>
         </>
-    );
+      ) : selectedRole === 'SIRS Analysis' ? (
+        <>
+          <div className="sirs-markdown">
+            <ReactMarkdown
+              children={parsedResponse?.incident}
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeRaw, rehypeHighlight]}
+            />
+            <ReactMarkdown
+              children={parsedResponse?.risk}
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeRaw, rehypeHighlight]}
+            />
+            <ReactMarkdown
+              children={parsedResponse?.recommendation}
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeRaw, rehypeHighlight]}
+            />
+          </div>
+        </>
+      ) : (
+        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+          No report format available for this role.
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default SummaryReport;

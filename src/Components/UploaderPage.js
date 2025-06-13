@@ -29,13 +29,13 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
     // console.log(activeReportType);
     const [showRoles, setShowRoles] = useState(true);
     // const [activeItem, setActiveItem] = useState("Care Services & elgibility Analysis"); careplan
-    const [activeItem, setActiveItem] = useState("Monthly Financial Health");
+    const [activeItem, setActiveItem] = useState("Financial Health");
 
     const toggleRoles = () => {
         // setShowRoles(!showRoles);
         setShowUploadReport(false);
     };
-    const roles = ['Monthly Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting', 'Incident Management'];
+    const roles = ['Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting', 'Incident Management'];
     const reportButtons = ["Care Services & eligibility Analysis", "Incident Report", "Quality and Risk Reporting", "HR Analysis"];
     const NDISButton = ["Audit & Registration Manager", "Incident & Complaint Reporter", "Restrictive Practice & Behaviour Support", "Worker-Screening & HR Compliance", "Financial & Claims Compliance", "Participant Outcomes & Capacity-Building"]
     // console.log(majorTypeofReport);
@@ -338,7 +338,7 @@ const UploaderPage = () => {
     const [user, setUser] = useState(null);
     const [showDropdown, setShowDropdown] = useState(false);
     const [showPricingModal, setShowPricingModal] = useState(false);
-    const [selectedRole, setSelectedRole] = useState('Monthly Financial Health');
+    const [selectedRole, setSelectedRole] = useState('Financial Health');
     const [reportZipData, setReportZipdata] = useState([])
     const [activeReportType, setActiveReportType] = useState(null);
     const [reportFiles, setReportFiles] = useState([]);
@@ -383,7 +383,7 @@ const UploaderPage = () => {
         // if (analysedReportdata) setAnalysedReportdata(null);
 
         // for financial thing to show when other is locked......
-        setSelectedRole('Monthly Financial Health');
+        setSelectedRole('Financial Health');
         setShowReport(false);
         setShowFinalZipReport(false);
         if (showUploadedReport) setShowUploadReport(false);
@@ -394,13 +394,11 @@ const UploaderPage = () => {
 
 
     const handleAnalyse = async () => {
-        // Ensure required report files have been uploaded
         if (reportFiles.length === 0) {
             alert("Please upload the report files.");
             return;
         }
-        
-        // Begin processing UI updates
+    
         handleClick();
         setIsProcessing(true);
         setProgress(1);
@@ -409,217 +407,198 @@ const UploaderPage = () => {
             setProgress((prev) => (prev < 90 ? prev + 2 : prev));
         }, 5000);
     
-        // Mapping sheet names to metric names for the API calls
-        const metricMap = {
-            "Hours Monthly": "hours",
-            "Wages Monthly": "wages",
-            "Income by Service Monthly": "income_by_service",
-            "Claimable per week": "claimables",
-        };
-    
-        const getMetricFromSheetName = (sheetName) => {
-            for (let key in metricMap) {
-                if (sheetName.toLowerCase().includes(key.toLowerCase())) {
-                    return metricMap[key];
-                }
-            }
-            return "claimables"; // default
-        };
-    
-        const generateSheetBlob = async (fileOrBlob, sheetName) => {
-            const buffer = await fileOrBlob.arrayBuffer();
-            const wb = XLSX.read(buffer, { type: "array" });
-            const newWb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(newWb, wb.Sheets[sheetName], sheetName);
-            const arrayBuffer = XLSX.write(newWb, { bookType: "xlsx", type: "array" });
-            return new Blob([arrayBuffer], {
-                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            });
-        };
-    
-        const standardFiles = [];
-        const uploadedFiles = [];
-    
         try {
-            // ------------------------------
-            // Process the STANDARD template
-            // ------------------------------
-            const stdTemplatePath = "/MonthlyReportTemplate.xlsx";
-            const stdTemplateResponse = await fetch(stdTemplatePath);
-            const stdTemplateBlob = await stdTemplateResponse.blob();
-            const stdBuffer = await stdTemplateBlob.arrayBuffer();
-            const stdWorkbook = XLSX.read(stdBuffer, { type: "array" });
+            if (selectedRole === "Financial Health") {
+                const metricMap = {
+                    "Hours Monthly": "hours",
+                    "Wages Monthly": "wages",
+                    "Income by Service Monthly": "income_by_service",
+                    "Claimable per week": "claimables",
+                };
     
-            for (const sheetName of stdWorkbook.SheetNames) {
-                const metric = getMetricFromSheetName(sheetName);
-                const sheetBlob = await generateSheetBlob(stdTemplateBlob, sheetName);
+                const getMetricFromSheetName = (sheetName) => {
+                    for (let key in metricMap) {
+                        if (sheetName.toLowerCase().includes(key.toLowerCase())) {
+                            return metricMap[key];
+                        }
+                    }
+                    return "claimables";
+                };
     
-                const formData = new FormData();
-                formData.append("template", sheetBlob, `${sheetName}.xlsx`);
-                reportFiles.forEach((file) => formData.append("source_files", file, file.name));
-                formData.append("metric_name", metric);
-    
-                const stdAPIRes = await axios.post(
-                    "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/monthly_financial_health",
-                    formData,
-                    { responseType: 'blob' }
-                );
-    
-                const stdFile = new File([stdAPIRes.data], `${sheetName}_Standard_Report.xlsx`, {
-                    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                });
-                standardFiles.push(stdFile);
-            }
-            setStandardExcelFile(standardFiles);
-    
-            // ----------------------------------------------
-            // Process the UPLOADED template (if applicable)
-            // ----------------------------------------------
-            let uploadedExcelFileTemp = null;
-            if (template && selectedRole === "Monthly Financial Health") {
-                const buffer = await template.arrayBuffer();
-                const wb = XLSX.read(buffer, { type: "array" });
-    
-                for (const sheetName of wb.SheetNames) {
-                    const metric = getMetricFromSheetName(sheetName);
-    
+                const generateSheetBlob = async (fileOrBlob, sheetName) => {
+                    const buffer = await fileOrBlob.arrayBuffer();
+                    const wb = XLSX.read(buffer, { type: "array" });
                     const newWb = XLSX.utils.book_new();
                     XLSX.utils.book_append_sheet(newWb, wb.Sheets[sheetName], sheetName);
-                    const sheetBlob = new Blob(
-                        [XLSX.write(newWb, { bookType: "xlsx", type: "array" })],
-                        { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
-                    );
+                    const arrayBuffer = XLSX.write(newWb, { bookType: "xlsx", type: "array" });
+                    return new Blob([arrayBuffer], {
+                        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    });
+                };
+    
+                const standardFiles = [];
+                const uploadedFiles = [];
+    
+                const stdTemplatePath = "/MonthlyReportTemplate.xlsx";
+                const stdTemplateResponse = await fetch(stdTemplatePath);
+                const stdTemplateBlob = await stdTemplateResponse.blob();
+                const stdBuffer = await stdTemplateBlob.arrayBuffer();
+                const stdWorkbook = XLSX.read(stdBuffer, { type: "array" });
+    
+                for (const sheetName of stdWorkbook.SheetNames) {
+                    const metric = getMetricFromSheetName(sheetName);
+                    const sheetBlob = await generateSheetBlob(stdTemplateBlob, sheetName);
     
                     const formData = new FormData();
                     formData.append("template", sheetBlob, `${sheetName}.xlsx`);
-                    reportFiles.forEach((file) => formData.append("files", file, file.name));
-                    formData.append("context", "None");
+                    reportFiles.forEach((file) => formData.append("source_files", file, file.name));
+                    formData.append("metric_name", metric);
     
-                    const uploadRes = await axios.post(
-                        "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/financial_reporting",
-                        formData
+                    const stdAPIRes = await axios.post(
+                        "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/monthly_financial_health",
+                        formData,
+                        { responseType: 'blob' }
                     );
     
-                    const base64Data = uploadRes.data?.file_base64;
-                    if (base64Data) {
-                        const binary = atob(base64Data.split(",")[1] || base64Data);
-                        const byteArray = new Uint8Array(binary.length);
-                        for (let i = 0; i < binary.length; i++) {
-                            byteArray[i] = binary.charCodeAt(i);
-                        }
-                        const blob = new Blob([byteArray], {
-                            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        });
-                        const uploadedFile = new File([blob], `${sheetName}_Uploaded_Report.xlsx`, {
-                            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        });
-                        uploadedFiles.push(uploadedFile);
-                        uploadedExcelFileTemp = uploadedFile;
-                    }
+                    const stdFile = new File([stdAPIRes.data], `${sheetName}_Standard_Report.xlsx`, {
+                        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    });
+                    standardFiles.push(stdFile);
                 }
-                setUploadedExcelFile(uploadedExcelFileTemp);
-            }
+                setStandardExcelFile(standardFiles);
     
-            // --------------------------
-            // Merge Standard and Uploaded Files
-            // --------------------------
-            const mergedWorkbook = XLSX.utils.book_new();
-            let sheetCounter = 1;
+                let uploadedExcelFileTemp = null;
+                if (template && selectedRole === "Financial Health") {
+                    const buffer = await template.arrayBuffer();
+                    const wb = XLSX.read(buffer, { type: "array" });
     
-            const appendSheets = async (file, label) => {
+                    for (const sheetName of wb.SheetNames) {
+                        const metric = getMetricFromSheetName(sheetName);
+    
+                        const newWb = XLSX.utils.book_new();
+                        XLSX.utils.book_append_sheet(newWb, wb.Sheets[sheetName], sheetName);
+                        const sheetBlob = new Blob(
+                            [XLSX.write(newWb, { bookType: "xlsx", type: "array" })],
+                            { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+                        );
+    
+                        const formData = new FormData();
+                        formData.append("template", sheetBlob, `${sheetName}.xlsx`);
+                        reportFiles.forEach((file) => formData.append("files", file, file.name));
+                        formData.append("context", "None");
+    
+                        const uploadRes = await axios.post(
+                            "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/financial_reporting",
+                            formData
+                        );
+    
+                        const base64Data = uploadRes.data?.file_base64;
+                        if (base64Data) {
+                            const binary = atob(base64Data.split(",")[1] || base64Data);
+                            const byteArray = new Uint8Array(binary.length);
+                            for (let i = 0; i < binary.length; i++) {
+                                byteArray[i] = binary.charCodeAt(i);
+                            }
+                            const blob = new Blob([byteArray], {
+                                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            });
+                            const uploadedFile = new File([blob], `${sheetName}_Uploaded_Report.xlsx`, {
+                                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            });
+                            uploadedFiles.push(uploadedFile);
+                            uploadedExcelFileTemp = uploadedFile;
+                        }
+                    }
+                    setUploadedExcelFile(uploadedExcelFileTemp);
+                }
+    
+                const mergedWorkbook = XLSX.utils.book_new();
+                let sheetCounter = 1;
+                const appendSheets = async (file, label) => {
+                    const buffer = await file.arrayBuffer();
+                    const wb = XLSX.read(buffer, { type: "array" });
+                    wb.SheetNames.forEach((sheet) => {
+                        const safeSheetName = `${label}_${sheet}_${sheetCounter++}`;
+                        XLSX.utils.book_append_sheet(mergedWorkbook, wb.Sheets[sheet], safeSheetName);
+                    });
+                };
+                for (const stdFile of standardFiles) await appendSheets(stdFile, "Standard");
+                for (const upFile of uploadedFiles) await appendSheets(upFile, "Uploaded");
+    
+                const mergedBlob = new Blob(
+                    [XLSX.write(mergedWorkbook, { bookType: "xlsx", type: "array" })],
+                    { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+                );
+                const mergedFile = new File([mergedBlob], "merged_report.xlsx", {
+                    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                });
+    
+                const summariseForm = new FormData();
+                summariseForm.append("file", mergedFile);
+                console.log('SuumariseFor',summariseForm);
+                const summaryResponse = await axios.post(
+                    "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/summarise_monthly_finance",
+                    summariseForm
+                );
+                console.log('DeepakAnalyis',summaryResponse);
+                setReport(summaryResponse.data?.analysis || "No summary available.");
+    
+                // Visualisation only for Financial Health
+                const visualiseForm = new FormData();
+                visualiseForm.append("file", mergedFile);
+                const expectedMetrics = [
+                    "Hours of Service Delivered",
+                    "Wages Plotting",
+                    "Income Plotting",
+                    "Services Plotting"
+                ];
+    
+                try {
+                    const visualiseResponse = await axios.post(
+                        "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/visualise_monthly_finance",
+                        visualiseForm
+                    );
+                    const attachments = visualiseResponse.data?.attachments || [];
+    
+                    if (attachments.length > 0) {
+                        const visuals = attachments.map((att) => {
+                            const base64 = att.file_base64.startsWith("data:") ? att.file_base64 : `data:image/png;base64,${att.file_base64}`;
+                            return { image: base64 };
+                        });
+                        setVisualizations(visuals);
+                    } else {
+                        setVisualizations(expectedMetrics.map(metric => ({ metricName: metric, image: "/GraphPlacholder.png" })));
+                    }
+                } catch (visualError) {
+                    console.error("Visualisation Error:", visualError);
+                    setVisualizations(expectedMetrics.map(metric => ({ metricName: metric, image: "/GraphPlacholder.png" })));
+                }
+    
+            } else if (selectedRole === "SIRS Analysis") {
+                const file = reportFiles[0];
                 const buffer = await file.arrayBuffer();
                 const wb = XLSX.read(buffer, { type: "array" });
-                wb.SheetNames.forEach((sheet) => {
-                    const safeSheetName = `${label}_${sheet}_${sheetCounter++}`;
-                    XLSX.utils.book_append_sheet(mergedWorkbook, wb.Sheets[sheet], safeSheetName);
-                });
-            };
+                const firstSheet = wb.Sheets[wb.SheetNames[0]];
+                const firstRow = XLSX.utils.sheet_to_json(firstSheet, { header: 1 })[1];
+                const headers = XLSX.utils.sheet_to_json(firstSheet, { header: 1 })[0];
+                const rowDict = {};
+                headers.forEach((key, index) => rowDict[key] = firstRow[index]);
     
-            for (const stdFile of standardFiles) {
-                await appendSheets(stdFile, "Standard");
-            }
-            for (const upFile of uploadedFiles) {
-                await appendSheets(upFile, "Uploaded");
-            }
-    
-            const mergedBlob = new Blob(
-                [XLSX.write(mergedWorkbook, { bookType: "xlsx", type: "array" })],
-                { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
-            );
-            const mergedFile = new File([mergedBlob], "merged_report.xlsx", {
-                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            });
-    
-            // --------------------------
-            // Summary API Call
-            // --------------------------
-            const summariseForm = new FormData();
-            summariseForm.append("file", mergedFile);
-            const summaryResponse = await axios.post(
-                "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/summarise_monthly_finance",
-                summariseForm
-            );
-            console.log('SummaryResponse',summaryResponse);
-            setReport(summaryResponse.data?.analysis || "No summary available.");
-    
-            // --------------------------
-            // Visualisation API Call
-            // --------------------------
-            const visualiseForm = new FormData();
-            visualiseForm.append("file", mergedFile);
-    
-            // List of expected metrics (for fallbacks)
-            const expectedMetrics = [
-                "Hours of Service Delivered",
-                "Wages Plotting",
-                "Income Plotting",
-                "Services Plotting"
-            ];
-    
-            try {
-                const visualiseResponse = await axios.post(
-                    "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/visualise_monthly_finance",
-                    visualiseForm
+                const sirsResponse = await axios.post(
+                    "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/sirs-analyze",
+                    { input_row: rowDict }
                 );
-                console.log('VisualRasponse',visualiseResponse)
     
-                const data = visualiseResponse.data;
-                const attachments = data?.attachments || [];
-    
-                // If the API returns one or more graphs, show them (without placeholders)
-                if (attachments.length > 0) {
-                    const visuals = attachments.map((att) => {
-                        const metricName = att.filename.replace(/\.[^/.]+$/, "").trim();
-                        const base64 = att.file_base64.startsWith("data:")
-                            ? att.file_base64
-                            : `data:image/png;base64,${att.file_base64}`;
-                        return { image: base64 };
-                    });
-                    setVisualizations(visuals);
-                } else {
-                    // API returned no graphs: show placeholders for all expected metrics
-                    setVisualizations(
-                        expectedMetrics.map((metric) => ({
-                            metricName: metric,
-                            image: "/GraphPlacholder.png",
-                        }))
-                    );
-                }
-    
-            } catch (visualError) {
-                console.error("Visualisation Error:", visualError);
-                // API call failed: show placeholders for all expected metrics
-                setVisualizations(
-                    expectedMetrics.map((metric) => ({
-                        metricName: metric,
-                        image: "/GraphPlacholder.png",
-                    }))
-                );
+                console.log('Deepak',sirsResponse);
+                const result = sirsResponse.data;
+                setReport(sirsResponse.data);
+                setVisualizations([]);
+            } else {
+                alert("Selected module not supported yet.");
             }
     
             clearInterval(interval);
             setProgress(100);
-    
             setTimeout(() => {
                 setShowReport(true);
                 setIsProcessing(false);
@@ -633,6 +612,7 @@ const UploaderPage = () => {
             setIsProcessing(false);
         }
     };
+    
     
 
 
@@ -1111,15 +1091,15 @@ const UploaderPage = () => {
                                         <BiLinkExternal size={28} color="#FFFFFF" />
                                     </div>
                                 </div>
-                                {['Monthly Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) ? (
+                                {['Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) ? (
                                     <div>
                                         <div className="uploader-grid"
                                             style={
-                                                selectedRole === "Monthly Financial Health"
+                                                selectedRole === "Financial Health"
                                                     ? {}
                                                     : { display: 'flex', justifyContent: 'center' }
                                             }>
-                                            {selectedRole === 'Monthly Financial Health' && (
+                                            {selectedRole === 'Financial Health' && (
                                                 <UploaderCSVBox
                                                     file={template}
                                                     setFile={setTemplate}
@@ -1130,7 +1110,7 @@ const UploaderPage = () => {
                                             )}
                                             <div
                                                 style={
-                                                    selectedRole === "Monthly Financial Health"
+                                                    selectedRole === "Financial Health"
                                                         ? { width: '100%' }
                                                         : { width: '50%' }
                                                 }
@@ -1185,7 +1165,7 @@ const UploaderPage = () => {
                                     </div>
                                 )}
 
-                                {['Monthly Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) ? (
+                                {['Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) ? (
                                     <>
                                         <button
                                             className="analyse-btn"
@@ -1218,7 +1198,7 @@ const UploaderPage = () => {
                             </>
                         ) : (
                             <>
-                                {showReport && ['Monthly Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) && (
+                                {showReport && ['Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) && (
                                     <>
                                         <div className="card-grid">
                                             {visualizations.map((viz, index) => (
