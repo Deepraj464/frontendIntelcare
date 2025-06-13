@@ -81,34 +81,42 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                     </div>
                 )}
 
-                {/* SUPPORT AT HOME (Locked) */}
                 <div className="roles-list">
                     <div style={{ color: 'white', fontSize: '15px', fontWeight: 'bold', textAlign: 'left', marginLeft: '30px', fontFamily: 'Roboto', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        SUPPORT AT HOME <FaLock size={12} />
+                        SUPPORT AT HOME
                     </div>
-                    {reportButtons.map(report => (
-                        <div
-                            key={report}
-                            className={`role-item ${activeItem === report ? 'active-role' : ''}`}
-                            style={{ cursor: 'not-allowed', marginTop: '4px', opacity: 0.5, pointerEvents: 'none' }}
-                            onClick={() => {
-                                // This will not trigger due to pointerEvents: 'none', but logic is preserved
-                                let reportType = report;
-                                if (report === "HR Analysis") reportType = "HR Document";
-                                else if (report === "Care Services & eligibility Analysis") reportType = "Care Plan Document";
-                                setActiveReportType(reportType);
-                                setActiveItem(report);
-                                setShowReport(false);
-                                setShowFinalZipReport(false);
-                                setShowUploadReport(true);
-                                setMajorTypeOfReport('SUPPORT AT HOME');
-                                if (analysedReportdata) setAnalysedReportdata(null);
-                            }}
-                        >
-                            {report}
-                        </div>
-                    ))}
+                    {reportButtons.map(report => {
+                        const isEnabled = report === "Care Services & eligibility Analysis";
+                        return (
+                            <div
+                                key={report}
+                                className={`role-item ${activeItem === report ? 'active-role' : ''}`}
+                                style={{
+                                    cursor: isEnabled ? 'pointer' : 'not-allowed',
+                                    marginTop: '4px',
+                                    opacity: isEnabled ? 1 : 0.5,
+                                    pointerEvents: isEnabled ? 'auto' : 'none'
+                                }}
+                                onClick={() => {
+                                    if (!isEnabled) return;
+                                    let reportType = report;
+                                    if (report === "HR Analysis") reportType = "HR Document";
+                                    else if (report === "Care Services & eligibility Analysis") reportType = "Care Plan Document";
+                                    setActiveReportType(reportType);
+                                    setActiveItem(report);
+                                    setShowReport(false);
+                                    setShowFinalZipReport(false);
+                                    setShowUploadReport(true);
+                                    setMajorTypeOfReport('SUPPORT AT HOME');
+                                    if (analysedReportdata) setAnalysedReportdata(null);
+                                }}
+                            >
+                                {report}
+                            </div>
+                        );
+                    })}
                 </div>
+
 
                 {/* NDIS (Locked) */}
                 <div className="roles-list">
@@ -398,15 +406,15 @@ const UploaderPage = () => {
             alert("Please upload the report files.");
             return;
         }
-    
+
         handleClick();
         setIsProcessing(true);
         setProgress(1);
-    
+
         const interval = setInterval(() => {
             setProgress((prev) => (prev < 90 ? prev + 2 : prev));
         }, 5000);
-    
+
         try {
             if (selectedRole === "Financial Health") {
                 const metricMap = {
@@ -415,7 +423,7 @@ const UploaderPage = () => {
                     "Income by Service Monthly": "income_by_service",
                     "Claimable per week": "claimables",
                 };
-    
+
                 const getMetricFromSheetName = (sheetName) => {
                     for (let key in metricMap) {
                         if (sheetName.toLowerCase().includes(key.toLowerCase())) {
@@ -424,7 +432,7 @@ const UploaderPage = () => {
                     }
                     return "claimables";
                 };
-    
+
                 const generateSheetBlob = async (fileOrBlob, sheetName) => {
                     const buffer = await fileOrBlob.arrayBuffer();
                     const wb = XLSX.read(buffer, { type: "array" });
@@ -435,63 +443,63 @@ const UploaderPage = () => {
                         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     });
                 };
-    
+
                 const standardFiles = [];
                 const uploadedFiles = [];
-    
+
                 const stdTemplatePath = "/MonthlyReportTemplate.xlsx";
                 const stdTemplateResponse = await fetch(stdTemplatePath);
                 const stdTemplateBlob = await stdTemplateResponse.blob();
                 const stdBuffer = await stdTemplateBlob.arrayBuffer();
                 const stdWorkbook = XLSX.read(stdBuffer, { type: "array" });
-    
+
                 for (const sheetName of stdWorkbook.SheetNames) {
                     const metric = getMetricFromSheetName(sheetName);
                     const sheetBlob = await generateSheetBlob(stdTemplateBlob, sheetName);
-    
+
                     const formData = new FormData();
                     formData.append("template", sheetBlob, `${sheetName}.xlsx`);
                     reportFiles.forEach((file) => formData.append("source_files", file, file.name));
                     formData.append("metric_name", metric);
-    
+
                     const stdAPIRes = await axios.post(
                         "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/monthly_financial_health",
                         formData,
                         { responseType: 'blob' }
                     );
-    
+
                     const stdFile = new File([stdAPIRes.data], `${sheetName}_Standard_Report.xlsx`, {
                         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     });
                     standardFiles.push(stdFile);
                 }
                 setStandardExcelFile(standardFiles);
-    
+
                 let uploadedExcelFileTemp = null;
                 if (template && selectedRole === "Financial Health") {
                     const buffer = await template.arrayBuffer();
                     const wb = XLSX.read(buffer, { type: "array" });
-    
+
                     for (const sheetName of wb.SheetNames) {
                         const metric = getMetricFromSheetName(sheetName);
-    
+
                         const newWb = XLSX.utils.book_new();
                         XLSX.utils.book_append_sheet(newWb, wb.Sheets[sheetName], sheetName);
                         const sheetBlob = new Blob(
                             [XLSX.write(newWb, { bookType: "xlsx", type: "array" })],
                             { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
                         );
-    
+
                         const formData = new FormData();
                         formData.append("template", sheetBlob, `${sheetName}.xlsx`);
                         reportFiles.forEach((file) => formData.append("files", file, file.name));
                         formData.append("context", "None");
-    
+
                         const uploadRes = await axios.post(
                             "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/financial_reporting",
                             formData
                         );
-    
+
                         const base64Data = uploadRes.data?.file_base64;
                         if (base64Data) {
                             const binary = atob(base64Data.split(",")[1] || base64Data);
@@ -511,7 +519,7 @@ const UploaderPage = () => {
                     }
                     setUploadedExcelFile(uploadedExcelFileTemp);
                 }
-    
+
                 const mergedWorkbook = XLSX.utils.book_new();
                 let sheetCounter = 1;
                 const appendSheets = async (file, label) => {
@@ -524,7 +532,7 @@ const UploaderPage = () => {
                 };
                 for (const stdFile of standardFiles) await appendSheets(stdFile, "Standard");
                 for (const upFile of uploadedFiles) await appendSheets(upFile, "Uploaded");
-    
+
                 const mergedBlob = new Blob(
                     [XLSX.write(mergedWorkbook, { bookType: "xlsx", type: "array" })],
                     { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
@@ -532,17 +540,17 @@ const UploaderPage = () => {
                 const mergedFile = new File([mergedBlob], "merged_report.xlsx", {
                     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 });
-    
+
                 const summariseForm = new FormData();
                 summariseForm.append("file", mergedFile);
-                console.log('SuumariseFor',summariseForm);
+                console.log('SuumariseFor', summariseForm);
                 const summaryResponse = await axios.post(
                     "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/summarise_monthly_finance",
                     summariseForm
                 );
-                console.log('DeepakAnalyis',summaryResponse);
+                console.log('DeepakAnalyis', summaryResponse);
                 setReport(summaryResponse.data?.analysis || "No summary available.");
-    
+
                 // Visualisation only for Financial Health
                 const visualiseForm = new FormData();
                 visualiseForm.append("file", mergedFile);
@@ -552,14 +560,14 @@ const UploaderPage = () => {
                     "Income Plotting",
                     "Services Plotting"
                 ];
-    
+
                 try {
                     const visualiseResponse = await axios.post(
                         "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/visualise_monthly_finance",
                         visualiseForm
                     );
                     const attachments = visualiseResponse.data?.attachments || [];
-    
+
                     if (attachments.length > 0) {
                         const visuals = attachments.map((att) => {
                             const base64 = att.file_base64.startsWith("data:") ? att.file_base64 : `data:image/png;base64,${att.file_base64}`;
@@ -573,7 +581,7 @@ const UploaderPage = () => {
                     console.error("Visualisation Error:", visualError);
                     setVisualizations(expectedMetrics.map(metric => ({ metricName: metric, image: "/GraphPlacholder.png" })));
                 }
-    
+
             } else if (selectedRole === "SIRS Analysis") {
                 const file = reportFiles[0];
                 const buffer = await file.arrayBuffer();
@@ -583,27 +591,27 @@ const UploaderPage = () => {
                 const headers = XLSX.utils.sheet_to_json(firstSheet, { header: 1 })[0];
                 const rowDict = {};
                 headers.forEach((key, index) => rowDict[key] = firstRow[index]);
-    
+
                 const sirsResponse = await axios.post(
                     "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/sirs-analyze",
                     { input_row: rowDict }
                 );
-    
-                console.log('Deepak',sirsResponse);
+
+                console.log('Deepak', sirsResponse);
                 const result = sirsResponse.data;
                 setReport(sirsResponse.data);
                 setVisualizations([]);
             } else {
                 alert("Selected module not supported yet.");
             }
-    
+
             clearInterval(interval);
             setProgress(100);
             setTimeout(() => {
                 setShowReport(true);
                 setIsProcessing(false);
             }, 500);
-    
+
         } catch (error) {
             console.error("Error:", error);
             alert("AI Overloading or network issue.");
@@ -612,8 +620,8 @@ const UploaderPage = () => {
             setIsProcessing(false);
         }
     };
-    
-    
+
+
 
 
 
@@ -641,45 +649,45 @@ const UploaderPage = () => {
         const view = new Uint8Array(buf);
         for (let i = 0; i < s.length; ++i) view[i] = s.charCodeAt(i) & 0xff;
         return buf;
-      }
-      
-      const handleDownloadStandardExcel = async () => {
+    }
+
+    const handleDownloadStandardExcel = async () => {
         if (!Array.isArray(standardExcelFile) || standardExcelFile.length === 0) {
-          alert("No Standard Excel files to download.");
-          return;
+            alert("No Standard Excel files to download.");
+            return;
         }
-      
+
         const mergedWorkbook = XLSX.utils.book_new();
         const usedSheetNames = new Set();
-      
+
         for (const file of standardExcelFile) {
-          const data = await file.arrayBuffer();
-          const workbook = XLSX.read(data, { type: "array" });
-      
-          const firstSheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[firstSheetName];
-      
-          // Get base name without extension and limit to 31 characters
-          const rawName = file.name.replace(/\.xlsx$/i, "");
-          let sheetName = rawName.slice(0, 31); // Truncate to 31 chars
-      
-          // Ensure uniqueness if names clash
-          let counter = 1;
-          while (usedSheetNames.has(sheetName)) {
-            const suffix = `_${counter++}`;
-            const base = rawName.slice(0, 31 - suffix.length);
-            sheetName = base + suffix;
-          }
-      
-          usedSheetNames.add(sheetName);
-          XLSX.utils.book_append_sheet(mergedWorkbook, worksheet, sheetName);
+            const data = await file.arrayBuffer();
+            const workbook = XLSX.read(data, { type: "array" });
+
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+
+            // Get base name without extension and limit to 31 characters
+            const rawName = file.name.replace(/\.xlsx$/i, "");
+            let sheetName = rawName.slice(0, 31); // Truncate to 31 chars
+
+            // Ensure uniqueness if names clash
+            let counter = 1;
+            while (usedSheetNames.has(sheetName)) {
+                const suffix = `_${counter++}`;
+                const base = rawName.slice(0, 31 - suffix.length);
+                sheetName = base + suffix;
+            }
+
+            usedSheetNames.add(sheetName);
+            XLSX.utils.book_append_sheet(mergedWorkbook, worksheet, sheetName);
         }
-      
+
         const wbout = XLSX.write(mergedWorkbook, { bookType: "xlsx", type: "binary" });
         const blob = new Blob([s2ab(wbout)], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         });
-      
+
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
@@ -688,10 +696,10 @@ const UploaderPage = () => {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-      };
-      
-      
-    
+    };
+
+
+
 
     const handleGenerate = async () => {
         if (!zipFile1) {
@@ -774,78 +782,73 @@ const UploaderPage = () => {
     };
 
     const handleAnalyseReports = async () => {
-        if (!activeReportType || reportFiles.length === 0) {
-            alert("Please enter a metric name and select at least one file.");
+        if (reportFiles.length === 0) {
+            alert("Please  upload a file.");
             return;
         }
-        handleClick();
-
-        const formData = new FormData();
-
-        // Add template file if it exists
-        if (template) {
-            formData.append("template", template);
-        }
-
-        // Add all report files
-        Array.from(reportFiles).forEach((file) => {
-            formData.append("files", file);
-        });
-
-        // Append metric name
-        formData.append("metric_name", activeReportType);
+    
+        handleClick(); // ✅ Call the click handler first (as in your original)
+    
         let progressInterval;
-
-        // Determine the correct API endpoint
-        let apiUrl = "";
-        if (majorTypeofReport === "SUPPORT AT HOME") {
-            apiUrl = "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/aged_care_reporting";
-        } else if (majorTypeofReport === "NDIS") {
-            apiUrl = "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/NDIS_reporting";
-        } else {
-            alert("Invalid report type.");
-            return;
-        }
-
         try {
-            setIsAnalysingReportLoading(true); // Show loader
+            setIsAnalysingReportLoading(true);
             setIsAnalysedReportProgress(1);
+    
+            // Start virtual progress
             progressInterval = setInterval(() => {
-                setIsAnalysedReportProgress((prevProgress) => {
-                    if (prevProgress < 90) {
-                        return prevProgress + 4; // Increase by 4% every interval
-                    }
-                    return prevProgress;
-                });
+                setIsAnalysedReportProgress((prev) => (prev < 90 ? prev + 4 : prev));
             }, 4000);
-
-            const response = await axios.post(apiUrl, formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
-
-            clearInterval(progressInterval);
-            setIsAnalysedReportProgress(100);
-
-            const responseData = response.data;
-            console.log(responseData);
-            console.log("Summary:", responseData.summary);
-
-            const parsedReports = JSON.parse(responseData.response);
-            setDocumentString(responseData.documents);
-            setAnalysedReportdata(responseData.summary);
-            setParsedReports(parsedReports);
-            // alert("Reports analysed successfully!");
+    
+            if (activeReportType === "Care Plan Document") {
+                const file = reportFiles[0];
+                const buffer = await file.arrayBuffer();
+                const wb = XLSX.read(buffer, { type: "array" });
+                const firstSheet = wb.Sheets[wb.SheetNames[0]];
+                const firstRow = XLSX.utils.sheet_to_json(firstSheet, { header: 1 })[1];
+                const headers = XLSX.utils.sheet_to_json(firstSheet, { header: 1 })[0];
+                const rowDict = {};
+                headers.forEach((key, index) => {
+                    rowDict[key] = firstRow[index];
+                });
+    
+                try {
+                    const response = await axios.post(
+                        "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/care-analyze",
+                        { input_row: rowDict }
+                    );
+    
+                    clearInterval(progressInterval);
+                    setIsAnalysedReportProgress(100);
+    
+                    if (response.status === 200) {
+                        const result = response.data;
+                        console.log("Care Plan Analysis Result:", result);
+                        setAnalysedReportdata(result);
+                        setDocumentString(null);
+                        setParsedReports(null);
+                    } else {
+                        alert("Care Plan API returned an error.");
+                    }
+                } catch (err) {
+                    console.error("Care Plan API error:", err);
+                    alert("Error analyzing Care Plan Document.");
+                    clearInterval(progressInterval);
+                } finally {
+                    setIsAnalysingReportLoading(false);
+                }
+    
+            } else {
+                alert("Selected module not supported yet.");
+                clearInterval(progressInterval);
+                setIsAnalysingReportLoading(false);
+            }
         } catch (error) {
-            console.error("Upload error:", error);
-            alert("Failed to connect to the server or analyse the reports.");
+            console.error("Unexpected Error:", error);
+            alert("Something went wrong while analyzing the report.");
             clearInterval(progressInterval);
-        } finally {
             setIsAnalysingReportLoading(false);
         }
     };
-    console.log(parsedReports);
 
     const handleSend = async () => {
         if (!input.trim()) return;
@@ -1038,14 +1041,14 @@ const UploaderPage = () => {
                                                     title={activeReportType}
                                                     subtitle={
                                                         activeReportType === "Care Plan Document"
-                                                            ? "Upload reports in ZIP or XLSX format"
+                                                            ? "Upload .XLSX, .CSV or .XLS format"
                                                             : activeReportType === "HR Document"
                                                                 ? "Upload reports in ZIP format"
                                                                 : "Upload reports in ZIP, PDF, XLSX or DOCX format"
                                                     }
                                                     fileformat={
                                                         activeReportType === "Care Plan Document"
-                                                            ? ".zip, .xlsx"
+                                                            ? ".xlsx,.csv,.xls"
                                                             : activeReportType === "HR Document"
                                                                 ? ".zip"
                                                                 : ".zip, .pdf, .docx, .xlsx"
@@ -1071,7 +1074,7 @@ const UploaderPage = () => {
                                 ) : (
                                     <div className="reports-box" style={{ height: 'auto', marginTop: '30px', padding: '10px' }}>
                                         <div style={{ backgroundColor: '#FFFFFF', padding: '10px 30px', borderRadius: '10px' }}>
-                                            <SummaryReport summaryText={analysedReportdata} handleDownloadAnalyedReportCSV={handleDownloadAnalyedReportCSV} />
+                                            <SummaryReport summaryText={analysedReportdata} selectedRole={activeReportType} handleDownloadAnalyedReportCSV={handleDownloadAnalyedReportCSV} />
                                         </div>
                                     </div>
                                 )}
