@@ -25,7 +25,7 @@ import SubscriptionStatus from "./SubscriptionStatus";
 import { FaLock } from 'react-icons/fa';
 
 
-const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setShowReport, showFinalZipReport, setShowFinalZipReport, showUploadedReport, setShowUploadReport, activeReportType, setActiveReportType, analysedReportdata, setAnalysedReportdata, majorTypeofReport, setMajorTypeOfReport }) => {
+const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setShowReport, showFinalZipReport, setShowFinalZipReport, showUploadedReport, setShowUploadReport, activeReportType, setActiveReportType, analysedReportdata, setAnalysedReportdata, majorTypeofReport, setMajorTypeOfReport,setReportFiles }) => {
     // console.log(activeReportType);
     const [showRoles, setShowRoles] = useState(true);
     // const [activeItem, setActiveItem] = useState("Care Services & elgibility Analysis"); careplan
@@ -68,9 +68,11 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                                     onClick={() => {
                                         setSelectedRole(role);
                                         setActiveItem(role);
+                                        setReportFiles([]);
                                         if (showReport) setShowReport(false);
                                         if (showFinalZipReport) setShowFinalZipReport(false);
                                         if (showUploadedReport) setShowUploadReport(false);
+                                       
                                     }}
                                     style={{ cursor: 'pointer', opacity: 1 }}
                                 >
@@ -106,6 +108,7 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                                     setActiveItem(report);
                                     setShowReport(false);
                                     setShowFinalZipReport(false);
+                                    setReportFiles([]);
                                     setShowUploadReport(true);
                                     setMajorTypeOfReport('SUPPORT AT HOME');
                                     if (analysedReportdata) setAnalysedReportdata(null);
@@ -964,7 +967,7 @@ const UploaderPage = () => {
                 :
                 <div className="page-container">
                     {sidebarVisible ? (
-                        <Sidebar onCollapse={toggleSidebar} selectedRole={selectedRole} setSelectedRole={setSelectedRole} showReport={showReport} setShowReport={setShowReport} showFinalZipReport={showFinalZipReport} setShowFinalZipReport={setShowFinalZipReport} showUploadedReport={showUploadedReport} setShowUploadReport={setShowUploadReport} activeReportType={activeReportType} setActiveReportType={setActiveReportType} analysedReportdata={analysedReportdata} setAnalysedReportdata={setAnalysedReportdata} majorTypeofReport={majorTypeofReport} setMajorTypeOfReport={setMajorTypeOfReport} />
+                        <Sidebar onCollapse={toggleSidebar} selectedRole={selectedRole} setSelectedRole={setSelectedRole} showReport={showReport} setShowReport={setShowReport} showFinalZipReport={showFinalZipReport} setShowFinalZipReport={setShowFinalZipReport} showUploadedReport={showUploadedReport} setShowUploadReport={setShowUploadReport} activeReportType={activeReportType} setActiveReportType={setActiveReportType} analysedReportdata={analysedReportdata} setAnalysedReportdata={setAnalysedReportdata} majorTypeofReport={majorTypeofReport} setMajorTypeOfReport={setMajorTypeOfReport} setReportFiles={setReportFiles}/>
                     ) : (
                         <div className="collapsed-button" onClick={toggleSidebar}>
                             <img src={BlackExpandIcon} height={27} width={28} alt="blackexpand" />
