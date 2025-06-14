@@ -152,10 +152,11 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
 };
 
 
-const UploaderCSVBox = ({ file, setFile, title, subtitle, removeFile }) => {
+const UploaderCSVBox = ({ file, setFile, title, subtitle, removeFile,disabled=false }) => {
     const [loading, setLoading] = useState(false);
 
     const handleFileChange = (e) => {
+        if (disabled) return;
         const selectedFile = e.target.files[0];
         if (selectedFile) {
             setLoading(true);
@@ -167,7 +168,7 @@ const UploaderCSVBox = ({ file, setFile, title, subtitle, removeFile }) => {
     };
 
     return (
-        <div className={`uploader-box ${loading ? "loading" : ""}`}>
+        <div  className={`uploader-box ${loading ? "loading" : ""} ${disabled ? "disabled" : ""}`}>
             {loading && (
                 <div className="loader-overlay">
                     <div className="spinner"></div>
@@ -178,7 +179,11 @@ const UploaderCSVBox = ({ file, setFile, title, subtitle, removeFile }) => {
                 {subtitle}
             </p>
             <div className="upload-area">
-                <label htmlFor={`file-upload-${title}`} className="upload-label">
+                <label 
+                htmlFor={`file-upload-${title}`} 
+                className="upload-label"
+                style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
+                >
                     <div className="upload-icon">
                         <img src={UploadIcon} height={42} width={42} alt="Upload icon" />
                     </div>
@@ -189,7 +194,7 @@ const UploaderCSVBox = ({ file, setFile, title, subtitle, removeFile }) => {
                         accept=".xlsx, .csv"
                         onChange={handleFileChange}
                         style={{ display: "none" }}
-                        disabled={loading}
+                        disabled={disabled || loading}
                     />
                 </label>
             </div>
@@ -1112,6 +1117,7 @@ const UploaderPage = () => {
                                                     title="Upload your template to be filled"
                                                     subtitle=".XLSX or .CSV Format Only"
                                                     removeFile={() => setTemplate(null)}
+                                                    disabled={true}
                                                 />
                                             )}
                                             <div
