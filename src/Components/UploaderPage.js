@@ -943,14 +943,15 @@ const UploaderPage = () => {
     }, []);
 
     useEffect(() => {
-        if (analysedReportdata) {
+        if (analysedReportdata || report) {
             const timer = setTimeout(() => {
                 setShowFeedbackPopup(true);
-            }, 15000);
-
+            }, 60000); // 1 minute
+    
             return () => clearTimeout(timer);
         }
-    }, [analysedReportdata]);
+    }, [analysedReportdata, report]); 
+    
 
     // Handle Logout
     const handleLogout = async () => {
