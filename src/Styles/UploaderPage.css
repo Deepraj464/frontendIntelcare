@@ -409,3 +409,13 @@ body, html, * {
   color: black;
   margin-bottom: 30px;
 }
+.betaversion{
+  text-align: end;
+  margin-right: -20px;
+  margin-top: 14px;
+  font-weight: 400;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #e6e5e5;
+}

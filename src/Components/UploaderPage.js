@@ -1006,6 +1006,7 @@ const UploaderPage = () => {
                                 </div>
                             </div>
                         )}
+                        <div className="betaversion">Beta Version</div>
                         {showFeedbackPopup && <FeedbackModal userEmail={user?.email} />}
                         {showUploadedReport && activeReportType && (
                             <>
