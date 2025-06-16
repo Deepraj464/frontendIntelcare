@@ -25,7 +25,7 @@ import SubscriptionStatus from "./SubscriptionStatus";
 import { FaLock } from 'react-icons/fa';
 
 
-const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setShowReport, showFinalZipReport, setShowFinalZipReport, showUploadedReport, setShowUploadReport, activeReportType, setActiveReportType, analysedReportdata, setAnalysedReportdata, majorTypeofReport, setMajorTypeOfReport,setReportFiles }) => {
+const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setShowReport, showFinalZipReport, setShowFinalZipReport, showUploadedReport, setShowUploadReport, activeReportType, setActiveReportType, analysedReportdata, setAnalysedReportdata, majorTypeofReport, setMajorTypeOfReport, setReportFiles }) => {
     // console.log(activeReportType);
     const [showRoles, setShowRoles] = useState(true);
     // const [activeItem, setActiveItem] = useState("Care Services & elgibility Analysis"); careplan
@@ -72,7 +72,7 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                                         if (showReport) setShowReport(false);
                                         if (showFinalZipReport) setShowFinalZipReport(false);
                                         if (showUploadedReport) setShowUploadReport(false);
-                                       
+
                                     }}
                                     style={{ cursor: 'pointer', opacity: 1 }}
                                 >
@@ -152,7 +152,7 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
 };
 
 
-const UploaderCSVBox = ({ file, setFile, title, subtitle, removeFile,disabled=false }) => {
+const UploaderCSVBox = ({ file, setFile, title, subtitle, removeFile, disabled = false }) => {
     const [loading, setLoading] = useState(false);
 
     const handleFileChange = (e) => {
@@ -168,7 +168,7 @@ const UploaderCSVBox = ({ file, setFile, title, subtitle, removeFile,disabled=fa
     };
 
     return (
-        <div  className={`uploader-box ${loading ? "loading" : ""} ${disabled ? "disabled" : ""}`}>
+        <div className={`uploader-box ${loading ? "loading" : ""} ${disabled ? "disabled" : ""}`}>
             {loading && (
                 <div className="loader-overlay">
                     <div className="spinner"></div>
@@ -179,10 +179,10 @@ const UploaderCSVBox = ({ file, setFile, title, subtitle, removeFile,disabled=fa
                 {subtitle}
             </p>
             <div className="upload-area">
-                <label 
-                htmlFor={`file-upload-${title}`} 
-                className="upload-label"
-                style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
+                <label
+                    htmlFor={`file-upload-${title}`}
+                    className="upload-label"
+                    style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
                 >
                     <div className="upload-icon">
                         <img src={UploadIcon} height={42} width={42} alt="Upload icon" />
@@ -595,31 +595,47 @@ const UploaderPage = () => {
                 const buffer = await file.arrayBuffer();
                 const wb = XLSX.read(buffer, { type: "array" });
                 const firstSheet = wb.Sheets[wb.SheetNames[0]];
-                const firstRow = XLSX.utils.sheet_to_json(firstSheet, { header: 1 })[1];
-                const headers = XLSX.utils.sheet_to_json(firstSheet, { header: 1 })[0];
-                const rowDict = {};
-                headers.forEach((key, index) => rowDict[key] = firstRow[index]);
+                const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
 
-                const sirsResponse = await axios.post(
-                    "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/sirs-analyze",
-                    { input_row: rowDict }
-                );
+                const headers = rows[0];
+                const dataRows = rows.slice(1); // Remove header row
 
-                console.log('Deepak', sirsResponse);
-                const result = sirsResponse.data;
-                setReport(sirsResponse.data);
-                setVisualizations([]);
+                const allResults = [];
+
+                for (let i = 0; i < dataRows.length; i++) {
+                    const row = dataRows[i];
+                    const rowDict = {};
+                    headers.forEach((key, index) => rowDict[key] = row[index]);
+
+                    try {
+                        const sirsResponse = await axios.post(
+                            "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/sirs-analyze",
+                            { input_row: rowDict }
+                        );
+
+                        const result = sirsResponse.data;
+                        allResults.push(result);
+
+                        if (i === 0) {
+                            // Show the first result immediately
+                            setReport([result]);
+                            setProgress(100);
+                            setTimeout(() => {
+                                setShowReport(true);
+                                setIsProcessing(false);
+                            }, 500);
+                        } else {
+                            // Append later results in background
+                            setReport(prev => [...prev, result]);
+                        }
+
+                    } catch (error) {
+                        console.error(`Error processing row ${i + 1}`, error);
+                    }
+                }
             } else {
                 alert("Selected module not supported yet.");
             }
-
-            clearInterval(interval);
-            setProgress(100);
-            setTimeout(() => {
-                setShowReport(true);
-                setIsProcessing(false);
-            }, 500);
-
         } catch (error) {
             console.error("Error:", error);
             alert("AI Overloading or network issue.");
@@ -628,10 +644,6 @@ const UploaderPage = () => {
             setIsProcessing(false);
         }
     };
-
-
-
-
 
 
 
@@ -791,60 +803,68 @@ const UploaderPage = () => {
 
     const handleAnalyseReports = async () => {
         if (reportFiles.length === 0) {
-            alert("Please  upload a file.");
+            alert("Please upload a file.");
             return;
         }
-    
-        handleClick(); // ✅ Call the click handler first (as in your original)
-    
+
+        handleClick();
+
         let progressInterval;
         try {
             setIsAnalysingReportLoading(true);
             setIsAnalysedReportProgress(1);
-    
+
             // Start virtual progress
             progressInterval = setInterval(() => {
-                setIsAnalysedReportProgress((prev) => (prev < 90 ? prev + 4 : prev));
+                setIsAnalysedReportProgress(prev => (prev < 90 ? prev + 4 : prev));
             }, 4000);
-    
+
             if (activeReportType === "Care Plan Document") {
                 const file = reportFiles[0];
                 const buffer = await file.arrayBuffer();
                 const wb = XLSX.read(buffer, { type: "array" });
                 const firstSheet = wb.Sheets[wb.SheetNames[0]];
-                const firstRow = XLSX.utils.sheet_to_json(firstSheet, { header: 1 })[1];
-                const headers = XLSX.utils.sheet_to_json(firstSheet, { header: 1 })[0];
-                const rowDict = {};
-                headers.forEach((key, index) => {
-                    rowDict[key] = firstRow[index];
-                });
-    
-                try {
-                    const response = await axios.post(
-                        "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/care-analyze",
-                        { input_row: rowDict }
-                    );
-    
-                    clearInterval(progressInterval);
-                    setIsAnalysedReportProgress(100);
-    
-                    if (response.status === 200) {
-                        const result = response.data;
-                        console.log("Care Plan Analysis Result:", result);
-                        setAnalysedReportdata(result);
-                        setDocumentString(null);
-                        setParsedReports(null);
-                    } else {
-                        alert("Care Plan API returned an error.");
+                const sheetData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                const headers = sheetData[0];
+                const dataRows = sheetData.slice(1); // skip header row
+
+                for (let i = 0; i < dataRows.length; i++) {
+                    const row = dataRows[i];
+                    const rowDict = {};
+                    headers.forEach((key, index) => {
+                        rowDict[key] = row[index];
+                    });
+
+                    try {
+                        const response = await axios.post(
+                            "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/care-analyze",
+                            { input_row: rowDict }
+                        );
+
+                        if (response.status === 200) {
+                            const result = response.data;
+                            setAnalysedReportdata(prev => [...(prev || []), result]);
+                            setDocumentString(null);
+                            setParsedReports(null);
+
+                            // ✅ First row: show UI and stop loading/progress
+                            if (i === 0) {
+                                clearInterval(progressInterval);
+                                setIsAnalysedReportProgress(100);
+                                setIsAnalysingReportLoading(false);
+                            }
+                        }
+                    } catch (err) {
+                        console.error(`Error analyzing row ${i + 1}:`, err);
+
+                        if (i === 0) {
+                            clearInterval(progressInterval);
+                            setIsAnalysingReportLoading(false);
+                            alert("Error analyzing first row.");
+                        }
                     }
-                } catch (err) {
-                    console.error("Care Plan API error:", err);
-                    alert("Error analyzing Care Plan Document.");
-                    clearInterval(progressInterval);
-                } finally {
-                    setIsAnalysingReportLoading(false);
                 }
-    
             } else {
                 alert("Selected module not supported yet.");
                 clearInterval(progressInterval);
@@ -857,6 +877,8 @@ const UploaderPage = () => {
             setIsAnalysingReportLoading(false);
         }
     };
+
+    console.log(analysedReportdata);
 
     const handleSend = async () => {
         if (!input.trim()) return;
@@ -947,11 +969,11 @@ const UploaderPage = () => {
             const timer = setTimeout(() => {
                 setShowFeedbackPopup(true);
             }, 60000); // 1 minute
-    
+
             return () => clearTimeout(timer);
         }
-    }, [analysedReportdata, report]); 
-    
+    }, [analysedReportdata, report]);
+
 
     // Handle Logout
     const handleLogout = async () => {
@@ -973,7 +995,7 @@ const UploaderPage = () => {
                 :
                 <div className="page-container">
                     {sidebarVisible ? (
-                        <Sidebar onCollapse={toggleSidebar} selectedRole={selectedRole} setSelectedRole={setSelectedRole} showReport={showReport} setShowReport={setShowReport} showFinalZipReport={showFinalZipReport} setShowFinalZipReport={setShowFinalZipReport} showUploadedReport={showUploadedReport} setShowUploadReport={setShowUploadReport} activeReportType={activeReportType} setActiveReportType={setActiveReportType} analysedReportdata={analysedReportdata} setAnalysedReportdata={setAnalysedReportdata} majorTypeofReport={majorTypeofReport} setMajorTypeOfReport={setMajorTypeOfReport} setReportFiles={setReportFiles}/>
+                        <Sidebar onCollapse={toggleSidebar} selectedRole={selectedRole} setSelectedRole={setSelectedRole} showReport={showReport} setShowReport={setShowReport} showFinalZipReport={showFinalZipReport} setShowFinalZipReport={setShowFinalZipReport} showUploadedReport={showUploadedReport} setShowUploadReport={setShowUploadReport} activeReportType={activeReportType} setActiveReportType={setActiveReportType} analysedReportdata={analysedReportdata} setAnalysedReportdata={setAnalysedReportdata} majorTypeofReport={majorTypeofReport} setMajorTypeOfReport={setMajorTypeOfReport} setReportFiles={setReportFiles} />
                     ) : (
                         <div className="collapsed-button" onClick={toggleSidebar}>
                             <img src={BlackExpandIcon} height={27} width={28} alt="blackexpand" />

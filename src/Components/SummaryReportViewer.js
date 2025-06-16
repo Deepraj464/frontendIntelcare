@@ -64,53 +64,91 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, ha
                 </>
             ) : selectedRole === 'SIRS Analysis' ? (
                 <>
-                    <div className="sirs-markdown">
-                        <ReactMarkdown
-                            children={parsedResponse?.incident}
-                            remarkPlugins={[remarkGfm]}
-                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                        />
-                        <ReactMarkdown
-                            children={parsedResponse?.risk}
-                            remarkPlugins={[remarkGfm]}
-                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                        />
-                        <ReactMarkdown
-                            children={parsedResponse?.recommendation}
-                            remarkPlugins={[remarkGfm]}
-                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                        />
-                    </div>
+                    {Array.isArray(parsedResponse) ? (
+                        parsedResponse.map((entry, index) => (
+                            <div key={index} className="sirs-markdown">
+                                {entry?.incident && (
+                                        <ReactMarkdown
+                                            children={entry.incident}
+                                            remarkPlugins={[remarkGfm]}
+                                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                        />
+                                )}
+
+                                {entry?.risk && (
+                                        <ReactMarkdown
+                                            children={entry.risk}
+                                            remarkPlugins={[remarkGfm]}
+                                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                        />
+                                )}
+
+                                {entry?.recommendation && (
+                                        <ReactMarkdown
+                                            children={entry.recommendation}
+                                            remarkPlugins={[remarkGfm]}
+                                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                        />
+                                )}
+                            </div>
+                        ))
+                    ) : (
+                        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                            Invalid SIRS report format.
+                        </div>
+                    )}
                 </>
             ) : selectedRole === 'Care Plan Document' ? (
                 <>
-                    <div className="sirs-markdown">
-                        <ReactMarkdown
-                            children={parsedResponse?.eligibility}
-                            remarkPlugins={[remarkGfm]}
-                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                        />
-                        <ReactMarkdown
-                            children={parsedResponse?.compliance}
-                            remarkPlugins={[remarkGfm]}
-                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                        />
-                        <ReactMarkdown
-                            children={parsedResponse?.documentation}
-                            remarkPlugins={[remarkGfm]}
-                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                        />
-                        <ReactMarkdown
-                            children={parsedResponse?.financial.replace(/```(?:\w+)?\n?/, '').replace(/```$/, '')}
-                            remarkPlugins={[remarkGfm]}
-                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                        />
-                        <ReactMarkdown
-                            children={parsedResponse?.service}
-                            remarkPlugins={[remarkGfm]}
-                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                        />
-                    </div>
+                    {Array.isArray(parsedResponse) ? (
+                        parsedResponse.map((entry, index) => (
+                            <div key={index} className="sirs-markdown" style={{ marginBottom: '32px' }}>
+                                {entry?.eligibility && (
+                                        <ReactMarkdown
+                                            children={entry.eligibility}
+                                            remarkPlugins={[remarkGfm]}
+                                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                        />
+                                )}
+
+                                {entry?.compliance && (
+                                        <ReactMarkdown
+                                            children={entry.compliance}
+                                            remarkPlugins={[remarkGfm]}
+                                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                        />
+                                )}
+
+                                {entry?.documentation && (
+                                        <ReactMarkdown
+                                            children={entry.documentation}
+                                            remarkPlugins={[remarkGfm]}
+                                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                        />
+                                )}
+
+                                {entry?.financial && (
+                                        <ReactMarkdown
+                                            children={entry.financial.replace(/```(?:\w+)?\n?/, '').replace(/```$/, '')}
+                                            remarkPlugins={[remarkGfm]}
+                                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                        />
+                                )}
+
+                                {entry?.service && (
+                                        <ReactMarkdown
+                                            children={entry.service}
+                                            remarkPlugins={[remarkGfm]}
+                                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                        />
+                                )}
+                            </div>
+                        ))
+                    ) : (
+                        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                            No Care Plan report data available.
+                        </div>
+                    )}
                 </>
             ) : (
                 <div style={{ textAlign: 'center', marginTop: '2rem' }}>
