@@ -574,6 +574,7 @@ const UploaderPage = () => {
                         "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/visualise_monthly_finance",
                         visualiseForm
                     );
+                    console.log(visualiseResponse);
                     const attachments = visualiseResponse.data?.attachments || [];
 
                     if (attachments.length > 0) {
@@ -589,6 +590,12 @@ const UploaderPage = () => {
                     console.error("Visualisation Error:", visualError);
                     setVisualizations(expectedMetrics.map(metric => ({ metricName: metric, image: "/GraphPlacholder.png" })));
                 }
+                clearInterval(interval);
+                setProgress(100);
+                setTimeout(() => {
+                    setShowReport(true);
+                    setIsProcessing(false);
+                }, 500);
 
             } else if (selectedRole === "SIRS Analysis") {
                 const file = reportFiles[0];
@@ -619,6 +626,7 @@ const UploaderPage = () => {
                         if (i === 0) {
                             // Show the first result immediately
                             setReport([result]);
+                            setVisualizations([]);
                             setProgress(100);
                             setTimeout(() => {
                                 setShowReport(true);
@@ -633,6 +641,7 @@ const UploaderPage = () => {
                         console.error(`Error processing row ${i + 1}`, error);
                     }
                 }
+                clearInterval(interval);
             } else {
                 alert("Selected module not supported yet.");
             }
