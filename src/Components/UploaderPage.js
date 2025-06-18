@@ -471,7 +471,7 @@ const UploaderPage = () => {
                     formData.append("metric_name", metric);
 
                     const stdAPIRes = await axios.post(
-                        "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/monthly_financial_health",
+                        "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/monthly_financial_health",
                         formData,
                         { responseType: 'blob' }
                     );
@@ -504,7 +504,7 @@ const UploaderPage = () => {
                         formData.append("context", "None");
 
                         const uploadRes = await axios.post(
-                            "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/financial_reporting",
+                            "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/financial_reporting",
                             formData
                         );
 
@@ -553,7 +553,7 @@ const UploaderPage = () => {
                 summariseForm.append("file", mergedFile);
                 console.log('SuumariseFor', summariseForm);
                 const summaryResponse = await axios.post(
-                    "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/summarise_monthly_finance",
+                    "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/summarise_monthly_finance",
                     summariseForm
                 );
                 console.log('DeepakAnalyis', summaryResponse);
@@ -571,7 +571,7 @@ const UploaderPage = () => {
 
                 try {
                     const visualiseResponse = await axios.post(
-                        "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/visualise_monthly_finance",
+                        "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/visualise_monthly_finance",
                         visualiseForm
                     );
                     console.log(visualiseResponse);
@@ -616,7 +616,7 @@ const UploaderPage = () => {
 
                     try {
                         const sirsResponse = await axios.post(
-                            "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/sirs-analyze",
+                            "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/sirs-analyze",
                             { input_row: rowDict }
                         );
 
@@ -774,7 +774,7 @@ const UploaderPage = () => {
 
                 try {
                     const response = await axios.post(
-                        "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/incident_reporting",
+                        "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/incident_reporting",
                         formData,
                         {
                             headers: {
@@ -794,6 +794,7 @@ const UploaderPage = () => {
                         error: error?.response?.data?.error || error.message,
                     });
                 }
+                console.log(allResponses)
             }
 
             // Set progress to 100% when complete
@@ -847,7 +848,7 @@ const UploaderPage = () => {
 
                     try {
                         const response = await axios.post(
-                            "https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/care-analyze",
+                            "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/care-analyze",
                             { input_row: rowDict }
                         );
 
@@ -909,7 +910,7 @@ const UploaderPage = () => {
 
         try {
             const response = await axios.post(
-                'https://curki-api-ecbybqa6d5bmdzdh.australiaeast-01.azurewebsites.net/askai',
+                'https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/askai',
                 payload
             );
 
@@ -973,15 +974,17 @@ const UploaderPage = () => {
         return () => unsubscribe(); // Cleanup function
     }, []);
 
+
     useEffect(() => {
         if (analysedReportdata || (report && showReport)) {
             const timer = setTimeout(() => {
                 setShowFeedbackPopup(true);
+                console.log('Deepak')
             }, 60000); // 1 minute
     
             return () => clearTimeout(timer);
         }
-    }, [analysedReportdata, report, showReport])
+    }, [analysedReportdata,showReport])
 
 
     // Handle Logout
