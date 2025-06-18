@@ -420,7 +420,7 @@ const UploaderPage = () => {
         setProgress(1);
 
         const interval = setInterval(() => {
-            setProgress((prev) => (prev < 90 ? prev + 2 : prev));
+            setProgress((prev) => (prev < 92 ? prev + 2 : prev));
         }, 5000);
 
         try {
@@ -974,14 +974,14 @@ const UploaderPage = () => {
     }, []);
 
     useEffect(() => {
-        if (analysedReportdata || report) {
+        if (analysedReportdata || (report && showReport)) {
             const timer = setTimeout(() => {
                 setShowFeedbackPopup(true);
             }, 60000); // 1 minute
-
+    
             return () => clearTimeout(timer);
         }
-    }, [analysedReportdata, report]);
+    }, [analysedReportdata, report, showReport])
 
 
     // Handle Logout
