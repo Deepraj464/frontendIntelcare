@@ -424,14 +424,29 @@ const UploaderPage = () => {
         }, 5000);
 
         try {
-            if (selectedRole === "Financial Health") {
-                const metricMap = {
-                    "Hours Monthly": "hours",
-                    "Wages Monthly": "wages",
-                    "Income by Service Monthly": "income_by_service",
-                    "Claimable per week": "claimables",
-                };
+            if (selectedRole === "Financial Health" || selectedRole === "Quarterly Financial Reporting") {
+                let metricMap = {};
 
+                if (selectedRole === "Financial Health") {
+                    metricMap = {
+                        "Hours Monthly": "hours",
+                        "Wages Monthly": "wages",
+                        "Income by Service Monthly": "income_by_service",
+                        "Claimable per week": "claimables",
+                    };
+                } else if (selectedRole === "Quarterly Financial Reporting") {
+                    metricMap = {
+                        "Year to date Financial State_1": "Year to date Financial Statement 1",
+                        "Year to date Financial State_2": "Year to date Financial Statement 2",
+                        "Year to date Financial Statemen": "Year to date Financial Statement 3",
+                        "Resi_CareLabour_Cost&Hours 1_Sh": "Resi_CareLabour_Cost&Hours 1",
+                        "Resi_CareLabour_Cost&Hours 2_Sh": "Resi_CareLabour_Cost&Hours 2",
+                        "Resi_CareLabour_Cost&Hours 3_Sh": "Resi_CareLabour_Cost&Hours 3",
+                        "DGTC - Resi Labour Cost prpd_Sh": "DGTC - Resi Labour Cost prpd",
+                        "HC_CareLabour_Cost&Hours 1_Shee": "HC_CareLabour_Cost&Hours 1",
+                        "HC_CareLabour_Cost&Hours 2_Shee": "HC_CareLabour_Cost&Hours 2",
+                    };
+                }
                 const getMetricFromSheetName = (sheetName) => {
                     for (let key in metricMap) {
                         if (sheetName.toLowerCase().includes(key.toLowerCase())) {
@@ -440,7 +455,7 @@ const UploaderPage = () => {
                     }
                     return "claimables";
                 };
-
+                console.log('MetricMap',metricMap);
                 const generateSheetBlob = async (fileOrBlob, sheetName) => {
                     const buffer = await fileOrBlob.arrayBuffer();
                     const wb = XLSX.read(buffer, { type: "array" });
@@ -454,8 +469,13 @@ const UploaderPage = () => {
 
                 const standardFiles = [];
                 const uploadedFiles = [];
+                let stdTemplatePath = "";
 
-                const stdTemplatePath = "/MonthlyReportTemplate.xlsx";
+                if (selectedRole === "Financial Health") {
+                    stdTemplatePath = "/MonthlyReportTemplate.xlsx";
+                } else if (selectedRole === 'Quarterly Financial Reporting') {
+                    stdTemplatePath = "/QuarterlyFinancialTemplate.xlsx";
+                }
                 const stdTemplateResponse = await fetch(stdTemplatePath);
                 const stdTemplateBlob = await stdTemplateResponse.blob();
                 const stdBuffer = await stdTemplateBlob.arrayBuffer();
@@ -469,13 +489,21 @@ const UploaderPage = () => {
                     formData.append("template", sheetBlob, `${sheetName}.xlsx`);
                     reportFiles.forEach((file) => formData.append("source_files", file, file.name));
                     formData.append("metric_name", metric);
+                    console.log(stdTemplatePath);
+
+                    let standardEndpoint = "";
+                    if (selectedRole === "Financial Health") {
+                        standardEndpoint = "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/monthly_financial_health";
+                    } else if (selectedRole === "Quarterly Financial Reporting") {
+                        console.log('Deepak');
+                        standardEndpoint = "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/QFR";
+                    }
 
                     const stdAPIRes = await axios.post(
-                        "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/monthly_financial_health",
+                        standardEndpoint,
                         formData,
                         { responseType: 'blob' }
                     );
-
                     const stdFile = new File([stdAPIRes.data], `${sheetName}_Standard_Report.xlsx`, {
                         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     });
@@ -484,7 +512,7 @@ const UploaderPage = () => {
                 setStandardExcelFile(standardFiles);
 
                 let uploadedExcelFileTemp = null;
-                if (template && selectedRole === "Financial Health") {
+                if (template) {
                     const buffer = await template.arrayBuffer();
                     const wb = XLSX.read(buffer, { type: "array" });
 
@@ -533,8 +561,14 @@ const UploaderPage = () => {
                 const appendSheets = async (file, label) => {
                     const buffer = await file.arrayBuffer();
                     const wb = XLSX.read(buffer, { type: "array" });
+                
+                    const sanitize = (name) => name.replace(/[:\\/?*\[\]]/g, '');
+                    const maxSheetNameLength = 31;
+                
                     wb.SheetNames.forEach((sheet) => {
-                        const safeSheetName = `${label}_${sheet}_${sheetCounter++}`;
+                        const baseName = sanitize(`${label}_${sheet}`);
+                        const truncatedBaseName = baseName.substring(0, maxSheetNameLength - 5); // Reserve space for counter
+                        const safeSheetName = `${truncatedBaseName}_${sheetCounter++}`;
                         XLSX.utils.book_append_sheet(mergedWorkbook, wb.Sheets[sheet], safeSheetName);
                     });
                 };
@@ -552,8 +586,15 @@ const UploaderPage = () => {
                 const summariseForm = new FormData();
                 summariseForm.append("file", mergedFile);
                 console.log('SuumariseFor', summariseForm);
+                let standardSummariseEndpoint = '';
+                if (selectedRole === "Financial Health") {
+                    standardSummariseEndpoint = "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/summarise_monthly_finance";
+                } else if (selectedRole === "Quarterly Financial Reporting") {
+                    console.log('Deepak');
+                    standardSummariseEndpoint = "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/summarise_QFR";
+                }
                 const summaryResponse = await axios.post(
-                    "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/summarise_monthly_finance",
+                    standardSummariseEndpoint,
                     summariseForm
                 );
                 console.log('DeepakAnalyis', summaryResponse);
@@ -570,16 +611,29 @@ const UploaderPage = () => {
                 ];
 
                 try {
+                    let standardVisulaiseEndpoint = '';
+                    if (selectedRole === "Financial Health") {
+                        standardVisulaiseEndpoint = "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/visualise_monthly_finance";
+                    } else if (selectedRole === "Quarterly Financial Reporting") {
+                        console.log('Deepak');
+                        standardVisulaiseEndpoint = "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/visualise_qfr";
+                    }
                     const visualiseResponse = await axios.post(
-                        "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/visualise_monthly_finance",
+                        standardVisulaiseEndpoint,
                         visualiseForm
                     );
                     console.log(visualiseResponse);
                     const attachments = visualiseResponse.data?.attachments || [];
 
                     if (attachments.length > 0) {
-                        const visuals = attachments.map((att) => {
-                            const base64 = att.file_base64.startsWith("data:") ? att.file_base64 : `data:image/png;base64,${att.file_base64}`;
+                        const uniqueAttachments = attachments.filter((att, index, self) =>
+                            index === self.findIndex(a => a.file_base64 === att.file_base64)
+                        );
+                    
+                        const visuals = uniqueAttachments.map((att) => {
+                            const base64 = att.file_base64.startsWith("data:") 
+                                ? att.file_base64 
+                                : `data:image/png;base64,${att.file_base64}`;
                             return { image: base64 };
                         });
                         setVisualizations(visuals);
@@ -981,10 +1035,10 @@ const UploaderPage = () => {
                 setShowFeedbackPopup(true);
                 console.log('Deepak')
             }, 60000); // 1 minute
-    
+
             return () => clearTimeout(timer);
         }
-    }, [analysedReportdata,showReport])
+    }, [analysedReportdata, showReport])
 
 
     // Handle Logout
@@ -1142,11 +1196,11 @@ const UploaderPage = () => {
                                     <div>
                                         <div className="uploader-grid"
                                             style={
-                                                selectedRole === "Financial Health"
+                                                (selectedRole === "Financial Health" || selectedRole === "Quarterly Financial Reporting")
                                                     ? {}
                                                     : { display: 'flex', justifyContent: 'center' }
                                             }>
-                                            {selectedRole === 'Financial Health' && (
+                                            {(selectedRole === "Financial Health" || selectedRole === "Quarterly Financial Reporting") && (
                                                 <UploaderCSVBox
                                                     file={template}
                                                     setFile={setTemplate}
@@ -1158,7 +1212,7 @@ const UploaderPage = () => {
                                             )}
                                             <div
                                                 style={
-                                                    selectedRole === "Financial Health"
+                                                    (selectedRole === "Financial Health" || selectedRole === "Quarterly Financial Reporting")
                                                         ? { width: '100%' }
                                                         : { width: '50%' }
                                                 }

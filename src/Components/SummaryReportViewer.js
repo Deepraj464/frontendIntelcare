@@ -23,7 +23,7 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, ha
 
     return (
         <div className="summary-report-container">
-            {selectedRole === 'Financial Health' ? (
+            {(selectedRole === "Financial Health" || selectedRole === "Quarterly Financial Reporting") ? (
                 <>
                     <div className="title" style={{ textAlign: 'center' }}>AI SUMMARY</div>
 
