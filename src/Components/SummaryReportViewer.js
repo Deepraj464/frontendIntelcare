@@ -7,7 +7,8 @@ import rehypeRaw from 'rehype-raw';
 import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github.css';
 
-const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, handleDownloadAnalyedStandardReportCSV, selectedRole }) => {
+const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, handleDownloadAnalyedStandardReportCSV, selectedRole, showDownloadButton,handleDownloadIncidentReportCSV }) => {
+    console.log(showDownloadButton);
     const parsedResponse = summaryText && typeof summaryText === "string" ? JSON.parse(summaryText) : summaryText;
 
     const compliance_level = parsedResponse?.compliance_level || '';
@@ -68,27 +69,27 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, ha
                         parsedResponse.map((entry, index) => (
                             <div key={index} className="sirs-markdown">
                                 {entry?.incident && (
-                                        <ReactMarkdown
-                                            children={entry.incident}
-                                            remarkPlugins={[remarkGfm]}
-                                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                                        />
+                                    <ReactMarkdown
+                                        children={entry.incident}
+                                        remarkPlugins={[remarkGfm]}
+                                        rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                    />
                                 )}
 
                                 {entry?.risk && (
-                                        <ReactMarkdown
-                                            children={entry.risk}
-                                            remarkPlugins={[remarkGfm]}
-                                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                                        />
+                                    <ReactMarkdown
+                                        children={entry.risk}
+                                        remarkPlugins={[remarkGfm]}
+                                        rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                    />
                                 )}
 
                                 {entry?.recommendation && (
-                                        <ReactMarkdown
-                                            children={entry.recommendation}
-                                            remarkPlugins={[remarkGfm]}
-                                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                                        />
+                                    <ReactMarkdown
+                                        children={entry.recommendation}
+                                        remarkPlugins={[remarkGfm]}
+                                        rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                    />
                                 )}
                             </div>
                         ))
@@ -104,43 +105,95 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, ha
                         parsedResponse.map((entry, index) => (
                             <div key={index} className="sirs-markdown" style={{ marginBottom: '32px' }}>
                                 {entry?.eligibility && (
-                                        <ReactMarkdown
-                                            children={entry.eligibility}
-                                            remarkPlugins={[remarkGfm]}
-                                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                                        />
+                                    <ReactMarkdown
+                                        children={entry.eligibility}
+                                        remarkPlugins={[remarkGfm]}
+                                        rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                    />
                                 )}
 
                                 {entry?.compliance && (
-                                        <ReactMarkdown
-                                            children={entry.compliance}
-                                            remarkPlugins={[remarkGfm]}
-                                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                                        />
+                                    <ReactMarkdown
+                                        children={entry.compliance}
+                                        remarkPlugins={[remarkGfm]}
+                                        rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                    />
                                 )}
 
                                 {entry?.documentation && (
-                                        <ReactMarkdown
-                                            children={entry.documentation}
-                                            remarkPlugins={[remarkGfm]}
-                                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                                        />
+                                    <ReactMarkdown
+                                        children={entry.documentation}
+                                        remarkPlugins={[remarkGfm]}
+                                        rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                    />
                                 )}
 
                                 {entry?.financial && (
-                                        <ReactMarkdown
-                                            children={entry.financial.replace(/```(?:\w+)?\n?/, '').replace(/```$/, '')}
-                                            remarkPlugins={[remarkGfm]}
-                                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                                        />
+                                    <ReactMarkdown
+                                        children={entry.financial.replace(/```(?:\w+)?\n?/, '').replace(/```$/, '')}
+                                        remarkPlugins={[remarkGfm]}
+                                        rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                    />
                                 )}
 
                                 {entry?.service && (
-                                        <ReactMarkdown
-                                            children={entry.service}
-                                            remarkPlugins={[remarkGfm]}
-                                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                                        />
+                                    <ReactMarkdown
+                                        children={entry.service}
+                                        remarkPlugins={[remarkGfm]}
+                                        rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                    />
+                                )}
+                            </div>
+                        ))
+                    ) : (
+                        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                            No Care Plan report data available.
+                        </div>
+                    )}
+                </>
+            ) : selectedRole === 'Incident Report' ? (
+                <>
+                    {showDownloadButton === true &&
+                        <div style={{ width: '100%', display: 'flex', justifyContent:'flex-end',marginBottom:'20px' }}>
+                            <button className="download-report-btn" onClick={handleDownloadIncidentReportCSV}>
+                                Download Report <MdOutlineFileDownload color="white" style={{ marginLeft: '6px' }} size={24} />
+                            </button>
+                        </div>
+                    }
+                    {Array.isArray(parsedResponse) ? (
+                        parsedResponse.map((entry, index) => (
+                            <div key={index} className="sirs-markdown" style={{ marginBottom: '32px' }}>
+                            {entry?.client && (
+                                <div style={{fontSize:'38px',fontWeight:'bold',color:'black'}}>
+                                    <ReactMarkdown
+                                        children={entry.client.replace(/```(?:\w+)?\n?/, '').replace(/```$/, '')}
+                                        remarkPlugins={[remarkGfm]}
+                                        rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                    />
+                                    </div>
+                                )}
+                                {entry?.incident && (
+                                    <ReactMarkdown
+                                        children={entry.incident.replace(/```(?:\w+)?\n?/, '').replace(/```$/, '')}
+                                        remarkPlugins={[remarkGfm]}
+                                        rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                    />
+                                )}
+
+                                {entry?.recommendation && (
+                                    <ReactMarkdown
+                                        children={entry.recommendation.replace(/```(?:\w+)?\n?/, '').replace(/```$/, '')}
+                                        remarkPlugins={[remarkGfm]}
+                                        rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                    />
+                                )}
+
+                                {entry?.risk && (
+                                    <ReactMarkdown
+                                        children={entry.risk.replace(/```(?:\w+)?\n?/, '').replace(/```$/, '')}
+                                        remarkPlugins={[remarkGfm]}
+                                        rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                    />
                                 )}
                             </div>
                         ))

@@ -88,7 +88,7 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                         SUPPORT AT HOME
                     </div>
                     {reportButtons.map(report => {
-                        const isEnabled = report === "Care Services & eligibility Analysis";
+                        const isEnabled = (report === "Care Services & eligibility Analysis" || report === "Incident Report");
                         return (
                             <div
                                 key={report}
@@ -369,6 +369,8 @@ const UploaderPage = () => {
     const [mergedExcelFile, setMergedExcelFile] = useState('');
     const [standardExcelFile, setStandardExcelFile] = useState(null);
     const [uploadedExcelFile, setUploadedExcelFile] = useState(null);
+    const [incidentdatatoDownload,setIncidentDatatoDownload]=useState([]);
+    const [showDownloadButton,setShowDownloadButton]=useState(false);
 
     const handleModalOpen = () => {
         setModalVisible(true);
@@ -381,8 +383,8 @@ const UploaderPage = () => {
         getCount();
     }, []);
 
-    console.log(activeReportType);
-    console.log(selectedRole);
+    // console.log(activeReportType);
+    // console.log(selectedRole);
 
     const isButtonDisabled = !template && reportFiles.length === 0;
     const isZipButtonDisabled = !zipFile1
@@ -455,7 +457,7 @@ const UploaderPage = () => {
                     }
                     return "claimables";
                 };
-                console.log('MetricMap',metricMap);
+                // console.log('MetricMap', metricMap);
                 const generateSheetBlob = async (fileOrBlob, sheetName) => {
                     const buffer = await fileOrBlob.arrayBuffer();
                     const wb = XLSX.read(buffer, { type: "array" });
@@ -495,7 +497,7 @@ const UploaderPage = () => {
                     if (selectedRole === "Financial Health") {
                         standardEndpoint = "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/monthly_financial_health";
                     } else if (selectedRole === "Quarterly Financial Reporting") {
-                        console.log('Deepak');
+                        // console.log('Deepak');
                         standardEndpoint = "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/QFR";
                     }
 
@@ -561,10 +563,10 @@ const UploaderPage = () => {
                 const appendSheets = async (file, label) => {
                     const buffer = await file.arrayBuffer();
                     const wb = XLSX.read(buffer, { type: "array" });
-                
+
                     const sanitize = (name) => name.replace(/[:\\/?*\[\]]/g, '');
                     const maxSheetNameLength = 31;
-                
+
                     wb.SheetNames.forEach((sheet) => {
                         const baseName = sanitize(`${label}_${sheet}`);
                         const truncatedBaseName = baseName.substring(0, maxSheetNameLength - 5); // Reserve space for counter
@@ -590,7 +592,7 @@ const UploaderPage = () => {
                 if (selectedRole === "Financial Health") {
                     standardSummariseEndpoint = "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/summarise_monthly_finance";
                 } else if (selectedRole === "Quarterly Financial Reporting") {
-                    console.log('Deepak');
+                    // console.log('Deepak');
                     standardSummariseEndpoint = "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/summarise_QFR";
                 }
                 const summaryResponse = await axios.post(
@@ -615,7 +617,7 @@ const UploaderPage = () => {
                     if (selectedRole === "Financial Health") {
                         standardVisulaiseEndpoint = "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/visualise_monthly_finance";
                     } else if (selectedRole === "Quarterly Financial Reporting") {
-                        console.log('Deepak');
+                        // console.log('Deepak');
                         standardVisulaiseEndpoint = "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/visualise_qfr";
                     }
                     const visualiseResponse = await axios.post(
@@ -629,10 +631,10 @@ const UploaderPage = () => {
                         const uniqueAttachments = attachments.filter((att, index, self) =>
                             index === self.findIndex(a => a.file_base64 === att.file_base64)
                         );
-                    
+
                         const visuals = uniqueAttachments.map((att) => {
-                            const base64 = att.file_base64.startsWith("data:") 
-                                ? att.file_base64 
+                            const base64 = att.file_base64.startsWith("data:")
+                                ? att.file_base64
                                 : `data:image/png;base64,${att.file_base64}`;
                             return { image: base64 };
                         });
@@ -929,6 +931,57 @@ const UploaderPage = () => {
                         }
                     }
                 }
+            } else if (activeReportType === "Incident Report") {
+                const file = reportFiles[0];
+                const buffer = await file.arrayBuffer();
+                const wb = XLSX.read(buffer, { type: "array" });
+                const firstSheet = wb.Sheets[wb.SheetNames[0]];
+                const sheetData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                const allResponsedata = [];
+
+                const headers = sheetData[0];
+                const dataRows = sheetData.slice(1); // skip header row
+
+                for (let i = 0; i < dataRows.length; i++) {
+                    const row = dataRows[i];
+                    const rowDict = {};
+                    headers.forEach((key, index) => {
+                        rowDict[key] = row[index];
+                    });
+
+                    try {
+                        const response = await axios.post(
+                            "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/incident",
+                            { file_type: "row", row: rowDict }
+                        );
+                        if (response?.data?.data) {
+                            allResponsedata.push(response?.data?.data);
+                        }
+                        if (response.status === 200) {
+                            const result = response.data;
+                            setAnalysedReportdata(prev => [...(prev || []), result]);
+                            setDocumentString(null);
+                            setParsedReports(null);
+
+                            // ✅ First row: show UI and stop loading/progress
+                            if (i === 0) {
+                                clearInterval(progressInterval);
+                                setIsAnalysedReportProgress(100);
+                                setIsAnalysingReportLoading(false);
+                            }
+                        }
+                    } catch (err) {
+                        console.error(`Error analyzing row ${i + 1}:`, err);
+
+                        if (i === 0) {
+                            clearInterval(progressInterval);
+                            setIsAnalysingReportLoading(false);
+                            alert("Error analyzing first row.");
+                        }
+                    }
+                }
+                setIncidentDatatoDownload(allResponsedata);
+                setShowDownloadButton(true);
             } else {
                 alert("Selected module not supported yet.");
                 clearInterval(progressInterval);
@@ -942,7 +995,7 @@ const UploaderPage = () => {
         }
     };
 
-    console.log(analysedReportdata);
+    console.log('AnalysedReportData',analysedReportdata);
 
     const handleSend = async () => {
         if (!input.trim()) return;
@@ -997,6 +1050,15 @@ const UploaderPage = () => {
         const csv = XLSX.utils.sheet_to_csv(worksheet);
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
 
+        saveAs(blob, 'Incident_Management_Report.csv');
+    };
+    const handleDownloadIncidentReportCSV = () => {
+        if (!Array.isArray(incidentdatatoDownload) || incidentdatatoDownload?.length === 0) return;
+
+        const worksheet = XLSX.utils.json_to_sheet(incidentdatatoDownload);
+        const csv = XLSX.utils.sheet_to_csv(worksheet);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
         saveAs(blob, 'Incident_Report.csv');
     };
     const handleDownloadAnalyedReportCSV = () => {
@@ -1013,7 +1075,7 @@ const UploaderPage = () => {
         await incrementCount();
     };
 
-    console.log(template);
+    // console.log(template);
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((currentUser) => {
@@ -1033,7 +1095,7 @@ const UploaderPage = () => {
         if (analysedReportdata || (report && showReport)) {
             const timer = setTimeout(() => {
                 setShowFeedbackPopup(true);
-                console.log('Deepak')
+                // console.log('Deepak')
             }, 60000); // 1 minute
 
             return () => clearTimeout(timer);
@@ -1052,6 +1114,7 @@ const UploaderPage = () => {
 
     // console.log(showUploadedReport);
     // console.log(report)
+    // console.log('showData',incidentdatatoDownload);
 
 
     return (
@@ -1111,12 +1174,12 @@ const UploaderPage = () => {
                                         <div
                                             className="uploader-grid"
                                             style={
-                                                activeReportType === "Care Plan Document" || activeReportType === "HR Document"
+                                                activeReportType === "Care Plan Document" || activeReportType === "HR Document" || activeReportType === "Incident Report"
                                                     ? { display: 'flex', justifyContent: 'center' }
                                                     : {}
                                             }
                                         >
-                                            {activeReportType !== "Care Plan Document" && activeReportType !== "HR Document" && (
+                                            {activeReportType !== "Care Plan Document" && activeReportType !== "HR Document" && activeReportType !== 'Incident Report' && (
                                                 <UploaderCSVBox
                                                     file={template}
                                                     setFile={setTemplate}
@@ -1128,7 +1191,7 @@ const UploaderPage = () => {
 
                                             <div
                                                 style={
-                                                    activeReportType === "Care Plan Document" || activeReportType === "HR Document"
+                                                    activeReportType === "Care Plan Document" || activeReportType === "HR Document" || activeReportType === "Incident Report"
                                                         ? { width: '50%' }
                                                         : { width: '100%' }
                                                 }
@@ -1138,14 +1201,14 @@ const UploaderPage = () => {
                                                     setFiles={setReportFiles}
                                                     title={activeReportType}
                                                     subtitle={
-                                                        activeReportType === "Care Plan Document"
+                                                        activeReportType === "Care Plan Document" || activeReportType === "Incident Report"
                                                             ? "Upload .XLSX, .CSV or .XLS format"
                                                             : activeReportType === "HR Document"
                                                                 ? "Upload reports in ZIP format"
                                                                 : "Upload reports in ZIP, PDF, XLSX or DOCX format"
                                                     }
                                                     fileformat={
-                                                        activeReportType === "Care Plan Document"
+                                                        activeReportType === "Care Plan Document" || activeReportType === "Incident Report"
                                                             ? ".xlsx,.csv,.xls"
                                                             : activeReportType === "HR Document"
                                                                 ? ".zip"
@@ -1172,7 +1235,7 @@ const UploaderPage = () => {
                                 ) : (
                                     <div className="reports-box" style={{ height: 'auto', marginTop: '30px', padding: '10px' }}>
                                         <div style={{ backgroundColor: '#FFFFFF', padding: '10px 30px', borderRadius: '10px' }}>
-                                            <SummaryReport summaryText={analysedReportdata} selectedRole={activeReportType} handleDownloadAnalyedReportCSV={handleDownloadAnalyedReportCSV} />
+                                            <SummaryReport summaryText={analysedReportdata} selectedRole={activeReportType} showDownloadButton={showDownloadButton} handleDownloadAnalyedReportCSV={handleDownloadAnalyedReportCSV} handleDownloadIncidentReportCSV={handleDownloadIncidentReportCSV}/>
                                         </div>
                                     </div>
                                 )}
