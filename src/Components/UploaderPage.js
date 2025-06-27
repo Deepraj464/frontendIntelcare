@@ -369,8 +369,13 @@ const UploaderPage = () => {
     const [mergedExcelFile, setMergedExcelFile] = useState('');
     const [standardExcelFile, setStandardExcelFile] = useState(null);
     const [uploadedExcelFile, setUploadedExcelFile] = useState(null);
-    const [incidentdatatoDownload,setIncidentDatatoDownload]=useState([]);
-    const [showDownloadButton,setShowDownloadButton]=useState(false);
+    const [incidentdatatoDownload, setIncidentDatatoDownload] = useState([]);
+    const [showDownloadButton, setShowDownloadButton] = useState(false);
+    const [isConsentChecked, setIsConsentChecked] = useState(false);
+
+    const handleButtonClick = () => {
+        setIsConsentChecked(true);
+    };
 
     const handleModalOpen = () => {
         setModalVisible(true);
@@ -495,10 +500,10 @@ const UploaderPage = () => {
 
                     let standardEndpoint = "";
                     if (selectedRole === "Financial Health") {
-                        standardEndpoint = "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/monthly_financial_health";
+                        standardEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/monthly_financial_health";
                     } else if (selectedRole === "Quarterly Financial Reporting") {
                         // console.log('Deepak');
-                        standardEndpoint = "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/QFR";
+                        standardEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/QFR";
                     }
 
                     const stdAPIRes = await axios.post(
@@ -534,7 +539,7 @@ const UploaderPage = () => {
                         formData.append("context", "None");
 
                         const uploadRes = await axios.post(
-                            "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/financial_reporting",
+                            "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/financial_reporting",
                             formData
                         );
 
@@ -590,10 +595,10 @@ const UploaderPage = () => {
                 console.log('SuumariseFor', summariseForm);
                 let standardSummariseEndpoint = '';
                 if (selectedRole === "Financial Health") {
-                    standardSummariseEndpoint = "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/summarise_monthly_finance";
+                    standardSummariseEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/summarise_monthly_finance";
                 } else if (selectedRole === "Quarterly Financial Reporting") {
                     // console.log('Deepak');
-                    standardSummariseEndpoint = "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/summarise_QFR";
+                    standardSummariseEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/summarise_QFR";
                 }
                 const summaryResponse = await axios.post(
                     standardSummariseEndpoint,
@@ -615,10 +620,10 @@ const UploaderPage = () => {
                 try {
                     let standardVisulaiseEndpoint = '';
                     if (selectedRole === "Financial Health") {
-                        standardVisulaiseEndpoint = "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/visualise_monthly_finance";
+                        standardVisulaiseEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/visualise_monthly_finance";
                     } else if (selectedRole === "Quarterly Financial Reporting") {
                         // console.log('Deepak');
-                        standardVisulaiseEndpoint = "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/visualise_qfr";
+                        standardVisulaiseEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/visualise_qfr";
                     }
                     const visualiseResponse = await axios.post(
                         standardVisulaiseEndpoint,
@@ -672,7 +677,7 @@ const UploaderPage = () => {
 
                     try {
                         const sirsResponse = await axios.post(
-                            "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/sirs-analyze",
+                            "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/sirs-analyze",
                             { input_row: rowDict }
                         );
 
@@ -830,7 +835,7 @@ const UploaderPage = () => {
 
                 try {
                     const response = await axios.post(
-                        "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/incident_reporting",
+                        "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/incident_reporting",
                         formData,
                         {
                             headers: {
@@ -904,7 +909,7 @@ const UploaderPage = () => {
 
                     try {
                         const response = await axios.post(
-                            "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/care-analyze",
+                            "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/care-analyze",
                             { input_row: rowDict }
                         );
 
@@ -951,7 +956,7 @@ const UploaderPage = () => {
 
                     try {
                         const response = await axios.post(
-                            "https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/incident",
+                            "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/incident",
                             { file_type: "row", row: rowDict }
                         );
                         if (response?.data?.data) {
@@ -995,7 +1000,7 @@ const UploaderPage = () => {
         }
     };
 
-    console.log('AnalysedReportData',analysedReportdata);
+    console.log('AnalysedReportData', analysedReportdata);
 
     const handleSend = async () => {
         if (!input.trim()) return;
@@ -1017,7 +1022,7 @@ const UploaderPage = () => {
 
         try {
             const response = await axios.post(
-                'https://curki-backend-api-d8d3c4hafyg3hqfg.australiaeast-01.azurewebsites.net/askai',
+                'https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/askai',
                 payload
             );
 
@@ -1235,7 +1240,18 @@ const UploaderPage = () => {
                                 ) : (
                                     <div className="reports-box" style={{ height: 'auto', marginTop: '30px', padding: '10px' }}>
                                         <div style={{ backgroundColor: '#FFFFFF', padding: '10px 30px', borderRadius: '10px' }}>
-                                            <SummaryReport summaryText={analysedReportdata} selectedRole={activeReportType} showDownloadButton={showDownloadButton} handleDownloadAnalyedReportCSV={handleDownloadAnalyedReportCSV} handleDownloadIncidentReportCSV={handleDownloadIncidentReportCSV}/>
+                                            <SummaryReport summaryText={analysedReportdata} selectedRole={activeReportType} showDownloadButton={showDownloadButton} handleDownloadAnalyedReportCSV={handleDownloadAnalyedReportCSV} handleDownloadIncidentReportCSV={handleDownloadIncidentReportCSV} />
+                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', fontSize: '13px', color: 'grey' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
+                                                    <input type="checkbox" id="aiConsent" checked={isConsentChecked} readOnly style={{ width: '16px', height: '16px', marginRight: '8px', accentColor: 'green', cursor: 'pointer' }} />
+                                                    <label htmlFor="aiConsent" style={{ cursor: 'pointer' }}>
+                                                        AI-generated content. Only to be used as a guide. I agree to T&C on curki.ai website.
+                                                    </label>
+                                                </div>
+                                                <button onClick={handleButtonClick} style={{ backgroundColor: 'black', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>
+                                                    I understand
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -1378,6 +1394,17 @@ const UploaderPage = () => {
                                         <div className="reports-box" style={{ height: 'auto', marginTop: '30px', padding: '10px' }}>
                                             <div style={{ backgroundColor: '#FFFFFF', padding: '10px 30px', borderRadius: '10px' }}>
                                                 <SummaryReport summaryText={report} handleDownloadAnalyedReportUploadedCSV={handleDownloadUploadedExcel} handleDownloadAnalyedStandardReportCSV={handleDownloadStandardExcel} selectedRole={selectedRole} />
+                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', fontSize: '13px', color: 'grey' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
+                                                    <input type="checkbox" id="aiConsent" checked={isConsentChecked} readOnly style={{ width: '16px', height: '16px', marginRight: '8px', accentColor: 'green', cursor: 'pointer' }} />
+                                                    <label htmlFor="aiConsent" style={{ cursor: 'pointer' }}>
+                                                        AI-generated content. Only to be used as a guide. I agree to T&C on curki.ai website.
+                                                    </label>
+                                                </div>
+                                                <button onClick={handleButtonClick} style={{ backgroundColor: 'black', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>
+                                                    I understand
+                                                </button>
+                                            </div>
                                             </div>
                                         </div>
                                     </>
@@ -1402,6 +1429,17 @@ const UploaderPage = () => {
                                                 Download Excel Report
                                             </button>
                                         </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', fontSize: '13px', color: 'grey' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
+                                                    <input type="checkbox" id="aiConsent" checked={isConsentChecked} readOnly style={{ width: '16px', height: '16px', marginRight: '8px', accentColor: 'green', cursor: 'pointer' }} />
+                                                    <label htmlFor="aiConsent" style={{ cursor: 'pointer' }}>
+                                                        AI-generated content. Only to be used as a guide. I agree to T&C on curki.ai website.
+                                                    </label>
+                                                </div>
+                                                <button onClick={handleButtonClick} style={{ backgroundColor: 'black', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>
+                                                    I understand
+                                                </button>
+                                            </div>
                                     </div>
                                 )}
 
