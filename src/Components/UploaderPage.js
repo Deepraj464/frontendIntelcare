@@ -88,7 +88,7 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                         SUPPORT AT HOME
                     </div>
                     {reportButtons.map(report => {
-                        const isEnabled = (report === "Care Services & eligibility Analysis" || report === "Incident Report");
+                        const isEnabled = (report === "Care Services & eligibility Analysis" || report === "Incident Report" || report === 'Quality and Risk Reporting');
                         return (
                             <div
                                 key={report}
@@ -987,6 +987,32 @@ const UploaderPage = () => {
                 }
                 setIncidentDatatoDownload(allResponsedata);
                 setShowDownloadButton(true);
+            } else if (activeReportType === 'Quality and Risk Reporting') {
+                const formData = new FormData();
+                reportFiles.forEach(file => {
+                    formData.append("files", file);
+                });
+
+                const response = await axios.post(
+                    "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/quality_risk_reporting",
+                    formData,
+                );
+
+                console.log('reponse',response);
+
+                if (response.status === 200 && response.data?.report) {
+                    const allReports = response.data.report;
+                    setAnalysedReportdata(allReports);
+                    setDocumentString(null);
+                    setParsedReports(null);
+
+                    // ✅ First response triggers UI change
+                    clearInterval(progressInterval);
+                    setIsAnalysedReportProgress(100);
+                    setIsAnalysingReportLoading(false);
+                } else {
+                    throw new Error("No report data found.");
+                }
             } else {
                 alert("Selected module not supported yet.");
                 clearInterval(progressInterval);
@@ -1000,7 +1026,7 @@ const UploaderPage = () => {
         }
     };
 
-    console.log('AnalysedReportData', analysedReportdata);
+    // console.log('AnalysedReportData', analysedReportdata);
 
     const handleSend = async () => {
         if (!input.trim()) return;
@@ -1179,12 +1205,12 @@ const UploaderPage = () => {
                                         <div
                                             className="uploader-grid"
                                             style={
-                                                activeReportType === "Care Plan Document" || activeReportType === "HR Document" || activeReportType === "Incident Report"
+                                                activeReportType === "Care Plan Document" || activeReportType === "HR Document" || activeReportType === "Incident Report" || activeReportType === 'Quality and Risk Reporting'
                                                     ? { display: 'flex', justifyContent: 'center' }
                                                     : {}
                                             }
                                         >
-                                            {activeReportType !== "Care Plan Document" && activeReportType !== "HR Document" && activeReportType !== 'Incident Report' && (
+                                            {activeReportType !== "Care Plan Document" && activeReportType !== "HR Document" && activeReportType !== 'Incident Report' && activeReportType !== 'Quality and Risk Reporting' && (
                                                 <UploaderCSVBox
                                                     file={template}
                                                     setFile={setTemplate}
@@ -1196,7 +1222,7 @@ const UploaderPage = () => {
 
                                             <div
                                                 style={
-                                                    activeReportType === "Care Plan Document" || activeReportType === "HR Document" || activeReportType === "Incident Report"
+                                                    activeReportType === "Care Plan Document" || activeReportType === "HR Document" || activeReportType === "Incident Report" || activeReportType === 'Quality and Risk Reporting'
                                                         ? { width: '50%' }
                                                         : { width: '100%' }
                                                 }
@@ -1206,14 +1232,14 @@ const UploaderPage = () => {
                                                     setFiles={setReportFiles}
                                                     title={activeReportType}
                                                     subtitle={
-                                                        activeReportType === "Care Plan Document" || activeReportType === "Incident Report"
+                                                        activeReportType === "Care Plan Document" || activeReportType === "Incident Report" || activeReportType === 'Quality and Risk Reporting'
                                                             ? "Upload .XLSX, .CSV or .XLS format"
                                                             : activeReportType === "HR Document"
                                                                 ? "Upload reports in ZIP format"
                                                                 : "Upload reports in ZIP, PDF, XLSX or DOCX format"
                                                     }
                                                     fileformat={
-                                                        activeReportType === "Care Plan Document" || activeReportType === "Incident Report"
+                                                        activeReportType === "Care Plan Document" || activeReportType === "Incident Report" || activeReportType === 'Quality and Risk Reporting'
                                                             ? ".xlsx,.csv,.xls"
                                                             : activeReportType === "HR Document"
                                                                 ? ".zip"
@@ -1395,16 +1421,16 @@ const UploaderPage = () => {
                                             <div style={{ backgroundColor: '#FFFFFF', padding: '10px 30px', borderRadius: '10px' }}>
                                                 <SummaryReport summaryText={report} handleDownloadAnalyedReportUploadedCSV={handleDownloadUploadedExcel} handleDownloadAnalyedStandardReportCSV={handleDownloadStandardExcel} selectedRole={selectedRole} />
                                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', fontSize: '13px', color: 'grey' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
-                                                    <input type="checkbox" id="aiConsent" checked={isConsentChecked} readOnly style={{ width: '16px', height: '16px', marginRight: '8px', accentColor: 'green', cursor: 'pointer' }} />
-                                                    <label htmlFor="aiConsent" style={{ cursor: 'pointer' }}>
-                                                        AI-generated content. Only to be used as a guide. I agree to T&C on curki.ai website.
-                                                    </label>
+                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
+                                                        <input type="checkbox" id="aiConsent" checked={isConsentChecked} readOnly style={{ width: '16px', height: '16px', marginRight: '8px', accentColor: 'green', cursor: 'pointer' }} />
+                                                        <label htmlFor="aiConsent" style={{ cursor: 'pointer' }}>
+                                                            AI-generated content. Only to be used as a guide. I agree to T&C on curki.ai website.
+                                                        </label>
+                                                    </div>
+                                                    <button onClick={handleButtonClick} style={{ backgroundColor: 'black', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>
+                                                        I understand
+                                                    </button>
                                                 </div>
-                                                <button onClick={handleButtonClick} style={{ backgroundColor: 'black', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>
-                                                    I understand
-                                                </button>
-                                            </div>
                                             </div>
                                         </div>
                                     </>
@@ -1430,16 +1456,16 @@ const UploaderPage = () => {
                                             </button>
                                         </div>
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', fontSize: '13px', color: 'grey' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
-                                                    <input type="checkbox" id="aiConsent" checked={isConsentChecked} readOnly style={{ width: '16px', height: '16px', marginRight: '8px', accentColor: 'green', cursor: 'pointer' }} />
-                                                    <label htmlFor="aiConsent" style={{ cursor: 'pointer' }}>
-                                                        AI-generated content. Only to be used as a guide. I agree to T&C on curki.ai website.
-                                                    </label>
-                                                </div>
-                                                <button onClick={handleButtonClick} style={{ backgroundColor: 'black', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>
-                                                    I understand
-                                                </button>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
+                                                <input type="checkbox" id="aiConsent" checked={isConsentChecked} readOnly style={{ width: '16px', height: '16px', marginRight: '8px', accentColor: 'green', cursor: 'pointer' }} />
+                                                <label htmlFor="aiConsent" style={{ cursor: 'pointer' }}>
+                                                    AI-generated content. Only to be used as a guide. I agree to T&C on curki.ai website.
+                                                </label>
                                             </div>
+                                            <button onClick={handleButtonClick} style={{ backgroundColor: 'black', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>
+                                                I understand
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
 

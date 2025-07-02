@@ -7,9 +7,10 @@ import rehypeRaw from 'rehype-raw';
 import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github.css';
 
-const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, handleDownloadAnalyedStandardReportCSV, selectedRole, showDownloadButton,handleDownloadIncidentReportCSV }) => {
+const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, handleDownloadAnalyedStandardReportCSV, selectedRole, showDownloadButton, handleDownloadIncidentReportCSV }) => {
     console.log(showDownloadButton);
     const parsedResponse = summaryText && typeof summaryText === "string" ? JSON.parse(summaryText) : summaryText;
+    console.log(parsedResponse)
 
     const compliance_level = parsedResponse?.compliance_level || '';
     const review_response = parsedResponse?.review_response || '';
@@ -154,7 +155,7 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, ha
             ) : selectedRole === 'Incident Report' ? (
                 <>
                     {showDownloadButton === true &&
-                        <div style={{ width: '100%', display: 'flex', justifyContent:'flex-end',marginBottom:'20px' }}>
+                        <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
                             <button className="download-report-btn" onClick={handleDownloadIncidentReportCSV}>
                                 Download Report <MdOutlineFileDownload color="white" style={{ marginLeft: '6px' }} size={24} />
                             </button>
@@ -163,13 +164,13 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, ha
                     {Array.isArray(parsedResponse) ? (
                         parsedResponse.map((entry, index) => (
                             <div key={index} className="sirs-markdown" style={{ marginBottom: '32px' }}>
-                            {entry?.client && (
-                                <div style={{fontSize:'38px',fontWeight:'bold',color:'black'}}>
-                                    <ReactMarkdown
-                                        children={entry.client.replace(/```(?:\w+)?\n?/, '').replace(/```$/, '')}
-                                        remarkPlugins={[remarkGfm]}
-                                        rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                                    />
+                                {entry?.client && (
+                                    <div style={{ fontSize: '38px', fontWeight: 'bold', color: 'black' }}>
+                                        <ReactMarkdown
+                                            children={entry.client.replace(/```(?:\w+)?\n?/, '').replace(/```$/, '')}
+                                            remarkPlugins={[remarkGfm]}
+                                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                        />
                                     </div>
                                 )}
                                 {entry?.incident && (
@@ -203,6 +204,46 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, ha
                         </div>
                     )}
                 </>
+            ) : selectedRole === 'Quality and Risk Reporting' ? (
+                <>
+                    {parsedResponse ? (
+                        <div className="sirs-markdown" style={{ marginBottom: '32px' }}>
+                            {parsedResponse?.Compliance_Standards && (
+                                    <ReactMarkdown
+                                        children={parsedResponse.Compliance_Standards.replace(/```(?:\w+)?\n?/, '').replace(/```$/, '')}
+                                        remarkPlugins={[remarkGfm]}
+                                        rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                    />
+                            )}
+                            {parsedResponse?.Incidents_Risk && (
+                                <ReactMarkdown
+                                    children={parsedResponse.Incidents_Risk.replace(/```(?:\w+)?\n?/, '').replace(/```$/, '')}
+                                    remarkPlugins={[remarkGfm]}
+                                    rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                />
+                            )}
+                            {parsedResponse?.Quality_Indicators && (
+                                <ReactMarkdown
+                                    children={parsedResponse.Quality_Indicators.replace(/```(?:\w+)?\n?/, '').replace(/```$/, '')}
+                                    remarkPlugins={[remarkGfm]}
+                                    rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                />
+                            )}
+                            {parsedResponse?.Workforce_QIPs && (
+                                <ReactMarkdown
+                                    children={parsedResponse.Workforce_QIP.replace(/```(?:\w+)?\n?/, '').replace(/```$/, '')}
+                                    remarkPlugins={[remarkGfm]}
+                                    rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                />
+                            )}
+                        </div>
+                    ) : (
+                        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                            No Care Plan report data available.
+                        </div>
+                    )}
+                </>
+
             ) : (
                 <div style={{ textAlign: 'center', marginTop: '2rem' }}>
                     No report format available for this role.
