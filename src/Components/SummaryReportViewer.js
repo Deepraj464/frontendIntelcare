@@ -34,12 +34,12 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, ha
                             Download Reports
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '18px' }}>
-                            <div style={{ width: '60%', display: 'flex', justifyContent: 'space-between' }}>
+                            <div style={{ width: '70%', display: 'flex', justifyContent: 'space-between' }}>
                                 <button className="download-report-btn" onClick={handleDownloadAnalyedStandardReportCSV}>
-                                    Approved Standard Format <MdOutlineFileDownload color="white" style={{ marginLeft: '4px' }} size={24} />
+                                    Approved Standard Format <MdOutlineFileDownload color="white" style={{ marginLeft: '5px' }} size={24} />
                                 </button>
                                 <button className="download-report-btn" onClick={handleDownloadAnalyedReportUploadedCSV}>
-                                    Your Uploaded Format <MdOutlineFileDownload color="white" style={{ marginLeft: '4px' }} size={24} />
+                                    Your Uploaded Format <MdOutlineFileDownload color="white" style={{ marginLeft: '5px' }} size={24} />
                                 </button>
                             </div>
                         </div>

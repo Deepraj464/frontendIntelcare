@@ -1,16 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "../Styles/UploaderPage.css";
-import UploadIcon from '../../src/Images/upload.png';
-import ExpandIcon from '../../src/Images/ExpandIcon.png';
-import ExploreIcon from '../../src/Images/ExploreIcon.png';
+import logo from '../../src/Images/CurkiAiLogo.png';
 import BlackExpandIcon from '../../src/Images/BlackExpandIcon.png';
-import ExcelSheetsLogo from '../../src/Images/ExcelSheetsLogo.png';
-import ZipIcon from '../../src/Images/zipIcon.png';
-import CrossIcon from '../../src/Images/CrossIcon.png';
-import PersonIcon from '../../src/Images/Personicon.png';
 import axios from 'axios';
 import { FaPaperPlane } from 'react-icons/fa';
-import { BiLinkExternal } from "react-icons/bi";
 import Modal from "./Modal";
 import SignIn from "./SignIn";
 import MarkdownParser from "./MarkdownParser";
@@ -22,10 +15,39 @@ import FeedbackModal from "./FeedbackModal";
 import SummaryReport from "./SummaryReportViewer";
 import PricingModal from "./PricingModal";
 import SubscriptionStatus from "./SubscriptionStatus";
-import { FaLock } from 'react-icons/fa';
+import { FiUploadCloud } from "react-icons/fi";
+import star from '../Images/star.png';
+import { IoMdInformationCircleOutline } from "react-icons/io";
+import askAiStar from '../Images/askaiStar.png';
+import purpleStar from '../Images/PurpleStar.png';
+import { RxCrossCircled } from "react-icons/rx";
+import { RiDeleteBin6Line } from "react-icons/ri";
+import fileIcon from '../Images/FileIcon.png';
+import purpleFinanicial from '../Images/purple_financial.png';
+import whiteFinancial from '../Images/white_financial.png';
+import purpleSirs from '../Images/purple_sirs.png';
+import whiteSirs from '../Images/white_sirs.png';
+import purpleQfr from '../Images/purple_quarter.png';
+import whiteQfr from '../Images/white_quarter.png';
+import purpleAnnual from '../Images/purple_annual.png';
+import whiteAnnual from '../Images/white_annual.png';
+import purpleIncidentManagement from '../Images/purple_incident.png';
+import whiteIncidentManagement from '../Images/white_incident.png';
+import purpleCareplan from '../Images/puple_careplan.png';
+import whiteCareplan from '../Images/white_care.png';
+import purpleIncidentReport from '../Images/purple_incidentReporting.png';
+import whiteIncidentReport from '../Images/white_incidentReporting.png';
+import purpleqirs from '../Images/purple_qirs.png';
+import whiteqirs from '../Images/white_qirs.png';
+import lock from '../Images/lock.png';
+import { IoIosContact, IoIosLogOut } from "react-icons/io";
+import { FaChevronUp } from "react-icons/fa";
+import Tippy from '@tippyjs/react';
+import 'tippy.js/dist/tippy.css';
+import TooltipPlaceholder from '../Images/TooltipPlaceholder.png';
 
 
-const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setShowReport, showFinalZipReport, setShowFinalZipReport, showUploadedReport, setShowUploadReport, activeReportType, setActiveReportType, analysedReportdata, setAnalysedReportdata, majorTypeofReport, setMajorTypeOfReport, setReportFiles }) => {
+const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setShowReport, showFinalZipReport, setShowFinalZipReport, showUploadedReport, setShowUploadReport, activeReportType, setActiveReportType, analysedReportdata, setAnalysedReportdata, majorTypeofReport, setMajorTypeOfReport, setReportFiles, user, handleLogout, setShowSignIn, setShowDropdown, showDropdown }) => {
     // console.log(activeReportType);
     const [showRoles, setShowRoles] = useState(true);
     // const [activeItem, setActiveItem] = useState("Care Services & elgibility Analysis"); careplan
@@ -37,27 +59,29 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
     };
     const roles = ['Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting', 'Incident Management'];
     const reportButtons = ["Care Services & eligibility Analysis", "Incident Report", "Quality and Risk Reporting", "HR Analysis"];
-    const NDISButton = ["Audit & Registration Manager", "Incident & Complaint Reporter", "Restrictive Practice & Behaviour Support", "Worker-Screening & HR Compliance", "Financial & Claims Compliance", "Participant Outcomes & Capacity-Building"]
-    // console.log(majorTypeofReport);
+    const NDISButton = ["Audit & Registration Manager", "Incident & Complaint Reporter", "Restrictive Practice & Behaviour Support", "Worker-Screening & HR Compliance", "Financial & Claims Compliance", "Participant Outcomes & Capacity-Building"];
+
+
+    const roleIcons = {
+        'Financial Health': { white: whiteFinancial, purple: purpleFinanicial },
+        'SIRS Analysis': { white: whiteSirs, purple: purpleSirs },
+        'Quarterly Financial Reporting': { white: whiteQfr, purple: purpleQfr },
+        'Annual Financial Reporting': { white: whiteAnnual, purple: purpleAnnual },
+        'Incident Management': { white: whiteIncidentManagement, purple: purpleIncidentManagement },
+
+        'Care Services & eligibility Analysis': { white: whiteCareplan, purple: purpleCareplan },
+        'Incident Report': { white: whiteIncidentReport, purple: purpleIncidentReport },
+        'Quality and Risk Reporting': { white: whiteqirs, purple: purpleqirs },
+    };
 
 
     return (
         <div className="sidebar">
-            {/* Expand/Collapse Sidebar */}
-            <div className="logo" onClick={onCollapse} style={{ cursor: 'pointer' }}>
-                <img src={ExpandIcon} height={27} width={28} alt='expandicon' />
+            <div className="logo" style={{ cursor: 'pointer' }}>
+                <img src={logo} style={{ width: '75%', height: 'auto' }} alt='curkiLogo' />
+                <div style={{ border: '1px solid #c8c8c8', padding: '4px 8px', borderRadius: '20px', color: '#c8c8c8', marginLeft: '-10px', fontSize: '8px', marginBottom: '-20px', marginTop: '10px' }}>Beta</div>
             </div>
-
-            {/* Explore Roles Button */}
             <div className="sidebar-scroll-content" style={{ overflowY: 'auto', flex: 1 }}>
-                <div
-                    className="sidebar-btn explore"
-                    onClick={toggleRoles}
-                    style={{ cursor: 'pointer' }}
-                >
-                    <img src={ExploreIcon} height={20} width={20} style={{ marginRight: 10 }} alt="explore icon" />
-                    Explore Roles
-                </div>
                 {showRoles && (
                     <div className="roles-list">
                         {roles.map(role => {
@@ -74,30 +98,37 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                                         if (showUploadedReport) setShowUploadReport(false);
 
                                     }}
-                                    style={{ cursor: 'pointer', opacity: 1 }}
+                                    style={{ cursor: 'pointer', opacity: 1, marginTop: '2px' }}
                                 >
-                                    <p>{role}</p>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <img
+                                            src={activeItem === role ? roleIcons[role].purple : roleIcons[role].white}
+                                            alt={`${role} icon`}
+                                            style={{ width: '22px', height: '22px' }}
+                                        />
+                                        <p>{role}</p>
+                                    </div>
                                 </div>
                             );
                         })}
                     </div>
                 )}
-
                 <div className="roles-list">
-                    <div style={{ color: 'white', fontSize: '15px', fontWeight: 'bold', textAlign: 'left', marginLeft: '30px', fontFamily: 'Roboto', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ color: 'white', fontSize: '18px', fontWeight: 'bold', textAlign: 'left', marginLeft: '30px', fontFamily: 'Roboto', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
                         SUPPORT AT HOME
                     </div>
                     {reportButtons.map(report => {
                         const isEnabled = (report === "Care Services & eligibility Analysis" || report === "Incident Report" || report === 'Quality and Risk Reporting');
+                        const icon = roleIcons[report];
                         return (
                             <div
                                 key={report}
                                 className={`role-item ${activeItem === report ? 'active-role' : ''}`}
                                 style={{
                                     cursor: isEnabled ? 'pointer' : 'not-allowed',
-                                    marginTop: '4px',
-                                    opacity: isEnabled ? 1 : 0.5,
-                                    pointerEvents: isEnabled ? 'auto' : 'none'
+                                    marginTop: '2px',
+                                    opacity: isEnabled ? 1 : 0.6,
+                                    pointerEvents: isEnabled ? 'auto' : 'none',
                                 }}
                                 onClick={() => {
                                     if (!isEnabled) return;
@@ -114,7 +145,24 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                                     if (analysedReportdata) setAnalysedReportdata(null);
                                 }}
                             >
-                                {report}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    {isEnabled && icon ? (
+                                        <img
+                                            src={activeItem === report ? icon.purple : icon.white}
+                                            alt={`${report} icon`}
+                                            style={{ width: '22px', height: '22px' }}
+                                        />
+                                    ) : (
+                                        <img src={lock} alt='lock' style={{ width: '22px', height: '22px' }} />
+                                    )}
+                                    <p style={{
+                                        color: isEnabled
+                                            ? (activeItem === report ? '#000000' : '#FFFFFF')
+                                            : '#929592'
+                                    }}>
+                                        {report}
+                                    </p>
+                                </div>
                             </div>
                         );
                     })}
@@ -123,14 +171,18 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
 
                 {/* NDIS (Locked) */}
                 <div className="roles-list">
-                    <div style={{ color: 'white', fontSize: '15px', fontWeight: 'bold', textAlign: 'left', marginLeft: '30px', fontFamily: 'Roboto', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        NDIS <FaLock size={12} />
+                    <div style={{ color: 'white', fontSize: '18px', fontWeight: 'bold', textAlign: 'left', marginLeft: '30px', fontFamily: 'Roboto', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                        NDIS
+                        <sup style={{ color: '#C8C8C8', fontSize: '8px', padding: '2px 6px', borderRadius: '999px', border: '1px solid #c8c8c8', fontWeight: 'normal', fontFamily: 'Inter' }}>
+                            Coming Soon
+                        </sup>
                     </div>
+
                     {NDISButton.map(report => (
                         <div
                             key={report}
-                            className={`role-item ${activeItem === report ? 'active-role' : ''}`}
-                            style={{ cursor: 'not-allowed', marginTop: '4px', opacity: 0.5, pointerEvents: 'none' }}
+                            className={`role-item ${activeItem === report ? 'active-role' : 'disabled'}`}
+                            style={{ cursor: 'not-allowed', marginTop: '2px', opacity: 0.6, pointerEvents: 'none' }}
                             onClick={() => {
                                 // Logic is preserved, but click is disabled visually
                                 setActiveReportType(report);
@@ -142,17 +194,48 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                                 if (analysedReportdata) setAnalysedReportdata(null);
                             }}
                         >
-                            {report}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <img src={lock} alt='lock' style={{ width: '22px', height: '22px' }} />
+                                {report}
+                            </div>
                         </div>
                     ))}
                 </div>
             </div>
+            <>
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    {showDropdown && (
+                        <button onClick={handleLogout} className="logout-button" > <IoIosLogOut size={24} color="#6548FF" />Logout</button>
+                    )}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignSelf: 'center', width: '90%', alignItems: 'center', border: '1px solid white', marginBottom: '20px', padding: '11px 14px', borderRadius: '12px', background: '#232627', cursor: 'pointer' }} onClick={() => {
+                    if (!user) {
+                        setShowSignIn(true);
+                    } else {
+                        setShowDropdown((prev) => !prev);
+                    }
+                }}
+                >
+                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        <IoIosContact color="white" size={36} />
+                        <div>
+                            <div style={{ color: '#c8c8c8', fontSize: '14px', textAlign: 'left', fontWeight: 'bold' }}>
+                                {user?.displayName}
+                            </div>
+                            <div style={{ color: '#c8c8c8', fontSize: '12px', textAlign: 'left' }}>
+                                {user?.email}
+                            </div>
+                        </div>
+                    </div>
+                    <FaChevronUp color="white" size={16} />
+                </div>
+            </>
         </div>
     );
 };
 
 
-const UploaderCSVBox = ({ file, setFile, title, subtitle, removeFile, disabled = false }) => {
+const UploaderCSVBox = ({ file, setFile, title, removeFile, disabled = false }) => {
     const [loading, setLoading] = useState(false);
 
     const handleFileChange = (e) => {
@@ -175,50 +258,71 @@ const UploaderCSVBox = ({ file, setFile, title, subtitle, removeFile, disabled =
                 </div>
             )}
             <p className="uploader-title">{title}</p>
-            <p className="uploader-subtitle">
-                {subtitle}
-            </p>
-            <div className="upload-area">
-                <label
-                    htmlFor={`file-upload-${title}`}
-                    className="upload-label"
-                    style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
-                >
-                    <div className="upload-icon">
-                        <img src={UploadIcon} height={42} width={42} alt="Upload icon" />
-                    </div>
-                    <div className="uploaddiv">Upload</div>
-                    <input
-                        type="file"
-                        id={`file-upload-${title}`}
-                        accept=".xlsx, .csv"
-                        onChange={handleFileChange}
-                        style={{ display: "none" }}
-                        disabled={disabled || loading}
-                    />
-                </label>
-            </div>
-            <p className="support-text">Only support .xlsx and .csv files</p>
             {file && (
                 <div className="file-info" onClick={removeFile}>
                     <div className="file-icon">
-                        <img src={ExcelSheetsLogo} height={28} width={21} alt="excel" />
+                        <img src={fileIcon} height={20} width={15} alt="Zip" />
                     </div>
-                    <div style={{ fontSize: '15px', fontFamily: 'Roboto', fontWeight: '600' }}>{file.name}</div>
+                    <div style={{ fontSize: '15px', fontFamily: 'Inter', fontWeight: '600', textAlign: 'start' }}>{file.name}</div>
                     <div className="remove-btn">
-                        <img src={CrossIcon} height={24} width={24} alt="cross" />
+                        <RiDeleteBin6Line size={20} color="red" />
                     </div>
                 </div>
             )}
+            <div>
+                {!file ?
+                    <div className="upload-area">
+                        <label
+                            htmlFor={`file-upload-${title}`}
+                            className="upload-label"
+                            style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
+                        >
+                            <div className="upload-icon">
+                                <FiUploadCloud color="#8b75FF" />
+                            </div>
+                            <div style={{ fontSize: '14px', fontWeight: '500', fontFamily: 'Inter', marginBottom: '6px' }}>Drop file or browse</div>
+                            <p className="support-text">Format: .xlsx or .csv only</p>
+                            <div className="uploaddiv">Browse Files</div>
+                            <input
+                                type="file"
+                                id={`file-upload-${title}`}
+                                accept=".xlsx, .csv"
+                                onChange={handleFileChange}
+                                style={{ display: "none" }}
+                                disabled={disabled || loading}
+                            />
+                        </label>
+                    </div>
+                    :
+                    <div style={{ marginTop: '16px' }}>
+                        <div className="uploaddiv">Browse Files</div>
+                        <input
+                            type="file"
+                            id={`file-upload-${title}`}
+                            accept=".xlsx, .csv"
+                            onChange={handleFileChange}
+                            style={{ display: "none" }}
+                            disabled={disabled || loading}
+                        />
+                    </div>
+                }
+            </div>
         </div>
     );
 };
-const UploadReports = ({ files, setFiles, title, subtitle, removeFile, fileformat }) => {
+const UploadReports = ({ files, setFiles, title, subtitle, removeFile, fileformat, content, multiple }) => {
     const [loading, setLoading] = useState(false);
 
     const handleFileChange = (e) => {
-        const selectedFiles = Array.from(e.target.files);
-        if (selectedFiles.length > 0) {
+        let selectedFiles = Array.from(e.target.files);
+        console.log(multiple)
+        console.log(selectedFiles);
+        if (!multiple && selectedFiles.length > 0) {
+            // Always replace with the latest uploaded file
+            selectedFiles = [selectedFiles[selectedFiles.length - 1]];
+            setFiles(selectedFiles);
+        }
+        else if (selectedFiles.length > 0) {
             setLoading(true);
             setTimeout(() => {
                 setFiles(prev => [...prev, ...selectedFiles]);
@@ -234,36 +338,81 @@ const UploadReports = ({ files, setFiles, title, subtitle, removeFile, fileforma
                     <div className="spinner"></div>
                 </div>
             )}
-            <p className="uploader-title">{title}</p>
-            <p className="uploader-subtitle">{subtitle}</p>
-            <div className="upload-area">
-                <label htmlFor={`file-upload-${title}`} className="upload-label">
-                    <div className="upload-icon">
-                        <img src={UploadIcon} height={42} width={42} alt="Upload icon" />
-                    </div>
-                    <div className="uploaddiv">Upload</div>
-                    <input
-                        type="file"
-                        id={`file-upload-${title}`}
-                        accept={fileformat}
-                        multiple
-                        onChange={handleFileChange}
-                        style={{ display: "none" }}
-                        disabled={loading}
-                    />
-                </label>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px', marginBottom: '30px' }}>
+                <div className="uploader-title" style={{ marginBottom: '0px' }}>{title}</div>
+                {(title === 'SIRS Analysis' || title === 'Care Plan Document' || title === 'Incident Report') &&
+                    <Tippy
+                        content={<div style={{ width: '280px', height: 'auto', padding: '4px' }}><img src={TooltipPlaceholder} alt='tooltip' style={{ width: '100%' }} /> {content}</div>}
+                        trigger="mouseenter focus click" // shows on hover or click
+                        interactive={true} // allows the tooltip to stay open on click
+                        placement="right"
+                        theme="custom"
+                    >
+                        <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                            <IoMdInformationCircleOutline size={22} color="#5B36E1" />
+                        </div>
+                    </Tippy>
+                }
+
             </div>
+
             <div className="files-lists">
                 {files.map((file, index) => (
                     <div className="files-infos" key={index} onClick={() => removeFile(index)}>
-                        <div style={{ fontSize: '15px', fontFamily: 'Roboto', fontWeight: '600' }}>
-                            {file.name}
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <div className="file-icon">
+                                <img src={fileIcon} height={20} width={15} alt="Zip" />
+                            </div>
+                            <div style={{ fontSize: '15px', fontFamily: 'Inter', fontWeight: '600', textAlign: 'start' }}>
+                                {file.name}
+                            </div>
                         </div>
                         <div className="remove-btn">
-                            <img src={CrossIcon} height={24} width={24} alt="remove" />
+                            <RiDeleteBin6Line size={20} color="red" />
                         </div>
                     </div>
                 ))}
+            </div>
+
+            <div>
+                {!files.length ? (
+                    <div className="upload-area">
+                        <label htmlFor={`file-upload-${title}`} className="upload-label">
+                            <div className="upload-icon">
+                                <FiUploadCloud color="#8b75FF" />
+                            </div>
+                            <div style={{ fontSize: '14px', fontWeight: '500', fontFamily: 'Inter', marginBottom: '6px' }}>
+                                Drop file or browse
+                            </div>
+                            <p className="support-text">{subtitle}</p>
+                            <div className="uploaddiv">Browse Files</div>
+                            <input
+                                type="file"
+                                id={`file-upload-${title}`}
+                                accept={fileformat}
+                                multiple={multiple}
+                                onChange={handleFileChange}
+                                style={{ display: "none" }}
+                                disabled={loading}
+                            />
+                        </label>
+                    </div>
+                ) : (
+                    <div style={{ marginTop: '16px' }}>
+                        <label htmlFor={`file-upload-${title}`} className="uploaddiv">
+                            Browse Files
+                            <input
+                                type="file"
+                                id={`file-upload-${title}`}
+                                accept={fileformat}
+                                multiple={multiple}
+                                onChange={handleFileChange}
+                                style={{ display: "none" }}
+                                disabled={loading}
+                            />
+                        </label>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -292,39 +441,56 @@ const UploaderZipBox = ({ file, setFile, title, subtitle, removeFile, disabled =
                 </div>
             )}
             <p className="uploader-title">{title}</p>
-            <p className="uploader-subtitle">{subtitle}</p>
-            <div className="upload-area">
-                <label
-                    htmlFor={`file-upload-${title}`}
-                    className="upload-label"
-                    style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
-                >
-                    <div className="upload-icon">
-                        <img src={UploadIcon} height={42} width={42} alt="Upload icon" />
-                    </div>
-                    <div className="uploaddiv">Upload</div>
-                    <input
-                        type="file"
-                        id={`file-upload-${title}`}
-                        accept=".zip"
-                        onChange={handleFileChange}
-                        style={{ display: "none" }}
-                        disabled={disabled || loading}
-                    />
-                </label>
-            </div>
-            <p className="support-text">Only support zip files</p>
             {file && (
                 <div className="file-info" onClick={removeFile}>
                     <div className="file-icon">
-                        <img src={ZipIcon} height={28} width={21} alt="Zip" />
+                        <img src={fileIcon} height={20} width={15} alt="Zip" />
                     </div>
-                    <div style={{ fontSize: '15px', fontFamily: 'Roboto', fontWeight: '600' }}>{file.name}</div>
+                    <div style={{ fontSize: '15px', fontFamily: 'Roboto', fontWeight: '600', textAlign: 'start' }}>{file.name}</div>
                     <div className="remove-btn">
-                        <img src={CrossIcon} height={24} width={24} alt="cross" />
+                        <RiDeleteBin6Line size={20} color="red" />
                     </div>
                 </div>
             )}
+            <div>
+                {!file ?
+                    <div className="upload-area">
+                        <label
+                            htmlFor={`file-upload-${title}`}
+                            className="upload-label"
+                            style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
+                        >
+                            <div className="upload-icon">
+                                <FiUploadCloud color="#8b75FF" />
+                            </div>
+                            <div style={{ fontSize: '14px', fontWeight: '500', fontFamily: 'Inter', marginBottom: '6px' }}>Drop file or browse</div>
+                            <p className="support-text">Only support zip files</p>
+                            <div className="uploaddiv">Browse Files</div>
+                            <input
+                                type="file"
+                                id={`file-upload-${title}`}
+                                accept=".zip"
+                                onChange={handleFileChange}
+                                style={{ display: "none" }}
+                                disabled={disabled || loading}
+                            />
+                        </label>
+                    </div>
+                    :
+                    <div style={{ marginTop: '16px' }}>
+                        <label className="uploaddiv">Browse Files
+                            <input
+                                type="file"
+                                id={`file-upload-${title}`}
+                                accept=".zip"
+                                onChange={handleFileChange}
+                                style={{ display: "none" }}
+                                disabled={disabled || loading}
+                            />
+                        </label>
+                    </div>
+                }
+            </div>
         </div>
     );
 };
@@ -998,7 +1164,7 @@ const UploaderPage = () => {
                     formData,
                 );
 
-                console.log('reponse',response);
+                console.log('reponse', response);
 
                 if (response.status === 200 && response.data?.report) {
                     const allReports = response.data.report;
@@ -1143,10 +1309,12 @@ const UploaderPage = () => {
 
     SubscriptionStatus(user, setShowPricingModal);
 
+    console.log(showPricingModal);
+
     // console.log(showUploadedReport);
     // console.log(report)
     // console.log('showData',incidentdatatoDownload);
-
+    console.log(user);
 
     return (
         <>
@@ -1155,271 +1323,97 @@ const UploaderPage = () => {
                 :
                 <div className="page-container">
                     {sidebarVisible ? (
-                        <Sidebar onCollapse={toggleSidebar} selectedRole={selectedRole} setSelectedRole={setSelectedRole} showReport={showReport} setShowReport={setShowReport} showFinalZipReport={showFinalZipReport} setShowFinalZipReport={setShowFinalZipReport} showUploadedReport={showUploadedReport} setShowUploadReport={setShowUploadReport} activeReportType={activeReportType} setActiveReportType={setActiveReportType} analysedReportdata={analysedReportdata} setAnalysedReportdata={setAnalysedReportdata} majorTypeofReport={majorTypeofReport} setMajorTypeOfReport={setMajorTypeOfReport} setReportFiles={setReportFiles} />
+                        <Sidebar onCollapse={toggleSidebar} selectedRole={selectedRole} setSelectedRole={setSelectedRole} showReport={showReport} setShowReport={setShowReport} showFinalZipReport={showFinalZipReport} setShowFinalZipReport={setShowFinalZipReport} showUploadedReport={showUploadedReport} setShowUploadReport={setShowUploadReport} activeReportType={activeReportType} setActiveReportType={setActiveReportType} analysedReportdata={analysedReportdata} setAnalysedReportdata={setAnalysedReportdata} majorTypeofReport={majorTypeofReport} setMajorTypeOfReport={setMajorTypeOfReport} setReportFiles={setReportFiles} user={user} handleLogout={handleLogout} setShowDropdown={setShowDropdown} setShowSignIn={setShowSignIn} showDropdown={showDropdown} />
                     ) : (
                         <div className="collapsed-button" onClick={toggleSidebar}>
                             <img src={BlackExpandIcon} height={27} width={28} alt="blackexpand" />
                         </div>
                     )}
-                    <div className="main-content" style={{ padding: showReport && '8px 10% 40px 10%', overflowY: 'auto', flex: 1, }}>
-                        <div className="top-bar">
-                            <img
-                                src={PersonIcon}
-                                height={40}
-                                width={40}
-                                style={{ cursor: 'pointer', marginRight: '-40px' }}
-                                onClick={() => {
-                                    if (!user) {
-                                        setShowSignIn(true);
-                                    } else {
-                                        setShowDropdown((prev) => !prev);
-                                    }
-                                }}
-                                alt="person"
-                            />
-
-                        </div>
+                    <div style={{ flex: 1, height: '100vh', overflowY: 'auto', }}>
                         <SignIn show={showSignIn} onClose={() => setShowSignIn(false)} />
-                        {showDropdown && (
-                            <div style={{ display: 'flex', justifyContent: 'end' }}>
-                                <div className="profile-dropdown" style={{ marginRight: '-90px' }}>
-                                    <p style={{ fontSize: '14px' }}>{user?.email}</p>
-                                    <button onClick={handleLogout} className="logout-button" >Logout</button>
-                                </div>
+                        <div className="typeofreportmaindiv" style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', borderBottom: '1px solid #E8ECEF', backgroundColor: 'white' }} >
+                            <div className="page-title-btn" onClick={handleModalOpen}>
+                                <IoMdInformationCircleOutline size={20} color="#5B36E1" />
+                                Accepted Types Of Reports
                             </div>
-                        )}
-                        <div className="betaversion">Beta Version</div>
-                        {showFeedbackPopup && <FeedbackModal userEmail={user?.email} />}
-                        {showUploadedReport && activeReportType && (
-                            <>
-                                {!analysedReportdata ? (
-                                    <>
-                                        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }} >
-                                            <div className="page-title-btn" onClick={handleModalOpen}>
-                                                <div style={{ marginRight: '10px' }}>
-                                                    Types of report to upload
-                                                </div>
-                                                <BiLinkExternal size={28} color="#FFFFFF" />
-                                            </div>
-                                        </div>
-                                        <div
-                                            className="uploader-grid"
-                                            style={
-                                                activeReportType === "Care Plan Document" || activeReportType === "HR Document" || activeReportType === "Incident Report" || activeReportType === 'Quality and Risk Reporting'
-                                                    ? { display: 'flex', justifyContent: 'center' }
-                                                    : {}
-                                            }
-                                        >
-                                            {activeReportType !== "Care Plan Document" && activeReportType !== "HR Document" && activeReportType !== 'Incident Report' && activeReportType !== 'Quality and Risk Reporting' && (
-                                                <UploaderCSVBox
-                                                    file={template}
-                                                    setFile={setTemplate}
-                                                    title="Upload your template to be filled"
-                                                    subtitle=".XLSX Format Only"
-                                                    removeFile={() => setTemplate(null)}
-                                                />
-                                            )}
-
+                        </div>
+                        <div className="main-content" style={{ padding: showReport && '8px 10% 40px 10%', flex: 1 }}>
+                            {showFeedbackPopup && <FeedbackModal userEmail={user?.email} />}
+                            {showUploadedReport && activeReportType && (
+                                <>
+                                    {!analysedReportdata ? (
+                                        <>
+                                            <div className="selectedModule">{activeReportType}</div>
+                                            <div className="selectedModuleDescription">Upload your data and<br></br>get instant insights into spending, funding, and what needs attention</div>
                                             <div
+                                                className="uploader-grid"
                                                 style={
                                                     activeReportType === "Care Plan Document" || activeReportType === "HR Document" || activeReportType === "Incident Report" || activeReportType === 'Quality and Risk Reporting'
-                                                        ? { width: '50%' }
-                                                        : { width: '100%' }
+                                                        ? { display: 'flex', justifyContent: 'center' }
+                                                        : {}
                                                 }
                                             >
-                                                <UploadReports
-                                                    files={reportFiles}
-                                                    setFiles={setReportFiles}
-                                                    title={activeReportType}
-                                                    subtitle={
-                                                        activeReportType === "Care Plan Document" || activeReportType === "Incident Report" || activeReportType === 'Quality and Risk Reporting'
-                                                            ? "Upload .XLSX, .CSV or .XLS format"
-                                                            : activeReportType === "HR Document"
-                                                                ? "Upload reports in ZIP format"
-                                                                : "Upload reports in ZIP, PDF, XLSX or DOCX format"
-                                                    }
-                                                    fileformat={
-                                                        activeReportType === "Care Plan Document" || activeReportType === "Incident Report" || activeReportType === 'Quality and Risk Reporting'
-                                                            ? ".xlsx,.csv,.xls"
-                                                            : activeReportType === "HR Document"
-                                                                ? ".zip"
-                                                                : ".zip, .pdf, .docx, .xlsx"
-                                                    }
-                                                    removeFile={(index) => {
-                                                        setReportFiles(prev => prev.filter((_, i) => i !== index));
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
+                                                {activeReportType !== "Care Plan Document" && activeReportType !== "HR Document" && activeReportType !== 'Incident Report' && activeReportType !== 'Quality and Risk Reporting' && (
+                                                    <UploaderCSVBox
+                                                        file={template}
+                                                        setFile={setTemplate}
+                                                        title="Upload Your Template To Be Filled"
+                                                        subtitle=".XLSX Format Only"
+                                                        removeFile={() => setTemplate(null)}
+                                                    />
+                                                )}
 
-                                        <button
-                                            className="analyse-btn"
-                                            disabled={isAnalysingReportLoading}
-                                            style={{ backgroundColor: '#000', marginTop: '20px' }}
-                                            onClick={handleAnalyseReports}
-                                        >
-                                            {isAnalysingReportLoading
-                                                ? `Analysing... ${isAnalyseReportProgress}%`
-                                                : "Analyse Reports"}
-                                        </button>
-                                    </>
-                                ) : (
-                                    <div className="reports-box" style={{ height: 'auto', marginTop: '30px', padding: '10px' }}>
-                                        <div style={{ backgroundColor: '#FFFFFF', padding: '10px 30px', borderRadius: '10px' }}>
-                                            <SummaryReport summaryText={analysedReportdata} selectedRole={activeReportType} showDownloadButton={showDownloadButton} handleDownloadAnalyedReportCSV={handleDownloadAnalyedReportCSV} handleDownloadIncidentReportCSV={handleDownloadIncidentReportCSV} />
-                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', fontSize: '13px', color: 'grey' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
-                                                    <input type="checkbox" id="aiConsent" checked={isConsentChecked} readOnly style={{ width: '16px', height: '16px', marginRight: '8px', accentColor: 'green', cursor: 'pointer' }} />
-                                                    <label htmlFor="aiConsent" style={{ cursor: 'pointer' }}>
-                                                        AI-generated content. Only to be used as a guide. I agree to T&C on curki.ai website.
-                                                    </label>
+                                                <div
+                                                    style={
+                                                        activeReportType === "Care Plan Document" || activeReportType === "HR Document" || activeReportType === "Incident Report" || activeReportType === 'Quality and Risk Reporting'
+                                                            ? { width: '50%' }
+                                                            : { width: '100%' }
+                                                    }
+                                                >
+                                                    <UploadReports
+                                                        files={reportFiles}
+                                                        setFiles={setReportFiles}
+                                                        title={activeReportType}
+                                                        subtitle={
+                                                            activeReportType === "Quality and Risk Reporting"
+                                                                ? "Upload multiple .xlsx, .csv or .xls files"
+                                                                : activeReportType === "Care Plan Document" || activeReportType === "Incident Report"
+                                                                    ? "Upload a single .xlsx, .csv or .xls file"
+                                                                    : activeReportType === "HR Document"
+                                                                        ? "Upload reports in ZIP format"
+                                                                        : "Upload reports in ZIP, PDF, XLSX or DOCX format"
+                                                        }
+                                                        fileformat={
+                                                            activeReportType === "Care Plan Document" || activeReportType === "Incident Report" || activeReportType === 'Quality and Risk Reporting'
+                                                                ? ".xlsx,.csv,.xls"
+                                                                : activeReportType === "HR Document"
+                                                                    ? ".zip"
+                                                                    : ".zip, .pdf, .docx, .xlsx"
+                                                        }
+                                                        removeFile={(index) => {
+                                                            setReportFiles(prev => prev.filter((_, i) => i !== index));
+                                                        }}
+                                                        content='Each individual row of the Excel/CSV sheet should represent  a single clients information'
+                                                        multiple={activeReportType === 'Quality and Risk Reporting'}
+                                                    />
                                                 </div>
-                                                <button onClick={handleButtonClick} style={{ backgroundColor: 'black', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>
-                                                    I understand
-                                                </button>
                                             </div>
-                                        </div>
-                                    </div>
-                                )}
 
-                            </>
-                        )}
-
-
-
-                        {(!showReport && !showFinalZipReport && !showUploadedReport) ? (
-                            <>
-                                <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }} onClick={handleModalOpen}>
-                                    <div className="page-title-btn">
-                                        <div style={{ marginRight: '10px' }}>
-                                            Types of report to upload
-                                        </div>
-                                        <BiLinkExternal size={28} color="#FFFFFF" />
-                                    </div>
-                                </div>
-                                {['Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) ? (
-                                    <div>
-                                        <div className="uploader-grid"
-                                            style={
-                                                (selectedRole === "Financial Health" || selectedRole === "Quarterly Financial Reporting")
-                                                    ? {}
-                                                    : { display: 'flex', justifyContent: 'center' }
-                                            }>
-                                            {(selectedRole === "Financial Health" || selectedRole === "Quarterly Financial Reporting") && (
-                                                <UploaderCSVBox
-                                                    file={template}
-                                                    setFile={setTemplate}
-                                                    title="Upload your template to be filled"
-                                                    subtitle=".XLSX or .CSV Format Only"
-                                                    removeFile={() => setTemplate(null)}
-                                                    disabled={true}
-                                                />
-                                            )}
-                                            <div
-                                                style={
-                                                    (selectedRole === "Financial Health" || selectedRole === "Quarterly Financial Reporting")
-                                                        ? { width: '100%' }
-                                                        : { width: '50%' }
-                                                }
+                                            <button
+                                                className="analyse-btn"
+                                                disabled={isAnalysingReportLoading}
+                                                style={{ backgroundColor: '#000', marginTop: '20px' }}
+                                                onClick={handleAnalyseReports}
                                             >
-                                                <UploadReports
-                                                    files={reportFiles}
-                                                    setFiles={setReportFiles}
-                                                    title={selectedRole}
-                                                    subtitle="Upload .XLSX, .CSV or .XLS format"
-                                                    fileformat=".xlsx, .csv, .xls"
-                                                    removeFile={(index) => {
-                                                        setReportFiles(prev => prev.filter((_, i) => i !== index));
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="uploader-grid">
-                                        <UploaderZipBox
-                                            file={zipFile1}
-                                            setFile={setZipFIle1}
-                                            title="Incident Logs"
-                                            subtitle="Upload incident logs"
-                                            removeFile={() => setZipFIle1(null)}
-                                            disabled={false}
-                                        />
-                                        <UploaderZipBox
-                                            file={zipFile2}
-                                            setFile={setZipFIle2}
-                                            title="Investigation Reports"
-                                            subtitle="Upload reports"
-                                            removeFile={() => setZipFIle2(null)}
-                                            disabled={true}
-                                        />
-                                        <UploaderZipBox
-                                            file={zipFile3}
-                                            setFile={setZipFIle3}
-                                            title="Root Cause Analysis"
-                                            subtitle="Upload RCA docs"
-                                            removeFile={() => setZipFIle3(null)}
-                                            disabled={true}
-                                        />
-                                        <UploaderZipBox
-                                            file={zipFile4}
-                                            setFile={setZipFIle4}
-                                            title="Corrective Actions"
-                                            subtitle="Upload action plans"
-                                            removeFile={() => setZipFIle4(null)}
-                                            disabled={true}
-                                        />
-                                    </div>
-                                )}
-
-                                {['Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) ? (
-                                    <>
-                                        <button
-                                            className="analyse-btn"
-                                            disabled={isButtonDisabled || isProcessing}
-                                            style={{
-                                                backgroundColor: isButtonDisabled || isProcessing ? '#A1A1AA' : '#000',
-                                                cursor: isProcessing ? 'not-allowed' : 'pointer'
-                                            }}
-                                            onClick={handleAnalyse}
-                                        >
-                                            {isProcessing ? `${progress}% Processing...` : 'Analyse'}
-                                        </button>
-                                        <div style={{ fontSize: '12px', color: 'grey', fontFamily: 'Inter', fontWeight: '400', textAlign: 'center', marginTop: '12px' }}>**Estimated Time to Analyse 4 min**</div>
-                                    </>
-                                ) : (
-                                    <button
-                                        className="analyse-btn"
-                                        disabled={isZipButtonDisabled || isZipProcessing}
-                                        style={{
-                                            backgroundColor: isZipButtonDisabled || isZipProcessing ? '#A1A1AA' : '#000',
-                                            cursor: isZipProcessing ? 'not-allowed' : 'pointer'
-                                        }}
-                                        onClick={handleGenerate}
-                                    >
-                                        {isZipProcessing ? `${zipProgress}% Processing...` : 'Generate'}
-                                    </button>
-                                )}
-
-
-                            </>
-                        ) : (
-                            <>
-                                {showReport && ['Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) && (
-                                    <>
-                                        <div className="card-grid">
-                                            {visualizations.map((viz, index) => (
-                                                <div key={index} className="data-card">
-                                                    <h4>{viz?.metricName}</h4>
-                                                    <img src={viz.image} alt={viz.metricName} style={{ width: "100%" }} />
-                                                </div>
-                                            ))}
-                                        </div>
-
-
+                                                {isAnalysingReportLoading
+                                                    ? `Analysing... ${isAnalyseReportProgress}%`
+                                                    : <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>Analyse<img src={star} alt='img' style={{ width: '20px', height: '20px' }} /></div>}
+                                            </button>
+                                        </>
+                                    ) : (
                                         <div className="reports-box" style={{ height: 'auto', marginTop: '30px', padding: '10px' }}>
                                             <div style={{ backgroundColor: '#FFFFFF', padding: '10px 30px', borderRadius: '10px' }}>
-                                                <SummaryReport summaryText={report} handleDownloadAnalyedReportUploadedCSV={handleDownloadUploadedExcel} handleDownloadAnalyedStandardReportCSV={handleDownloadStandardExcel} selectedRole={selectedRole} />
+                                                <SummaryReport summaryText={analysedReportdata} selectedRole={activeReportType} showDownloadButton={showDownloadButton} handleDownloadAnalyedReportCSV={handleDownloadAnalyedReportCSV} handleDownloadIncidentReportCSV={handleDownloadIncidentReportCSV} />
                                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', fontSize: '13px', color: 'grey' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
                                                         <input type="checkbox" id="aiConsent" checked={isConsentChecked} readOnly style={{ width: '16px', height: '16px', marginRight: '8px', accentColor: 'green', cursor: 'pointer' }} />
@@ -1427,79 +1421,238 @@ const UploaderPage = () => {
                                                             AI-generated content. Only to be used as a guide. I agree to T&C on curki.ai website.
                                                         </label>
                                                     </div>
-                                                    <button onClick={handleButtonClick} style={{ backgroundColor: 'black', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>
+                                                    <button onClick={handleButtonClick} style={{ background: 'linear-gradient(180deg, rgba(139, 117, 255, 0.9) 27.88%, #6D51FF 100%)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>
                                                         I understand
                                                     </button>
                                                 </div>
                                             </div>
                                         </div>
-                                    </>
-                                )}
-                                {(showFinalZipReport && selectedRole === 'Incident Management') && (
-                                    <div className="reports-box" style={{ height: 'auto' }}>
-                                        <h2 style={{ marginBottom: '14px' }}>Summary Report</h2>
+                                    )}
 
-                                        {Array.isArray(reportZipData) && reportZipData?.length > 0 && (
-                                            <ul style={{ marginLeft: '20px', marginRight: '20px' }}>
-                                                {Object.entries(reportZipData[0]).map(([key, value]) => (
-                                                    <li key={key} style={{ marginBottom: '4px' }}>
-                                                        <strong>{key}:</strong> {String(value)}
-                                                    </li>
+                                </>
+                            )}
+
+
+
+                            {(!showReport && !showFinalZipReport && !showUploadedReport) ? (
+                                <>
+                                    <div className="selectedModule">{selectedRole}</div>
+                                    <div className="selectedModuleDescription">Upload your data and<br></br>get instant insights into spending, funding, and what needs attention</div>
+                                    {['Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) ? (
+                                        <div>
+                                            <div className="uploader-grid"
+                                                style={
+                                                    (selectedRole === "Financial Health" || selectedRole === "Quarterly Financial Reporting")
+                                                        ? {}
+                                                        : { display: 'flex', justifyContent: 'center' }
+                                                }>
+                                                {(selectedRole === "Financial Health" || selectedRole === "Quarterly Financial Reporting") && (
+                                                    <UploaderCSVBox
+                                                        file={template}
+                                                        setFile={setTemplate}
+                                                        title="Upload Your Template To Be Filled"
+                                                        subtitle=".XLSX or .CSV Format Only"
+                                                        removeFile={() => setTemplate(null)}
+                                                        disabled={true}
+                                                    />
+                                                )}
+                                                <div
+                                                    style={
+                                                        (selectedRole === "Financial Health" || selectedRole === "Quarterly Financial Reporting")
+                                                            ? { width: '100%' }
+                                                            : { width: '50%' }
+                                                    }
+                                                >
+                                                    <UploadReports
+                                                        files={reportFiles}
+                                                        setFiles={setReportFiles}
+                                                        title={selectedRole}
+                                                        subtitle={
+                                                            selectedRole === 'SIRS Analysis'
+                                                                ? 'Upload a single .xlsx, .csv or .xls file'
+                                                                : 'Upload multiple .xlsx, .csv or .xls files'
+                                                        }
+                                                        fileformat=".xlsx, .csv, .xls"
+                                                        removeFile={(index) => {
+                                                            setReportFiles(prev => prev.filter((_, i) => i !== index));
+                                                        }}
+                                                        content='Each individual row of the Excel/CSV sheet should represent  a single clients information'
+                                                        multiple={selectedRole !== 'SIRS Analysis'}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="uploader-grid">
+                                            <UploaderZipBox
+                                                file={zipFile1}
+                                                setFile={setZipFIle1}
+                                                title="Incident Logs"
+                                                subtitle="Upload incident logs"
+                                                removeFile={() => setZipFIle1(null)}
+                                                disabled={false}
+                                            />
+                                            <UploaderZipBox
+                                                file={zipFile2}
+                                                setFile={setZipFIle2}
+                                                title="Investigation Reports"
+                                                subtitle="Upload reports"
+                                                removeFile={() => setZipFIle2(null)}
+                                                disabled={true}
+                                            />
+                                            <UploaderZipBox
+                                                file={zipFile3}
+                                                setFile={setZipFIle3}
+                                                title="Root Cause Analysis"
+                                                subtitle="Upload RCA docs"
+                                                removeFile={() => setZipFIle3(null)}
+                                                disabled={true}
+                                            />
+                                            <UploaderZipBox
+                                                file={zipFile4}
+                                                setFile={setZipFIle4}
+                                                title="Corrective Actions"
+                                                subtitle="Upload action plans"
+                                                removeFile={() => setZipFIle4(null)}
+                                                disabled={true}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {['Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) ? (
+                                        <>
+                                            <button
+                                                className="analyse-btn"
+                                                disabled={isButtonDisabled || isProcessing}
+                                                style={{
+                                                    backgroundColor: isButtonDisabled || isProcessing ? '#A1A1AA' : '#000',
+                                                    cursor: isProcessing ? 'not-allowed' : 'pointer'
+                                                }}
+                                                onClick={handleAnalyse}
+                                            >
+                                                {isProcessing ? `${progress}% Processing...` : <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>Analyse<img src={star} alt='img' style={{ width: '20px', height: '20px' }} /></div>}
+                                            </button>
+                                            <div style={{ fontSize: '12px', color: 'grey', fontFamily: 'Inter', fontWeight: '400', textAlign: 'center', marginTop: '12px' }}>**Estimated Time to Analyse 4 min**</div>
+                                        </>
+                                    ) : (
+                                        <button
+                                            className="analyse-btn"
+                                            disabled={isZipButtonDisabled || isZipProcessing}
+                                            style={{
+                                                backgroundColor: isZipButtonDisabled || isZipProcessing ? '#A1A1AA' : '#000',
+                                                cursor: isZipProcessing ? 'not-allowed' : 'pointer'
+                                            }}
+                                            onClick={handleGenerate}
+                                        >
+                                            {isZipProcessing ? `${zipProgress}% Processing...` : <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>Analyse<img src={star} alt='img' style={{ width: '20px', height: '20px' }} /></div>}
+                                        </button>
+                                    )}
+
+
+                                </>
+                            ) : (
+                                <>
+                                    {showReport && ['Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) && (
+                                        <>
+                                            <div className="card-grid">
+                                                {visualizations.map((viz, index) => (
+                                                    <div key={index} className="data-card">
+                                                        <h4>{viz?.metricName}</h4>
+                                                        <img src={viz.image} alt={viz.metricName} style={{ width: "100%" }} />
+                                                    </div>
                                                 ))}
-                                            </ul>
-                                        )}
-
-                                        <p style={{ textAlign: 'center', marginTop: '20px', fontWeight: 'bold', fontSize: '20px' }}>Click below to download Full Report</p>
-                                        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', marginBottom: '10px' }}>
-                                            <button className="download-btn" style={{ padding: '14px', backgroundColor: 'black', color: 'white', border: 'none', outline: 'none', borderRadius: '12px', fontSize: '18px', cursor: 'pointer' }} onClick={handleDownloadCSV}>
-                                                Download Excel Report
-                                            </button>
-                                        </div>
-                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', fontSize: '13px', color: 'grey' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
-                                                <input type="checkbox" id="aiConsent" checked={isConsentChecked} readOnly style={{ width: '16px', height: '16px', marginRight: '8px', accentColor: 'green', cursor: 'pointer' }} />
-                                                <label htmlFor="aiConsent" style={{ cursor: 'pointer' }}>
-                                                    AI-generated content. Only to be used as a guide. I agree to T&C on curki.ai website.
-                                                </label>
                                             </div>
-                                            <button onClick={handleButtonClick} style={{ backgroundColor: 'black', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>
-                                                I understand
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
 
-                            </>
-                        )}
-                        <Modal isVisible={isModalVisible} onClose={handleModalClose}>
-                        </Modal>
-                        <div style={{ position: 'fixed', bottom: '30px', right: '30px', backgroundColor: '#000', color: '#fff', borderRadius: '40px', width: '100px', height: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '16px', cursor: 'pointer', boxShadow: '0px 4px 12px rgba(0,0,0,0.2)', zIndex: 999 }} onClick={() => setShowAIChat(!showAIChat)}>
-                            Ask AI
-                        </div>
 
-                        {showAIChat && (
-                            <div style={{ position: 'fixed', bottom: '100px', right: '30px', width: '350px', height: '400px', backgroundColor: '#000', borderRadius: '10px', boxShadow: '0px 4px 12px rgba(0,0,0,0.2)', padding: '15px', zIndex: 999, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
-                                    <p style={{ color: '#FFFFFF', fontSize: '12px', }}>I can help with Support at Home, NDIS, compliance and reporting</p>
-                                    <button onClick={() => setShowAIChat(false)} style={{ background: 'none', border: 'none', fontSize: '26px', cursor: 'pointer', color: '#fff', marginTop: '-4px' }}>×</button>
-                                </div>
+                                            <div className="reports-box" style={{ height: 'auto', marginTop: '30px', padding: '10px' }}>
+                                                <div style={{ backgroundColor: '#FFFFFF', padding: '10px 30px', borderRadius: '10px' }}>
+                                                    <SummaryReport summaryText={report} handleDownloadAnalyedReportUploadedCSV={handleDownloadUploadedExcel} handleDownloadAnalyedStandardReportCSV={handleDownloadStandardExcel} selectedRole={selectedRole} />
+                                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', fontSize: '13px', color: 'grey' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
+                                                            <input type="checkbox" id="aiConsent" checked={isConsentChecked} readOnly style={{ width: '16px', height: '16px', marginRight: '8px', accentColor: 'green', cursor: 'pointer' }} />
+                                                            <label htmlFor="aiConsent" style={{ cursor: 'pointer' }}>
+                                                                AI-generated content. Only to be used as a guide. I agree to T&C on curki.ai website.
+                                                            </label>
+                                                        </div>
+                                                        <button onClick={handleButtonClick} style={{ background: 'linear-gradient(180deg, rgba(139, 117, 255, 0.9) 27.88%, #6D51FF 100%)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>
+                                                            I understand
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                    {(showFinalZipReport && selectedRole === 'Incident Management') && (
+                                        <div className="reports-box" style={{ height: 'auto' }}>
+                                            <h2 style={{ marginBottom: '14px' }}>Summary Report</h2>
 
-                                <div style={{ flex: 1, marginTop: '10px', overflowY: 'auto', padding: '10px' }}>
-                                    {messages.map((msg, index) => (
-                                        <div key={index} style={{ display: 'flex', justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start', marginBottom: '8px' }}>
-                                            <div style={{ backgroundColor: '#fff', padding: '10px', borderRadius: '10px', maxWidth: '75%', fontSize: '14px', textAlign: 'left', color: 'black' }}>
-                                                <MarkdownParser text={msg.text} />
+                                            {Array.isArray(reportZipData) && reportZipData?.length > 0 && (
+                                                <ul style={{ marginLeft: '20px', marginRight: '20px' }}>
+                                                    {Object.entries(reportZipData[0]).map(([key, value]) => (
+                                                        <li key={key} style={{ marginBottom: '4px' }}>
+                                                            <strong>{key}:</strong> {String(value)}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            )}
+
+                                            <p style={{ textAlign: 'center', marginTop: '20px', fontWeight: 'bold', fontSize: '20px' }}>Click below to download Full Report</p>
+                                            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', marginBottom: '10px' }}>
+                                                <button className="download-btn" style={{ padding: '14px', background: 'linear-gradient(180deg, rgba(139, 117, 255, 0.9) 27.88%, #6D51FF 100%)', color: 'white', border: 'none', outline: 'none', borderRadius: '12px', fontSize: '18px', cursor: 'pointer' }} onClick={handleDownloadCSV}>
+                                                    Download Excel Report
+                                                </button>
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', fontSize: '13px', color: 'grey' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
+                                                    <input type="checkbox" id="aiConsent" checked={isConsentChecked} readOnly style={{ width: '16px', height: '16px', marginRight: '8px', accentColor: 'green', cursor: 'pointer' }} />
+                                                    <label htmlFor="aiConsent" style={{ cursor: 'pointer' }}>
+                                                        AI-generated content. Only to be used as a guide. I agree to T&C on curki.ai website.
+                                                    </label>
+                                                </div>
+                                                <button onClick={handleButtonClick} style={{ background: 'linear-gradient(180deg, rgba(139, 117, 255, 0.9) 27.88%, #6D51FF 100%)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>
+                                                    I understand
+                                                </button>
                                             </div>
                                         </div>
-                                    ))}
-                                </div>
+                                    )}
 
-                                <div style={{ position: 'relative', marginTop: '10px' }}>
-                                    <input type="text" placeholder="Type your question..." value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()} style={{ width: '100%', padding: '8px 40px 8px 8px', borderRadius: '5px', border: '1px solid #ccc' }} />
-                                    <FaPaperPlane onClick={handleSend} size={18} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: 'white' }} />
-                                </div>
+                                </>
+                            )}
+                            <Modal isVisible={isModalVisible} onClose={handleModalClose}>
+                            </Modal>
+                            <div className="ask-ai-button" onClick={() => setShowAIChat(!showAIChat)}>
+                                <img src={askAiStar} alt='askAiStar' style={{ width: '22px', height: '22px' }} />
+                                <div style={{ fontFamily: 'Inter', fontSize: '16px', color: 'white' }}>Ask AI</div>
                             </div>
-                        )}
+
+                            {showAIChat && (
+                                <div style={{ position: 'fixed', bottom: '100px', right: '30px', width: '350px', height: '400px', backgroundColor: '#000', borderRadius: '10px', boxShadow: '0px 4px 12px rgba(0,0,0,0.2)', zIndex: 999, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: 'none' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', backgroundColor: 'white', borderTopRightRadius: '10px', borderTopLeftRadius: '10px', padding: '12px 8px' }}>
+                                        <div style={{ display: 'flex', gap: '10px', marginLeft: '20px', alignItems: 'center' }}>
+                                            <img src={purpleStar} alt='purple star' style={{ width: '24px', height: '24px' }} />
+                                            <div style={{ fontSize: '12px', fontFamily: 'Inter' }}>I can help with Support at Home, NDIS, compliance and reporting</div>
+                                        </div>
+                                        {/* <button  style={{ background: 'none', border: 'none', fontSize: '26px', cursor: 'pointer', color: '#000', marginTop: '-4px' }}>×</button> */}
+                                        <RxCrossCircled size={24} color="#4A4A4A" onClick={() => setShowAIChat(false)} style={{ cursor: 'pointer' }} />
+                                    </div>
+
+                                    <div style={{ flex: 1, marginTop: '10px', overflowY: 'auto', padding: '10px' }}>
+                                        {messages.map((msg, index) => (
+                                            <div key={index} style={{ display: 'flex', justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start', marginBottom: '8px' }}>
+                                                <div style={{ backgroundColor: msg.sender === 'user' ? '#fff' : '#6548FF', padding: '10px', borderRadius: '10px', maxWidth: '75%', fontSize: '14px', textAlign: 'left', color: msg.sender === 'user' ? 'black' : 'white', fontFamily: 'Inter' }}>
+                                                    <MarkdownParser text={msg.text} />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div style={{ position: 'relative', marginTop: '10px', marginBottom: '16px', width: '75%', display: 'flex', alignSelf: 'center' }}>
+                                        <input type="text" placeholder="Type your question..." value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()} style={{ width: '100%', padding: '8px 40px 8px 8px', borderRadius: '10px', border: '1px solid #ccc' }} />
+                                        <FaPaperPlane onClick={handleSend} size={18} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: 'white' }} />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             }

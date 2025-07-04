@@ -1,9 +1,13 @@
 import React, { useState } from "react";
-import { auth, googleProvider,facebookProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup } from "../firebase";
+import { auth, googleProvider, facebookProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup } from "../firebase";
 import "../Styles/SignIn.css";
 import emailjs from "@emailjs/browser";
+import { FcGoogle } from "react-icons/fc";
+import { FaFacebook } from "react-icons/fa6";
+import { FaEnvelope, FaKey, FaUser } from "react-icons/fa"
 
 const SignIn = ({ show, onClose }) => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -27,7 +31,7 @@ const SignIn = ({ show, onClose }) => {
           message: "A new user just signed up!",
           email: email,
         };
-      
+
         try {
           await emailjs.send(
             "service_6otxz7o",
@@ -55,27 +59,27 @@ const SignIn = ({ show, onClose }) => {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-     const result= await signInWithPopup(auth, googleProvider);
-     console.log(result?.user?.email);
-     if(result._tokenResponse.isNewUser){
-      const templateParams = {
-        message: "A new user just signed up!",
-        email: result?.user?.email,
-      };
-    
-      try {
-        await emailjs.send(
-          "service_6otxz7o",
-          "template_fxslvkj",
-          templateParams,
-          "hp6wyNEGYtFRXcOSs"
-        );
-        console.log("Email sent successfully");
-      } catch (emailError) {
-        console.error("Failed to send email:", emailError);
+      const result = await signInWithPopup(auth, googleProvider);
+      console.log(result?.user?.email);
+      if (result._tokenResponse.isNewUser) {
+        const templateParams = {
+          message: "A new user just signed up!",
+          email: result?.user?.email,
+        };
+
+        try {
+          await emailjs.send(
+            "service_6otxz7o",
+            "template_fxslvkj",
+            templateParams,
+            "hp6wyNEGYtFRXcOSs"
+          );
+          console.log("Email sent successfully");
+        } catch (emailError) {
+          console.error("Failed to send email:", emailError);
+        }
       }
-     }
-   
+
       alert("Google Sign-In successful!");
       onClose();
     } catch (err) {
@@ -102,62 +106,120 @@ const SignIn = ({ show, onClose }) => {
       <div className="popup">
         {/* <button className="close-btn" onClick={onClose}>×</button> */}
 
-        <div className="divider">
-          <hr />
-          <span style={{ color: "#ffffff" }}>Sign-in with Social Media</span>
-          <hr />
+        <div className="signheader">
+          {isSignUp ? "Create Your Account" : "Log In"}
         </div>
 
-        <div className="social-buttons">
-          <button className="social-btn" onClick={handleGoogleSignIn} disabled={loading}>G</button>
-          <button className="social-btn" onClick={handleFacebookSignIn} disabled={loading}>f</button>
-          <button className="social-btn" disabled={loading}>X</button>
-        </div>
-
-        <div className="divider">
-          <hr />
-          <span style={{ color: "#ffffff" }}>or continue with</span>
-          <hr />
-        </div>
 
         <form onSubmit={handleAuth}>
-          <input
-            type="email"
-            placeholder="Email Address *"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password *"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <div style={{ position: "relative", marginBottom: "10px" }}>
+            <FaUser
+              style={{
+                position: "absolute",
+                left: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "#aaa",
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Full Name *"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              style={{
+                paddingLeft: "35px",
+                width: "100%",
+                height: "40px",
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
+          <div style={{ position: "relative", marginBottom: "10px" }}>
+            <FaEnvelope
+              style={{
+                position: "absolute",
+                left: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "#aaa",
+              }}
+            />
+            <input
+              type="email"
+              placeholder="Email Address *"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              style={{
+                paddingLeft: "35px",
+                width: "100%",
+                height: "40px",
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
+
+          <div style={{ position: "relative", marginBottom: "10px" }}>
+            <FaKey
+              style={{
+                position: "absolute",
+                left: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "#aaa",
+              }}
+            />
+            <input
+              type="password"
+              placeholder="Password *"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={{
+                paddingLeft: "35px",
+                width: "100%",
+                height: "40px",
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
+
           {loading ? (
-            <div style={{display:'flex',justifyContent:'center',alignItems:'center'}}>
-            <div className="loader"></div>
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+              <div className="loader"></div>
             </div>
           ) : (
             <button type="submit" className="signin-btn" disabled={loading}>
-              {isSignUp ? "Create Account" : "Sign In"}
+              {isSignUp ? "Create Account" : "Log In"}
             </button>
           )}
-
         </form>
 
         {error && <p className="error-message">User Does Not Exist ! Create Account</p>}
 
-        <p className="register-text">{isSignUp ? "Already have an account?" : "Don't have an account yet?"}</p>
-        <a href="#" className="register-link" onClick={(e) => {
-          e.preventDefault(); // Prevent URL change
-          setIsSignUp(!isSignUp);
-        }}>
-          {isSignUp ? "Sign In" : "Create Account"}
-        </a>
+        <div className="divider">
+          <hr />
+          <span style={{ color: "#000000" }}>or continue with</span>
+          <hr />
+        </div>
 
-        <a href="#" className="forgot-link">Forgot password?</a>
+        <div className="social-buttons">
+          <button className="social-btn" onClick={handleGoogleSignIn} disabled={loading}><FcGoogle size={28} />Google</button>
+          <button className="social-btn" onClick={handleFacebookSignIn} disabled={loading}><FaFacebook size={28} color="#1877F2" />Facebook</button>
+        </div>
+        <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center' }}>
+          <p className="register-text">{isSignUp ? "Already have an account?" : "Don't have an account yet?"}</p>
+          <a href="#" className="register-link" onClick={(e) => {
+            e.preventDefault(); // Prevent URL change
+            setIsSignUp(!isSignUp);
+          }}>
+            {isSignUp ? "Sign In" : "Sign Up"}
+          </a>
+        </div>
+
+        {/* <a href="#" className="forgot-link">Forgot password?</a> */}
       </div>
     </div>
   );

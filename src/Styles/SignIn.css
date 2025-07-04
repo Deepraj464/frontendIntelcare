@@ -15,13 +15,13 @@
 
 /* Popup container */
 .popup {
-  background: #000000;
+  background:#FAF9FF;
   padding: 2rem;
   border-radius: 12px;
   position: relative;
-  max-width: 400px;
+  max-width: 450px;
   width: 90%;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 16px rgba(150, 109, 215, 0.3);
 }
 
 /* Close button */
@@ -34,6 +34,12 @@
   font-size: 1.5rem;
   cursor: pointer;
   color: #ffffff;
+}
+.signheader{
+  text-align: center;
+  font-size: 26px;
+  font-weight: 600;
+  margin-bottom: 14px;
 }
 
 
@@ -52,7 +58,7 @@ h2 {
 .divider hr {
   flex: 1;
   border: none;
-  border-top: 1px solid white;
+  border-top: 1px solid black;
 }
 
 .divider span {
@@ -62,22 +68,28 @@ h2 {
 
 .social-buttons {
   display: flex;
-  justify-content: center;
-  gap: 15px;
+  flex-direction: column;
   margin-bottom: 20px;
 }
 
 .social-btn {
-  border: 1px solid white;
-  background-color: transparent;
-  color: white;
-  padding: 12px;
-  border-radius: 50%;
-  width: 45px;
+  border: 1.6px solid #E0E2E9;
+  background-color: white;
+  color: black;
+  padding: 10px;
+  border-radius: 10px;
+  width: '100%';
   height: 45px;
-  font-size: 18px;
+  font-size: 14px;
   cursor: pointer;
   transition: 0.3s;
+  margin-bottom: 10px;
+  font-family: 'Inter';
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
 }
 
 .social-btn:hover {
@@ -93,11 +105,11 @@ form {
 
 input {
   padding: 12px;
-  background-color: transparent;
-  border: 1px solid white;
-  color: white;
+  background-color: white;
+  color: black;
   border-radius: 6px;
   outline: none;
+  border: 1.6px solid #E0E2E9
 }
 
 input::placeholder {
@@ -105,40 +117,42 @@ input::placeholder {
 }
 
 .signin-btn {
-  background-color: white;
-  color: black;
+  color: white;
   border: none;
   padding: 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
   transition: 0.3s;
+  font-size: 16px;
+  background: linear-gradient(180deg, rgba(139, 117, 255, 0.9) 27.88%, #6D51FF 100%);
+
 }
 
 .signin-btn:hover {
-  background-color: #ccc;
+  background-color: #4218db;
 }
 
 .register-text {
-  margin-top: 20px;
   font-size: 14px;
-  color: white;
+  color: #969AB8;
+  font-weight: 500;
 }
 
 .register-link {
   display: block;
   margin: 10px 0;
-  color: white;
-  text-decoration: underline;
+  color: #6548FF;
   font-weight: bold;
+  font-size: 14px;
+  text-decoration: none !important;
 }
 
 .forgot-link {
   display: block;
   margin-top: 10px;
-  color: #ccc;
+  color: black;
   font-size: 13px;
-  text-decoration: underline;
 }
 .error-message{
   font-size: 14px;
