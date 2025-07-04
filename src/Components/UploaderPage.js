@@ -115,7 +115,7 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
                 )}
                 <div className="roles-list">
                     <div style={{ color: 'white', fontSize: '18px', fontWeight: 'bold', textAlign: 'left', marginLeft: '30px', fontFamily: 'Roboto', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
-                        SUPPORT AT HOME
+                        SUPPORT AT HOME/ HCP/ CHSP
                     </div>
                     {reportButtons.map(report => {
                         const isEnabled = (report === "Care Services & eligibility Analysis" || report === "Incident Report" || report === 'Quality and Risk Reporting');
@@ -1648,7 +1648,7 @@ const UploaderPage = () => {
 
                                     <div style={{ position: 'relative', marginTop: '10px', marginBottom: '16px', width: '75%', display: 'flex', alignSelf: 'center' }}>
                                         <input type="text" placeholder="Type your question..." value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()} style={{ width: '100%', padding: '8px 40px 8px 8px', borderRadius: '10px', border: '1px solid #ccc' }} />
-                                        <FaPaperPlane onClick={handleSend} size={18} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: 'white' }} />
+                                        <FaPaperPlane onClick={handleSend} size={18} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: '#6548FF' }} />
                                     </div>
                                 </div>
                             )}
