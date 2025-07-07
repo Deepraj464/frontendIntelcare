@@ -33,6 +33,8 @@ import purpleAnnual from '../Images/purple_annual.png';
 import whiteAnnual from '../Images/white_annual.png';
 import purpleIncidentManagement from '../Images/purple_incident.png';
 import whiteIncidentManagement from '../Images/white_incident.png';
+import purpleCustom from '../Images/purple_custom.png';
+import whitecustom from '../Images/white_custom.png';
 import purpleCareplan from '../Images/puple_careplan.png';
 import whiteCareplan from '../Images/white_care.png';
 import purpleIncidentReport from '../Images/purple_incidentReporting.png';
@@ -45,6 +47,7 @@ import { FaChevronUp } from "react-icons/fa";
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
 import TooltipPlaceholder from '../Images/TooltipPlaceholder.png';
+import customPlaceHolder from '../Images/customPlaceholder.jpeg';
 
 
 const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setShowReport, showFinalZipReport, setShowFinalZipReport, showUploadedReport, setShowUploadReport, activeReportType, setActiveReportType, analysedReportdata, setAnalysedReportdata, majorTypeofReport, setMajorTypeOfReport, setReportFiles, user, handleLogout, setShowSignIn, setShowDropdown, showDropdown }) => {
@@ -57,7 +60,7 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
         // setShowRoles(!showRoles);
         setShowUploadReport(false);
     };
-    const roles = ['Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting', 'Incident Management'];
+    const roles = ['Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting', 'Incident Management', 'Custom Reporting'];
     const reportButtons = ["Care Services & eligibility Analysis", "Incident Report", "Quality and Risk Reporting", "HR Analysis"];
     const NDISButton = ["Audit & Registration Manager", "Incident & Complaint Reporter", "Restrictive Practice & Behaviour Support", "Worker-Screening & HR Compliance", "Financial & Claims Compliance", "Participant Outcomes & Capacity-Building"];
 
@@ -68,6 +71,7 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
         'Quarterly Financial Reporting': { white: whiteQfr, purple: purpleQfr },
         'Annual Financial Reporting': { white: whiteAnnual, purple: purpleAnnual },
         'Incident Management': { white: whiteIncidentManagement, purple: purpleIncidentManagement },
+        'Custom Reporting': { white: whitecustom, purple: purpleCustom },
 
         'Care Services & eligibility Analysis': { white: whiteCareplan, purple: purpleCareplan },
         'Incident Report': { white: whiteIncidentReport, purple: purpleIncidentReport },
@@ -340,9 +344,9 @@ const UploadReports = ({ files, setFiles, title, subtitle, removeFile, fileforma
             )}
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px', marginBottom: '30px' }}>
                 <div className="uploader-title" style={{ marginBottom: '0px' }}>{title}</div>
-                {(title === 'SIRS Analysis' || title === 'Care Plan Document' || title === 'Incident Report') &&
+                {(title === 'SIRS Analysis' || title === 'Custom Reporting' || title === 'Care Plan Document' || title === 'Incident Report') &&
                     <Tippy
-                        content={<div style={{ width: '280px', height: 'auto', padding: '4px' }}><img src={TooltipPlaceholder} alt='tooltip' style={{ width: '100%' }} /> {content}</div>}
+                        content={<div style={{ width: '450px', height: 'auto', padding: '4px' }}><img src={title === 'Custom Reporting' ? customPlaceHolder : TooltipPlaceholder} alt='tooltip' style={{ width: '100%' }} /> {content}</div>}
                         trigger="mouseenter focus click" // shows on hover or click
                         interactive={true} // allows the tooltip to stay open on click
                         placement="right"
@@ -869,6 +873,55 @@ const UploaderPage = () => {
                     }
                 }
                 clearInterval(interval);
+            } else if (selectedRole === 'Custom Reporting') {
+                console.log('doing custom Reporting.......');
+                try {
+                    const payrollForm = new FormData();
+                    reportFiles.forEach((file, index) => {
+                        payrollForm.append(`source${index + 1}`, file, file.name);
+                    });
+
+                    const payrollResponse = await axios.post(
+                        "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/tlc/payroll",
+                        payrollForm,
+                        { responseType: 'blob' }
+                    );
+                    
+                    // console.log('payrollResponse',payrollResponse);
+                    const payrollBlob = new Blob([payrollResponse.data], {
+                        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    });
+
+                    const payrollFile = new File([payrollBlob], "final_report.xlsx", {
+                        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    });
+
+                    // Step 2: Summary API
+                    const summaryForm = new FormData();
+                    summaryForm.append("file", payrollFile);
+
+                    const summaryResponse = await axios.post(
+                        "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/tlc/payroll_summary",
+                        summaryForm
+                    );
+
+                    const summaryText = summaryResponse.data || "No summary available.";
+                    // console.log('SummaryText',summaryText);
+                    setReport(summaryText);
+                    setVisualizations([]);
+                    setProgress(100);
+
+                    setTimeout(() => {
+                        setShowReport(true);
+                        setIsProcessing(false);
+                    }, 500);
+                } catch (error) {
+                    console.error("Custom Reporting Error:", error);
+                    alert("Custom Reporting failed. Please check your files or try again.");
+                    clearInterval(interval);
+                    setProgress(0);
+                    setIsProcessing(false);
+                }
             } else {
                 alert("Selected module not supported yet.");
             }
@@ -1309,12 +1362,11 @@ const UploaderPage = () => {
 
     SubscriptionStatus(user, setShowPricingModal);
 
-    console.log(showPricingModal);
-
+    // console.log(showPricingModal);
     // console.log(showUploadedReport);
     // console.log(report)
     // console.log('showData',incidentdatatoDownload);
-    console.log(user);
+    // console.log(user);
 
     return (
         <>
@@ -1438,7 +1490,7 @@ const UploaderPage = () => {
                                 <>
                                     <div className="selectedModule">{selectedRole}</div>
                                     <div className="selectedModuleDescription">Upload your data and<br></br>get instant insights into spending, funding, and what needs attention</div>
-                                    {['Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) ? (
+                                    {['Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting', 'Custom Reporting'].includes(selectedRole) ? (
                                         <div>
                                             <div className="uploader-grid"
                                                 style={
@@ -1476,7 +1528,9 @@ const UploaderPage = () => {
                                                         removeFile={(index) => {
                                                             setReportFiles(prev => prev.filter((_, i) => i !== index));
                                                         }}
-                                                        content='Each individual row of the Excel/CSV sheet should represent  a single clients information'
+                                                        content={selectedRole === 'Custom Reporting'
+                                                            ? "The file must contain metadata in the first row and the header in the second row. Metadata in the first row should specify the payroll date."
+                                                            : "Each individual row of the Excel/CSV sheet should represent a single client's information."}
                                                         multiple={selectedRole !== 'SIRS Analysis'}
                                                     />
                                                 </div>
@@ -1519,7 +1573,7 @@ const UploaderPage = () => {
                                         </div>
                                     )}
 
-                                    {['Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) ? (
+                                    {['Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting', 'Custom Reporting'].includes(selectedRole) ? (
                                         <>
                                             <button
                                                 className="analyse-btn"
@@ -1552,7 +1606,7 @@ const UploaderPage = () => {
                                 </>
                             ) : (
                                 <>
-                                    {showReport && ['Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting'].includes(selectedRole) && (
+                                    {showReport && ['Financial Health', 'SIRS Analysis', 'Quarterly Financial Reporting', 'Annual Financial Reporting', 'Custom Reporting'].includes(selectedRole) && (
                                         <>
                                             <div className="card-grid">
                                                 {visualizations.map((viz, index) => (

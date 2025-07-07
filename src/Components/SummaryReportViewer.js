@@ -209,11 +209,11 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, ha
                     {parsedResponse ? (
                         <div className="sirs-markdown" style={{ marginBottom: '32px' }}>
                             {parsedResponse?.Compliance_Standards && (
-                                    <ReactMarkdown
-                                        children={parsedResponse.Compliance_Standards.replace(/```(?:\w+)?\n?/, '').replace(/```$/, '')}
-                                        remarkPlugins={[remarkGfm]}
-                                        rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                                    />
+                                <ReactMarkdown
+                                    children={parsedResponse.Compliance_Standards.replace(/```(?:\w+)?\n?/, '').replace(/```$/, '')}
+                                    remarkPlugins={[remarkGfm]}
+                                    rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                />
                             )}
                             {parsedResponse?.Incidents_Risk && (
                                 <ReactMarkdown
@@ -243,7 +243,22 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, ha
                         </div>
                     )}
                 </>
-
+            ) : selectedRole === 'Custom Reporting' ? (
+                <>
+                    {parsedResponse ? (
+                        <div className="sirs-markdown" style={{ marginBottom: '32px' }}>
+                                <ReactMarkdown
+                                    children={parsedResponse.summary.replace(/```(?:\w+)?\n?/, '').replace(/```$/, '')}
+                                    remarkPlugins={[remarkGfm]}
+                                    rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                />
+                        </div>
+                    ) : (
+                        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                            No payroll summary report available.
+                        </div>
+                    )}
+                </>
             ) : (
                 <div style={{ textAlign: 'center', marginTop: '2rem' }}>
                     No report format available for this role.

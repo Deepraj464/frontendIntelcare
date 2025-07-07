@@ -519,6 +519,7 @@ html,
   background-color: #DDD7FF;
   color: black;
   font-size: 12px;
+  max-width: 500px !important;
 }
 .tippy-box[data-theme~='custom'] > .tippy-arrow::before {
   color: #DDD7FF; /* same as background */
