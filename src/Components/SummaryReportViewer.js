@@ -7,7 +7,7 @@ import rehypeRaw from 'rehype-raw';
 import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github.css';
 
-const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, handleDownloadAnalyedStandardReportCSV, selectedRole, showDownloadButton, handleDownloadIncidentReportCSV }) => {
+const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, handleDownloadAnalyedStandardReportCSV, selectedRole, showDownloadButton, handleDownloadIncidentReportCSV,handledownloadPayrollFile}) => {
     console.log(showDownloadButton);
     const parsedResponse = summaryText && typeof summaryText === "string" ? JSON.parse(summaryText) : summaryText;
     console.log(parsedResponse)
@@ -245,13 +245,18 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, ha
                 </>
             ) : selectedRole === 'Custom Reporting' ? (
                 <>
+                    <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+                        <button className="download-report-btn" onClick={handledownloadPayrollFile}>
+                            Download Populated Report <MdOutlineFileDownload color="white" style={{ marginLeft: '6px' }} size={24} />
+                        </button>
+                    </div>
                     {parsedResponse ? (
                         <div className="sirs-markdown" style={{ marginBottom: '32px' }}>
-                                <ReactMarkdown
-                                    children={parsedResponse.summary.replace(/```(?:\w+)?\n?/, '').replace(/```$/, '')}
-                                    remarkPlugins={[remarkGfm]}
-                                    rehypePlugins={[rehypeRaw, rehypeHighlight]}
-                                />
+                            <ReactMarkdown
+                                children={parsedResponse.summary.replace(/```(?:\w+)?\n?/, '').replace(/```$/, '')}
+                                remarkPlugins={[remarkGfm]}
+                                rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                            />
                         </div>
                     ) : (
                         <div style={{ textAlign: 'center', marginTop: '2rem' }}>

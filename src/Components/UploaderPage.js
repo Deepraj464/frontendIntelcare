@@ -542,7 +542,7 @@ const UploaderPage = () => {
     const [incidentdatatoDownload, setIncidentDatatoDownload] = useState([]);
     const [showDownloadButton, setShowDownloadButton] = useState(false);
     const [isConsentChecked, setIsConsentChecked] = useState(false);
-
+    const [payRollReport,setPayRollReport]=useState(null);
     const handleButtonClick = () => {
         setIsConsentChecked(true);
     };
@@ -887,14 +887,17 @@ const UploaderPage = () => {
                         { responseType: 'blob' }
                     );
                     
-                    // console.log('payrollResponse',payrollResponse);
+                    console.log('payrollResponse',payrollResponse);
                     const payrollBlob = new Blob([payrollResponse.data], {
                         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     });
 
-                    const payrollFile = new File([payrollBlob], "final_report.xlsx", {
+                    const payrollFile = new File([payrollBlob], "payroll_final_report.xlsx", {
                         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     });
+                    setPayRollReport(payrollFile);
+
+                    console.log(payrollFile);
 
                     // Step 2: Summary API
                     const summaryForm = new FormData();
@@ -959,6 +962,21 @@ const UploaderPage = () => {
         for (let i = 0; i < s.length; ++i) view[i] = s.charCodeAt(i) & 0xff;
         return buf;
     }
+
+    const handledownloadPayrollFile = () => {
+        const url = URL.createObjectURL(payRollReport);
+    
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = payRollReport.name;
+        document.body.appendChild(link);
+        link.click();
+    
+        // Clean up
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+    
 
     const handleDownloadStandardExcel = async () => {
         if (!Array.isArray(standardExcelFile) || standardExcelFile.length === 0) {
@@ -1620,7 +1638,7 @@ const UploaderPage = () => {
 
                                             <div className="reports-box" style={{ height: 'auto', marginTop: '30px', padding: '10px' }}>
                                                 <div style={{ backgroundColor: '#FFFFFF', padding: '10px 30px', borderRadius: '10px' }}>
-                                                    <SummaryReport summaryText={report} handleDownloadAnalyedReportUploadedCSV={handleDownloadUploadedExcel} handleDownloadAnalyedStandardReportCSV={handleDownloadStandardExcel} selectedRole={selectedRole} />
+                                                    <SummaryReport summaryText={report} handleDownloadAnalyedReportUploadedCSV={handleDownloadUploadedExcel} handleDownloadAnalyedStandardReportCSV={handleDownloadStandardExcel} handledownloadPayrollFile={handledownloadPayrollFile} selectedRole={selectedRole} />
                                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', fontSize: '13px', color: 'grey' }}>
                                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
                                                             <input type="checkbox" id="aiConsent" checked={isConsentChecked} readOnly style={{ width: '16px', height: '16px', marginRight: '8px', accentColor: 'green', cursor: 'pointer' }} />
