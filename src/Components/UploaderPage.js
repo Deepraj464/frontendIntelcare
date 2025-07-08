@@ -357,7 +357,7 @@ const UploadReports = ({ files, setFiles, title, subtitle, removeFile, fileforma
                 <div className="uploader-title" style={{ marginBottom: '0px' }}>{title}</div>
                 {(title === 'SIRS Analysis' || title === 'Custom Reporting' || title === 'Care Plan Document' || title === 'Incident Report') &&
                     <Tippy
-                        content={<div style={{ width: '450px', height: 'auto', padding: '4px' }}><img src={title === 'Custom Reporting' ? customPlaceHolder : TooltipPlaceholder} alt='tooltip' style={{ width: '100%' }} /> {content}</div>}
+                        content={<div style={{ width: '450px', height: 'auto', padding: '4px',fontSize:'15px',fontWeight:'600'}}><img src={title === 'Custom Reporting' ? customPlaceHolder : TooltipPlaceholder} alt='tooltip' style={{ width: '100%' }} /> {content}</div>}
                         trigger="mouseenter focus click" // shows on hover or click
                         interactive={true} // allows the tooltip to stay open on click
                         placement="right"
