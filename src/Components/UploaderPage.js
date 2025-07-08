@@ -263,12 +263,12 @@ const UploaderCSVBox = ({ file, setFile, title, removeFile, disabled = false }) 
             )}
             <p className="uploader-title">{title}</p>
             {file && (
-                <div className="file-info" onClick={removeFile}>
+                <div className="file-info" >
                     <div className="file-icon">
                         <img src={fileIcon} height={20} width={15} alt="Zip" />
                     </div>
                     <div style={{ fontSize: '15px', fontFamily: 'Inter', fontWeight: '600', textAlign: 'start' }}>{file.name}</div>
-                    <div className="remove-btn">
+                    <div className="remove-btn" onClick={removeFile}>
                         <RiDeleteBin6Line size={20} color="red" />
                     </div>
                 </div>
@@ -314,12 +314,12 @@ const UploaderCSVBox = ({ file, setFile, title, removeFile, disabled = false }) 
         </div>
     );
 };
-const UploadReports = ({ files, setFiles, title, subtitle, removeFile, fileformat, content, multiple }) => {
+const UploadReports = ({ files, setFiles, title, subtitle, removeFile, fileformat, content, multiple,isProcessing }) => {
     const [loading, setLoading] = useState(false);
 
     const handleFileChange = (e) => {
         let selectedFiles = Array.from(e.target.files);
-        console.log(multiple)
+        console.log('Deepak',isProcessing)
         console.log(selectedFiles);
         if (!multiple && selectedFiles.length > 0) {
             // Always replace with the latest uploaded file
@@ -329,7 +329,18 @@ const UploadReports = ({ files, setFiles, title, subtitle, removeFile, fileforma
         else if (selectedFiles.length > 0) {
             setLoading(true);
             setTimeout(() => {
-                setFiles(prev => [...prev, ...selectedFiles]);
+                if (title === "Custom Reporting") {
+                    let newFiles = [...files, ...selectedFiles];
+    
+                    // Only keep the last 2 files
+                    if (newFiles.length > 2) {
+                        newFiles = newFiles.slice(newFiles.length - 2);
+                    }
+    
+                    setFiles(newFiles);
+                } else {
+                    setFiles(prev => [...prev, ...selectedFiles]);
+                }
                 setLoading(false);
             }, 1000);
         }
@@ -362,7 +373,7 @@ const UploadReports = ({ files, setFiles, title, subtitle, removeFile, fileforma
 
             <div className="files-lists">
                 {files.map((file, index) => (
-                    <div className="files-infos" key={index} onClick={() => removeFile(index)}>
+                    <div className="files-infos" key={index}>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                             <div className="file-icon">
                                 <img src={fileIcon} height={20} width={15} alt="Zip" />
@@ -371,7 +382,7 @@ const UploadReports = ({ files, setFiles, title, subtitle, removeFile, fileforma
                                 {file.name}
                             </div>
                         </div>
-                        <div className="remove-btn">
+                        <div className="remove-btn" onClick={() => removeFile(index)}>
                             <RiDeleteBin6Line size={20} color="red" />
                         </div>
                     </div>
@@ -389,7 +400,7 @@ const UploadReports = ({ files, setFiles, title, subtitle, removeFile, fileforma
                                 Drop file or browse
                             </div>
                             <p className="support-text">{subtitle}</p>
-                            <div className="uploaddiv">Browse Files</div>
+                            <div className={`uploaddiv ${isProcessing ? 'disabled' : ''}`}>Browse Files</div>
                             <input
                                 type="file"
                                 id={`file-upload-${title}`}
@@ -397,7 +408,7 @@ const UploadReports = ({ files, setFiles, title, subtitle, removeFile, fileforma
                                 multiple={multiple}
                                 onChange={handleFileChange}
                                 style={{ display: "none" }}
-                                disabled={loading}
+                                disabled={loading || isProcessing}
                             />
                         </label>
                     </div>
@@ -412,7 +423,7 @@ const UploadReports = ({ files, setFiles, title, subtitle, removeFile, fileforma
                                 multiple={multiple}
                                 onChange={handleFileChange}
                                 style={{ display: "none" }}
-                                disabled={loading}
+                                disabled={loading || isProcessing}
                             />
                         </label>
                     </div>
@@ -1465,6 +1476,7 @@ const UploaderPage = () => {
                                                         }}
                                                         content='Each individual row of the Excel/CSV sheet should represent  a single clients information'
                                                         multiple={activeReportType === 'Quality and Risk Reporting'}
+                                                        isProcessing={isAnalysingReportLoading}
                                                     />
                                                 </div>
                                             </div>
@@ -1550,6 +1562,7 @@ const UploaderPage = () => {
                                                             ? "The file must contain metadata in the first row and the header in the second row. Metadata in the first row should specify the payroll date."
                                                             : "Each individual row of the Excel/CSV sheet should represent a single client's information."}
                                                         multiple={selectedRole !== 'SIRS Analysis'}
+                                                        isProcessing={isProcessing}
                                                     />
                                                 </div>
                                             </div>
