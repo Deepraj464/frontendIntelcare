@@ -6,9 +6,10 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github.css';
+import NewReportIcon from '../Images/NewReportIcon.png';
 
-const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, handleDownloadAnalyedStandardReportCSV, selectedRole, showDownloadButton, handleDownloadIncidentReportCSV,handledownloadPayrollFile}) => {
-    console.log(showDownloadButton);
+const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, handleDownloadAnalyedStandardReportCSV, selectedRole, showDownloadButton, handleDownloadIncidentReportCSV, handledownloadPayrollFile,resetSirsAnalysisState,resetQualityandRiskState,resetIncidentReportState,resetCareServicesEligibilityState,resetCustomReportingState}) => {
+    // console.log(showDownloadButton);
     const parsedResponse = summaryText && typeof summaryText === "string" ? JSON.parse(summaryText) : summaryText;
     console.log(parsedResponse)
 
@@ -28,7 +29,6 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, ha
             {(selectedRole === "Financial Health" || selectedRole === "Quarterly Financial Reporting") ? (
                 <>
                     <div className="title" style={{ textAlign: 'center' }}>AI SUMMARY</div>
-
                     <div className="download-report-div">
                         <div style={{ fontSize: '18px', fontWeight: '500', textAlign: 'center', marginBottom: '20px', marginTop: '12px' }}>
                             Download Reports
@@ -66,6 +66,11 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, ha
                 </>
             ) : selectedRole === 'SIRS Analysis' ? (
                 <>
+                    <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', marginBottom: '24px' }}>
+                        <button className="new-report-btn" onClick={resetSirsAnalysisState}>
+                            <img src={NewReportIcon} alt='newReporticon' style={{width:'24px'}}/><div>New Report</div>
+                        </button>
+                    </div>
                     {Array.isArray(parsedResponse) ? (
                         parsedResponse.map((entry, index) => (
                             <div key={index} className="sirs-markdown">
@@ -102,6 +107,11 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, ha
                 </>
             ) : selectedRole === 'Care Plan Document' ? (
                 <>
+                    <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', marginBottom: '24px' }}>
+                        <button className="new-report-btn" onClick={resetCareServicesEligibilityState}>
+                            <img src={NewReportIcon} alt='newReporticon' style={{width:'24px'}}/>  <div>New Report</div>
+                        </button>
+                    </div>
                     {Array.isArray(parsedResponse) ? (
                         parsedResponse.map((entry, index) => (
                             <div key={index} className="sirs-markdown" style={{ marginBottom: '32px' }}>
@@ -154,13 +164,17 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, ha
                 </>
             ) : selectedRole === 'Incident Report' ? (
                 <>
-                    {showDownloadButton === true &&
-                        <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+
+                    <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', marginBottom: '24px', gap: '20px' }}>
+                        <button className="new-report-btn" onClick={resetIncidentReportState}>
+                            <img src={NewReportIcon} alt='newReporticon' style={{width:'24px'}} /><div>New Report</div>
+                        </button>
+                        {showDownloadButton === true &&
                             <button className="download-report-btn" onClick={handleDownloadIncidentReportCSV}>
                                 Download Report <MdOutlineFileDownload color="white" style={{ marginLeft: '6px' }} size={24} />
                             </button>
-                        </div>
-                    }
+                        }
+                    </div>
                     {Array.isArray(parsedResponse) ? (
                         parsedResponse.map((entry, index) => (
                             <div key={index} className="sirs-markdown" style={{ marginBottom: '32px' }}>
@@ -206,6 +220,11 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, ha
                 </>
             ) : selectedRole === 'Quality and Risk Reporting' ? (
                 <>
+                    <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', marginBottom: '24px' }}>
+                        <button className="new-report-btn" onClick={resetQualityandRiskState}>
+                            <img src={NewReportIcon} alt='newReporticon' style={{width:'24px'}} /><div>New Report</div>
+                        </button>
+                    </div>
                     {parsedResponse ? (
                         <div className="sirs-markdown" style={{ marginBottom: '32px' }}>
                             {parsedResponse?.Compliance_Standards && (
@@ -245,9 +264,12 @@ const SummaryReport = ({ summaryText, handleDownloadAnalyedReportUploadedCSV, ha
                 </>
             ) : selectedRole === 'Custom Reporting' ? (
                 <>
-                    <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+                    <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', marginBottom: '24px', gap: '20px' }}>
+                        <button className="new-report-btn" onClick={resetCustomReportingState}>
+                            <img src={NewReportIcon} alt='newReporticon' style={{width:'24px'}} /> <div>New Report</div>
+                        </button>
                         <button className="download-report-btn" onClick={handledownloadPayrollFile}>
-                            Download Populated Report <MdOutlineFileDownload color="white" style={{ marginLeft: '6px' }} size={24} />
+                            Download Report <MdOutlineFileDownload color="white" style={{ marginLeft: '6px' }} size={24} />
                         </button>
                     </div>
                     {parsedResponse ? (
