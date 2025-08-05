@@ -1,0 +1,38 @@
+.broadcast-success {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  background-color: rgba(255, 255, 255, 0.8); /* optional: semi-transparent bg */
+  z-index: 9999; /* ensure it appears on top */
+}
+
+.success-circle {
+  background-color: #00c9a7;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tick {
+  color: white;
+  font-size: 4rem;
+  font-weight: bold;
+}
+
+.success-text {
+  margin-top: 1rem;
+  font-size: 1.25rem;
+  color: #333;
+  text-align: center;
+}
