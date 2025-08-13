@@ -69,6 +69,7 @@ const Sidebar = ({
     "Rostering Automation",
   ];
   const NDISButton = [
+    "Client Event & Incident Management",
     "Audit & Registration Manager",
     "Incident & Complaint Reporter",
     "Restrictive Practice & Behaviour Support",
@@ -97,6 +98,7 @@ const Sidebar = ({
       purple: purpleIncidentReport,
     },
     "Quality and Risk Reporting": { white: whiteqirs, purple: purpleqirs },
+    "HR Analysis": { white: whiteIncidentReport, purple: purpleIncidentReport },
   };
 
   return (
@@ -188,7 +190,8 @@ const Sidebar = ({
               const isEnabled =
                 report === "Care Services & eligibility Analysis" ||
                 report === "Incident Report" ||
-                report === "Quality and Risk Reporting";
+                report === "Quality and Risk Reporting" ||
+                report === "HR Analysis";
               const icon = roleIcons[report];
               return (
                 <div
@@ -205,7 +208,7 @@ const Sidebar = ({
                   onClick={() => {
                     if (!isEnabled) return;
                     let reportType = report;
-                    if (report === "HR Analysis") reportType = "HR Document";
+                    if (report === "HR Analysis") reportType = "HR Analysis";
                     else if (report === "Care Services & eligibility Analysis")
                       reportType = "Care Plan Document";
                     setSelectedRole(reportType);
@@ -347,56 +350,94 @@ const Sidebar = ({
             }}
           >
             NDIS
-            <sup
-              style={{
-                color: "#C8C8C8",
-                fontSize: "8px",
-                padding: "2px 6px",
-                borderRadius: "999px",
-                border: "1px solid #c8c8c8",
-                fontWeight: "normal",
-                fontFamily: "Inter",
-              }}
-            >
-              Coming Soon
-            </sup>
           </div>
 
-          {NDISButton.map((report) => (
-            <div
-              key={report}
-              className={`role-item ${
-                activeItem === report ? "active-role" : "disabled"
-              }`}
-              style={{
-                cursor: "not-allowed",
-                marginTop: "2px",
-                opacity: 0.6,
-                pointerEvents: "none",
-              }}
-              onClick={() => {
-                // Logic is preserved, but click is disabled visually
-                setActiveReportType(report);
-                setActiveItem(report);
-                setShowReport(false);
-                setShowFinalZipReport(false);
-                setShowUploadReport(true);
-                setMajorTypeOfReport("NDIS");
-                if (analysedReportdata) setAnalysedReportdata(null);
-              }}
-            >
+          {NDISButton.map((report) => {
+            const icon = roleIcons[report];
+            const isEnabled = true; // Always enabled now
+
+            return (
               <div
-                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                key={report}
+                className={`role-item ${
+                  activeItem === report ? "active-role" : ""
+                }`}
+                style={{
+                  cursor: isEnabled ? "pointer" : "not-allowed",
+                  marginTop: "2px",
+                  opacity: isEnabled ? 1 : 0.6,
+                  pointerEvents: isEnabled ? "auto" : "none",
+                }}
+                onClick={() => {
+                  if (!isEnabled) return;
+
+                  let reportType = report;
+
+                  // Map UI names to internal report types
+                  if (report === "Client Event & Incident Management")
+                    reportType = "Client Event & Incident Management";
+                  else if (report === "Audit & Registration Manager")
+                    reportType = "Audit & Registration Manager";
+                  else if (report === "Incident & Complaint Reporter")
+                    reportType = "Incident & Complaint Reporter";
+                  else if (
+                    report === "Restrictive Practice & Behaviour Support"
+                  )
+                    reportType = "Restrictive Practice & Behaviour Support";
+                  else if (report === "Worker-Screening & HR Compliance")
+                    reportType = "Worker-Screening & HR Compliance";
+                  else if (report === "Financial & Claims Compliance")
+                    reportType = "Financial & Claims Compliance";
+                  else if (
+                    report === "Participant Outcomes & Capacity-Building"
+                  )
+                    reportType = "Participant Outcomes & Capacity-Building";
+
+                  // Set both selectedRole and activeReportType
+                  setSelectedRole(reportType);
+                  setActiveItem(report);
+                  setActiveReportType(reportType);
+
+                  // Reset views
+                  setShowReport(false);
+                  setShowFinalZipReport(false);
+                  setShowUploadReport(true);
+                  setMajorTypeOfReport("NDIS");
+
+                  if (analysedReportdata) setAnalysedReportdata(null);
+                }}
               >
-                <img
-                  src={lock}
-                  alt="lock"
-                  style={{ width: "22px", height: "22px" }}
-                />
-                {report}
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  {isEnabled && icon ? (
+                    <img
+                      src={activeItem === report ? icon.purple : icon.white}
+                      alt={`${report} icon`}
+                      style={{ width: "22px", height: "22px" }}
+                    />
+                  ) : (
+                    <img
+                      src={lock}
+                      alt="lock"
+                      style={{ width: "22px", height: "22px" }}
+                    />
+                  )}
+                  <p
+                    style={{
+                      color: isEnabled
+                        ? activeItem === report
+                          ? "#000000"
+                          : "#FFFFFF"
+                        : "#929592",
+                    }}
+                  >
+                    {report}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
       <>

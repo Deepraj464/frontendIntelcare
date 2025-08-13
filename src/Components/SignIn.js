@@ -1,19 +1,25 @@
 import React, { useState } from "react";
-import { auth, googleProvider, facebookProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup } from "../firebase";
+import {
+  auth,
+  googleProvider,
+  facebookProvider,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+} from "../firebase";
 import "../Styles/SignIn.css";
 import emailjs from "@emailjs/browser";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa6";
-import { FaEnvelope, FaKey, FaUser } from "react-icons/fa"
+import { FaEnvelope, FaKey, FaUser } from "react-icons/fa";
 
 const SignIn = ({ show, onClose }) => {
-  const [name, setName] = useState('');
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
-
 
   if (!show) return null;
 
@@ -110,7 +116,6 @@ const SignIn = ({ show, onClose }) => {
           {isSignUp ? "Create Your Account" : "Log In"}
         </div>
 
-
         <form onSubmit={handleAuth}>
           <div style={{ position: "relative", marginBottom: "10px" }}>
             <FaUser
@@ -187,7 +192,13 @@ const SignIn = ({ show, onClose }) => {
           </div>
 
           {loading ? (
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
               <div className="loader"></div>
             </div>
           ) : (
@@ -197,7 +208,9 @@ const SignIn = ({ show, onClose }) => {
           )}
         </form>
 
-        {error && <p className="error-message">User Does Not Exist ! Create Account</p>}
+        {error && (
+          <p className="error-message">User Does Not Exist ! Create Account</p>
+        )}
 
         <div className="divider">
           <hr />
@@ -206,15 +219,44 @@ const SignIn = ({ show, onClose }) => {
         </div>
 
         <div className="social-buttons">
-          <button className="social-btn" onClick={handleGoogleSignIn} disabled={loading}><FcGoogle size={28} />Google</button>
-          <button className="social-btn" onClick={handleFacebookSignIn} disabled={loading}><FaFacebook size={28} color="#1877F2" />Facebook</button>
+          <button
+            className="social-btn"
+            onClick={handleGoogleSignIn}
+            disabled={loading}
+          >
+            <FcGoogle size={28} />
+            Google
+          </button>
+          <button
+            className="social-btn"
+            onClick={handleFacebookSignIn}
+            disabled={loading}
+          >
+            <FaFacebook size={28} color="#1877F2" />
+            Facebook
+          </button>
         </div>
-        <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center' }}>
-          <p className="register-text">{isSignUp ? "Already have an account?" : "Don't have an account yet?"}</p>
-          <a href="#" className="register-link" onClick={(e) => {
-            e.preventDefault(); // Prevent URL change
-            setIsSignUp(!isSignUp);
-          }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "4px",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <p className="register-text">
+            {isSignUp
+              ? "Already have an account?"
+              : "Don't have an account yet?"}
+          </p>
+          <a
+            href="#"
+            className="register-link"
+            onClick={(e) => {
+              e.preventDefault(); // Prevent URL change
+              setIsSignUp(!isSignUp);
+            }}
+          >
             {isSignUp ? "Sign In" : "Sign Up"}
           </a>
         </div>
