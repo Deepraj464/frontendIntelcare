@@ -164,7 +164,7 @@ const Client_Event_Reporting = () => {
                 Client Event & Incident Reporting
               </span>
               <div className="info-icon" title="Upload files for analysis">
-                ?
+                i
               </div>
             </div>
 
@@ -229,7 +229,7 @@ const Client_Event_Reporting = () => {
           {/* Ask AI Section */}
           {stage3Data && (
             <div className="ask-ai-container">
-              <label>Ask AI a Question:</label>
+              <label style={{ marginLeft: "8px" }}>Ask AI a Question:</label>
               <div className="ask-ai-input-wrapper">
                 <input
                   type="text"
@@ -238,7 +238,7 @@ const Client_Event_Reporting = () => {
                   placeholder="Type your question here..."
                 />
                 <button onClick={handleAskAI} disabled={loadingAskAI}>
-                  {loadingAskAI ? "Thinking..." : "Ask 🤖"}
+                  {loadingAskAI ? "Thinking..." : "Ask"}
                 </button>
               </div>
 
