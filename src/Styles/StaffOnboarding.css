@@ -1,8 +1,8 @@
-.staff-onboarding-wrapper {
-  width: 100%;
+/* Main container styles */
+.staff-onboarding-page {
+  width: 120%;
   display: flex;
   justify-content: center;
-  background: #fff;
   padding: 40px 20px;
   box-sizing: border-box;
 }
@@ -11,15 +11,15 @@
   display: flex;
   max-width: 1280px;
   width: 100%;
-  gap: 40px; /* space between video and contents */
-  align-items: flex-start; /* align top edges */
+  gap: 40px;
+  align-items: flex-start;
   box-sizing: border-box;
   min-width: 320px;
 }
 
-/* Video Section ~ 65% width (adjusted from your 85% to fit properly) */
+/* Video Section ~ 65% width */
 .video-section {
-  flex: 0 0 65%; /* fixed 65% width */
+  flex: 0 0 65%;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -27,8 +27,8 @@
 
 /* Right Side Contents ~ 35% width */
 .course-contents {
-  flex: 0 0 35%; /* fixed 35% width */
-  min-width: 300px; /* prevent too small */
+  flex: 0 0 35%;
+  min-width: 300px;
   background: #f9fafc;
   border-radius: 12px;
   padding: 24px 24px 32px;
@@ -42,17 +42,19 @@
 /* Video player styling */
 .video-player {
   position: relative;
-  width: calc(100% + 100px); /* Increase width by 100px */
-  aspect-ratio: 16 / 9;       /* keep 16:9 ratio */
+  width: calc(100% + 100px);
+  aspect-ratio: 16 / 9;
   background: #000;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgb(0 0 0 / 0.15);
   transform: translateX(-100px);
-  max-width: none; /* prevent max width constraints */
+  max-width: none;
 }
+
 .video-player video,
-.video-player img {
+.video-player img,
+.video-thumbnail {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -83,6 +85,7 @@
   font-weight: 700;
   font-size: 18px;
   color: #3c3f58;
+  margin: 0;
 }
 
 .progress-text {
@@ -91,64 +94,120 @@
   font-weight: 600;
 }
 
-/* Section title */
+/* Enhanced Section Styling */
+.course-section {
+  margin-bottom: 8px;
+  border: 1px solid #e8ecf0;
+  border-radius: 8px;
+  background-color: #ffffff;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.course-section.expanded {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Enhanced Section title */
 .section-title {
   display: flex;
-  justify-content: start;
+  justify-content: flex-start;
   flex-direction: column;
-  align-items: self-start;
+  align-items: flex-start;
   cursor: pointer;
-  padding: 14px 0;
+  padding: 16px 18px;
   font-weight: 600;
   font-size: 14px;
   color: #5c5f7a;
-  border-bottom: 1px solid #e1e6f0;
-  gap: 12px;
+  gap: 8px;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 .section-title:hover {
   color: #5c3aed;
+  background-color: #f8f9ff;
 }
 
-/* Lectures list */
+.section-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.expand-icon {
+  font-size: 12px;
+  transition: transform 0.2s ease;
+  color: #8b8fa3;
+}
+
+.expand-icon.rotated {
+  transform: rotate(90deg);
+}
+
+.section-progress {
+  font-size: 12px;
+  color: #8b8fa3;
+}
+
+/* Enhanced Lectures list */
 .lectures-list {
-  margin-top: 12px;
-  font-size: 14px;
-  color: #4a4d66;
+  background-color: #fafbfd;
+  border-top: 1px solid #e8ecf0;
 }
 
 .lecture {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 0;
+  padding: 12px 18px;
   cursor: pointer;
   border-bottom: 1px solid #f0f1f6;
   color: #4a4d66;
-  align-items: baseline;
+  transition: all 0.15s ease;
+  font-size: 14px;
+  text-align: left;
 }
 
 .lecture:hover {
   background-color: #eef2ff;
   color: #5c3aed;
-  border-radius: 6px;
 }
 
 .lecture.active {
-  background-color: #d9d8ff;
+  background-color: #e6e3ff;
   font-weight: 600;
   border-left: 4px solid #5c3aed;
   color: #3a3699;
-  border-radius: 6px;
   padding-left: 14px;
-  align-items: baseline;
 }
 
-/* Completed lecture style */
-.lecture.completed .lecture-title {
+.lecture.last-item {
+  border-bottom: none;
+}
+
+.lecture-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.lecture-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: #5c3aed;
+  cursor: pointer;
+}
+
+.lecture-title {
+  flex: 1;
+}
+
+.lecture-title.completed {
   text-decoration: line-through;
   color: #a3a3a3;
-  align-items: baseline;
 }
 
 /* Smaller time text */
@@ -189,5 +248,15 @@
 
   .course-contents {
     margin-top: 20px;
+  }
+
+  .video-player {
+    transform: none;
+    width: 100%;
+  }
+
+  .video-title {
+    transform: none;
+    width: 100%;
   }
 }
