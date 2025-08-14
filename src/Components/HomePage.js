@@ -25,6 +25,8 @@ import CareServicesEligibility from "./Modules/SupportAtHomeModule.js/CareServic
 import IncidentReport from "./Modules/SupportAtHomeModule.js/IncidentReport";
 import QualityandRisk from "./Modules/SupportAtHomeModule.js/QualityandRisk";
 import AiRostering from "./Modules/RosteringModule/Rostering";
+import ResumeScreening from "./Modules/SupportAtHomeModule.js/HRAnalysis";
+import Client_Event_Reporting from "./Modules/NDISModule/Client_Event_Reporting";
 
 const HomePage = () => {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -38,9 +40,13 @@ const HomePage = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [selectedRole, setSelectedRole] = useState("Financial Health");
+  console.log("selectedRole",selectedRole)
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
   const [majorTypeofReport, setMajorTypeOfReport] = useState("");
-
+  const [activeReportType, setActiveReportType] = useState("");
+  const [showReport, setShowReport] = useState(false);
+  const [showFinalZipReport, setShowFinalZipReport] = useState(false);
+  const [showUploadedReport, setShowUploadReport] = useState(false);
   const handleModalOpen = () => {
     setModalVisible(true);
   };
@@ -152,6 +158,14 @@ const HomePage = () => {
               setShowDropdown={setShowDropdown}
               setShowSignIn={setShowSignIn}
               showDropdown={showDropdown}
+              activeReportType={activeReportType}
+              setActiveReportType={setActiveReportType}
+              showReport={showReport}
+              setShowReport={setShowReport}
+              showFinalZipReport={showFinalZipReport}
+              setShowFinalZipReport={setShowFinalZipReport}
+              showUploadedReport={showUploadedReport}
+              setShowUploadReport={setShowUploadReport}
             />
           ) : (
             <div className="collapsed-button" onClick={toggleSidebar}>
@@ -212,7 +226,16 @@ const HomePage = () => {
                     setShowFeedbackPopup={setShowFeedbackPopup}
                   />
                 </div>
-
+                <div
+                  style={{
+                    display:
+                      selectedRole === "Client Event & Incident Management"
+                        ? "block"
+                        : "none",
+                  }}
+                >
+                  <Client_Event_Reporting />
+                </div>
                 <div
                   style={{
                     display:
@@ -268,7 +291,16 @@ const HomePage = () => {
                     setShowFeedbackPopup={setShowFeedbackPopup}
                   />
                 </div>
-
+                <div
+                  style={{
+                    display: selectedRole === "HR Analysis" ? "block" : "none",
+                  }}
+                >
+                  <ResumeScreening
+                    handleClick={handleClick}
+                    setShowFeedbackPopup={setShowFeedbackPopup}
+                  />
+                </div>
                 <div
                   style={{
                     display:
@@ -309,6 +341,11 @@ const HomePage = () => {
                     setShowFeedbackPopup={setShowFeedbackPopup}
                   />
                 </div>
+                <div
+                  style={{
+                    display: selectedRole === "HR Analysis" ? "block" : "none",
+                  }}
+                ></div>
                 <div
                   style={{
                     display:

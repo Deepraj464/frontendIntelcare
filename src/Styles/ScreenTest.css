@@ -1,0 +1,316 @@
+/* ScreeningTest.css - add or merge into ResumeScreening.css */
+* {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+.screening-root {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: inherit;
+  color: #1e293b;
+}
+
+/* Intro form */
+.intro-card {
+  background: white;
+  border-radius: 14px;
+  padding: 32px;
+  border: 1px solid #e6e9f2;
+  box-shadow: 0 6px 20px rgba(2, 6, 23, 0.04);
+  text-align: center;
+}
+
+.intro-card h2 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.intro-sub {
+  color: #64748b;
+  margin-bottom: 18px;
+  font-weight: 500;
+}
+
+.intro-form .label {
+  display: block;
+  text-align: left;
+  margin: 12px 0 6px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #e6e9f2;
+  outline: none;
+  font-size: 14px;
+  box-sizing: border-box;
+  margin-bottom: 8px;
+}
+
+.input:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.08);
+}
+
+.form-error {
+  color: #dc2626;
+  margin: 10px 0;
+  font-weight: 600;
+}
+
+/* buttons */
+.btn {
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  min-width: 96px;
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.16);
+}
+
+.btn.ghost {
+  background: white;
+  border: 1.5px solid #e6e9f2;
+  color: #6b7280;
+}
+
+/* quiz card */
+.quiz-card {
+  background: white;
+  border-radius: 14px;
+  padding: 28px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 6px 24px rgba(2, 6, 23, 0.04);
+}
+
+.quiz-header {
+  margin-bottom: 22px;
+  text-align: center;
+}
+
+.quiz-progress {
+  font-weight: 700;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.quiz-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  max-width: 680px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+/* options */
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.option-card {
+  border-radius: 12px;
+  padding: 14px 16px;
+  border: 1.8px solid #e6e9f2;
+  font-size: smaller;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: #fff;
+  text-align: left;
+}
+
+.option-card:hover {
+  border-color: #c7b6ff;
+  transform: translateY(-2px);
+}
+
+.option-card.selected {
+  border-color: #10b981; /* green like screenshot for selection */
+  background: #f0fdf4;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08);
+}
+
+/* footer with nav */
+.quiz-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 22px;
+  gap: 12px;
+}
+
+.footer-right {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* summary */
+.summary-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid #e6e9f2;
+  text-align: center;
+}
+
+.summary-text {
+  color: #475569;
+  margin: 10px 0 18px;
+  font-weight: 600;
+}
+
+.summary-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.answers-review {
+  margin-top: 8px;
+  text-align: left;
+}
+
+.review-item {
+  border-top: 1px dashed #eef2ff;
+  padding: 10px 0;
+}
+
+.review-q {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.review-a.correct {
+  color: #065f46;
+  font-weight: 700;
+}
+
+.review-a.wrong {
+  color: #991b1b;
+  font-weight: 700;
+}
+.tick-circle {
+  width: 120px;
+  height: 120px;
+  background-color: #4caf50;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.tick-circle::after {
+  content: "";
+  position: absolute;
+  width: 30px; /* Slightly adjusted for better proportions */
+  height: 50px;
+  border-right: 4px solid white;
+  border-bottom: 4px solid white;
+  transform: rotate(45deg);
+  margin-top: -8px; /* Fine-tuned vertical adjustment */
+  margin-left: 2px; /* Fine-tuned horizontal adjustment */
+}
+
+.tick-circle:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  background-color: #3e8e41;
+}
+
+/* Animation version */
+.tick-circle.animate::after {
+  animation: checkmarkFadeIn 0.6s ease-out;
+}
+
+@keyframes checkmarkFadeIn {
+  from {
+    opacity: 0;
+    transform: rotate(45deg) scale(0.5);
+    margin-top: -20px;
+  }
+  to {
+    opacity: 1;
+    transform: rotate(45deg) scale(1);
+    margin-top: -8px;
+  }
+}
+/* Add to your existing CSS */
+.success-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.success-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-top: 24px;
+  margin-bottom: 8px;
+}
+
+.success-subtext {
+  color: #64748b;
+  font-size: 16px;
+  max-width: 400px;
+  margin: 0 auto 24px;
+}
+
+.summary-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* Animation for the tick */
+.tick-circle.animate::after {
+  animation: checkmarkFadeIn 0.6s ease-out forwards;
+}
+
+@keyframes checkmarkFadeIn {
+  0% {
+    opacity: 0;
+    transform: rotate(45deg) scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(45deg) scale(1);
+  }
+}
+/* responsive */
+@media (max-width: 640px) {
+  .screening-root {
+    padding: 12px;
+  }
+
+  .quiz-title {
+    font-size: 15px;
+  }
+
+  .option-card {
+    padding: 12px;
+  }
+}
