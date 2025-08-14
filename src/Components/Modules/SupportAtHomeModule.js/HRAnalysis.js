@@ -192,7 +192,7 @@ const ResumeScreening = ({
 
             <div className="upload-section">
               <div
-                className="upload-label"
+                className="upload-labels"
                 style={{ flexDirection: "row", justifyContent: "center" }}
               >
                 Monthly Financial Health
@@ -200,13 +200,13 @@ const ResumeScreening = ({
               </div>
 
               <div
-                className={`upload-area ${selectedFile ? "file-selected" : ""}`}
+                className={`upload-areass ${selectedFile ? "file-selected" : ""}`}
                 onClick={() => document.getElementById("hrFileInput").click()}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
               >
-                <div className="upload-icon">📁</div>
-                <div className="upload-text">
+                <div className="upload-iconss">📁</div>
+                <div className="upload-textss">
                   {selectedFile ? selectedFile.name : "Drop file or browse"}
                 </div>
                 <div className="upload-subtext">

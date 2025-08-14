@@ -200,7 +200,7 @@ const Client_Event_Reporting = () => {
 
           {/* Analyse Button */}
           <button
-            className="analyse-btn"
+            className="analyse-btns"
             onClick={handleAnalyse}
             disabled={loading}
           >

@@ -74,11 +74,11 @@
   margin-top: 10px;
 }
 
-.upload-icon {
+.upload-iconss {
   font-size: 30px;
 }
 
-.upload-text {
+.upload-textss {
   font-weight: bold;
 }
 
@@ -124,7 +124,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.analyse-btn {
+.analyse-btns {
   background: linear-gradient(90deg, #7b5fff, #4a3cff);
   color: white;
   padding: 10px 16px;
