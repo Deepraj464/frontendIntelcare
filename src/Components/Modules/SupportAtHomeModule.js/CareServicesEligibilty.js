@@ -52,7 +52,7 @@ const CareServicesEligibility = (props) => {
 
                 try {
                     const response = await axios.post(
-                        "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/care-analyze",
+                        "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/header-modules/care-plan-analysis/analyze",
                         { input_row: rowDict }
                     );
 

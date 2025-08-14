@@ -681,10 +681,10 @@ const UploaderPage = () => {
 
                     let standardEndpoint = "";
                     if (selectedRole === "Financial Health") {
-                        standardEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/monthly_financial_health";
+                        standardEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/header-modules/financial/populate";
                     } else if (selectedRole === "Quarterly Financial Reporting") {
                         // console.log('Deepak');
-                        standardEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/QFR";
+                        standardEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/support-at-home/qfr/populate";
                     }
 
                     const stdAPIRes = await axios.post(
@@ -776,10 +776,10 @@ const UploaderPage = () => {
                 console.log('SuumariseFor', summariseForm);
                 let standardSummariseEndpoint = '';
                 if (selectedRole === "Financial Health") {
-                    standardSummariseEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/summarise_monthly_finance";
+                    standardSummariseEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/header-modules/financial/report";
                 } else if (selectedRole === "Quarterly Financial Reporting") {
                     // console.log('Deepak');
-                    standardSummariseEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/summarise_QFR";
+                    standardSummariseEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/support-at-home/qfr/report";
                 }
                 const summaryResponse = await axios.post(
                     standardSummariseEndpoint,
@@ -801,10 +801,10 @@ const UploaderPage = () => {
                 try {
                     let standardVisulaiseEndpoint = '';
                     if (selectedRole === "Financial Health") {
-                        standardVisulaiseEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/visualise_monthly_finance";
+                        standardVisulaiseEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/header-modules/financial/visualise";
                     } else if (selectedRole === "Quarterly Financial Reporting") {
                         // console.log('Deepak');
-                        standardVisulaiseEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/visualise_qfr";
+                        standardVisulaiseEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/support-at-home/qfr/visualise ";
                     }
                     const visualiseResponse = await axios.post(
                         standardVisulaiseEndpoint,
@@ -858,7 +858,7 @@ const UploaderPage = () => {
 
                     try {
                         const sirsResponse = await axios.post(
-                            "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/sirs-analyze",
+                            "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/support-at-home/sirs/analyze",
                             { input_row: rowDict }
                         );
 
@@ -893,7 +893,7 @@ const UploaderPage = () => {
                     });
 
                     const payrollResponse = await axios.post(
-                        "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/tlc/payroll",
+                        "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/support-at-home/custom-reporting/tlc/payroll",
                         payrollForm,
                         { responseType: 'blob' }
                     );
@@ -915,7 +915,7 @@ const UploaderPage = () => {
                     summaryForm.append("file", payrollFile);
 
                     const summaryResponse = await axios.post(
-                        "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/tlc/payroll_summary",
+                        "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/support-at-home/custom-reporting/tlc/payroll_summary",
                         summaryForm
                     );
 
@@ -1083,7 +1083,7 @@ const UploaderPage = () => {
 
                 try {
                     const response = await axios.post(
-                        "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/incident_reporting",
+                        "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/support-at-home/incident-reporting-dca/report",
                         formData,
                         {
                             headers: {
@@ -1157,7 +1157,7 @@ const UploaderPage = () => {
 
                     try {
                         const response = await axios.post(
-                            "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/care-analyze",
+                            "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/header-modules/care-plan-analysis/analyze",
                             { input_row: rowDict }
                         );
 
@@ -1242,7 +1242,7 @@ const UploaderPage = () => {
                 });
 
                 const response = await axios.post(
-                    "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/quality_risk_reporting",
+                    "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/support-at-home/quality-risk/report",
                     formData,
                 );
 

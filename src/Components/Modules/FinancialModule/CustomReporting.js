@@ -40,7 +40,7 @@ const CustomReporting = (props) => {
             });
 
             const payrollResponse = await axios.post(
-                "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/tlc/payroll",
+                "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/support-at-home/custom-reporting/tlc/payroll",
                 payrollForm,
                 { responseType: 'blob' }
             );
@@ -62,7 +62,7 @@ const CustomReporting = (props) => {
             summaryForm.append("file", payrollFile);
 
             const summaryResponse = await axios.post(
-                "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/tlc/payroll_summary",
+                "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/support-at-home/custom-reporting/tlc/payroll_summary",
                 summaryForm
             );
 
