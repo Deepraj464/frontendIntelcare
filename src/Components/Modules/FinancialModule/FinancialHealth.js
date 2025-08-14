@@ -166,7 +166,7 @@ const FinancialHealth = (props) => {
 
                     let standardEndpoint = "";
                     if (props.selectedRole === "Financial Health") {
-                        standardEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/monthly_financial_health";
+                        standardEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/header-modules/financial/populate";
                     }
 
                     const stdAPIRes = await axios.post(
@@ -258,7 +258,7 @@ const FinancialHealth = (props) => {
                 console.log('SuumariseFor', summariseForm);
                 let standardSummariseEndpoint = '';
                 if (props.selectedRole === "Financial Health") {
-                    standardSummariseEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/summarise_monthly_finance";
+                    standardSummariseEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/header-modules/financial/report";
                 }
                 const summaryResponse = await axios.post(
                     standardSummariseEndpoint,
@@ -280,7 +280,7 @@ const FinancialHealth = (props) => {
                 try {
                     let standardVisulaiseEndpoint = '';
                     if (props.selectedRole === "Financial Health") {
-                        standardVisulaiseEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/visualise_monthly_finance";
+                        standardVisulaiseEndpoint = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/header-modules/financial/visualise";
                     }
                     const visualiseResponse = await axios.post(
                         standardVisulaiseEndpoint,

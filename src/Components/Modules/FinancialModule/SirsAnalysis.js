@@ -50,7 +50,7 @@ const SirsAnalysis = (props) => {
 
                 try {
                     const sirsResponse = await axios.post(
-                        "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/sirs-analyze",
+                        "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/support-at-home/sirs/analyze",
                         { input_row: rowDict }
                     );
 

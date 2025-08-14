@@ -57,7 +57,7 @@ const IncidentReport = (props) => {
 
                 try {
                     const response = await axios.post(
-                        "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/incident",
+                        "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/support-at-home/incident/report",
                         { file_type: "row", row: rowDict }
                     );
                     if (response?.data?.data) {
