@@ -191,7 +191,10 @@ const ResumeScreening = ({
             </p>
 
             <div className="upload-section">
-              <div className="upload-label">
+              <div
+                className="upload-label"
+                style={{ flexDirection: "row", justifyContent: "center" }}
+              >
                 Monthly Financial Health
                 <div className="info-icon">i</div>
               </div>
