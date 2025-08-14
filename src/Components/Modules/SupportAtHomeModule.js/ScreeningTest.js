@@ -179,14 +179,13 @@ export default function ScreeningTest({ onFinish }) {
           </div>
 
           <div className="quiz-footer">
-            <button
-              className="btn ghost"
-              onClick={() => {
-                if (current > 0) goPrev();
-              }}
-            >
-              ← Previous
-            </button>
+            {current > 0 && (
+              <div className="prev-btn-animate">
+                <button className="btn ghost" onClick={goPrev}>
+                  ← Previous
+                </button>
+              </div>
+            )}
 
             <div className="footer-right">
               <button className="btn ghost" onClick={skipQuestion}>
@@ -215,10 +214,7 @@ export default function ScreeningTest({ onFinish }) {
 
           {/* Add any additional actions or summary you want below */}
           <div className="summary-actions">
-            <button
-              className="btn primary"
-              onClick={() => resetTest()}
-            >
+            <button className="btn primary" onClick={() => resetTest()}>
               Start New Test
             </button>
           </div>
