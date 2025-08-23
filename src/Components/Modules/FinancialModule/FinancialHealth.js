@@ -162,17 +162,15 @@ const FinancialHealth = (props) => {
             let fromDate = null;
             let toDate = null;
 
-            if (syncEnabled) {
-                fromDate = toAWSDateTime(startDay, startMonth);
-                toDate = toAWSDateTime(endDay, endMonth);
+            fromDate = toAWSDateTime(startDay, startMonth);
+            toDate = toAWSDateTime(endDay, endMonth);
 
-                // Validate dates were created successfully
-                if (!fromDate || !toDate) {
-                    alert("Please select valid start and end dates.");
-                    clearInterval(interval);
-                    setIsFinancialProcessing(false);
-                    return;
-                }
+            // Validate dates were created successfully
+            if (!fromDate || !toDate) {
+                alert("Please select valid start and end dates.");
+                clearInterval(interval);
+                setIsFinancialProcessing(false);
+                return;
             }
 
             // Debug logging
@@ -205,7 +203,7 @@ const FinancialHealth = (props) => {
                 }
 
                 financialReportFiles.forEach((file, index) => {
-                    console.log(`Appending file ${index + 1}:`,file.name,file.type,file.size);
+                    console.log(`Appending file ${index + 1}:`, file.name, file.type, file.size);
                     formData.append("files", file);
                 });
             }
@@ -253,16 +251,24 @@ const FinancialHealth = (props) => {
 
             const vizData = vizRes.data;
             console.log("Visualization Response:", vizData);
-
+   console.log('vizdata',vizData.data.attachments)
             // ✅ Save to state with better validation
             setFinancialReport(analysisData.final);
-            setFinancialVisualizations(
+            const figures =
                 Array.isArray(vizData?.data?.figures)
                     ? vizData.data.figures
                     : Array.isArray(vizData?.figures)
                         ? vizData.figures
-                        : []
-            );
+                        : Array.isArray(vizData?.data?.attachments)
+                            ? vizData.data.attachments.map((att, index) => ({
+                                image: `data:image/png;base64,${att.file_base64}`,
+                                metricName: att.filename
+                                    ? att.filename.replace(/\.[^/.]+$/, "") // Remove extension
+                                    : `Attachment ${index + 1}`
+                            }))
+                            : [];
+
+            setFinancialVisualizations(figures);
             setFinancialShowReport(true);
         } catch (err) {
             console.error("Error in analysis pipeline:", err);
@@ -362,6 +368,7 @@ const FinancialHealth = (props) => {
         setFinancialShowReport(false);
         setIsConsentChecked(false);
     };
+    console.log('financial Visualizations',financialVisualizations)
 
     return (
         <>
@@ -665,18 +672,6 @@ const FinancialHealth = (props) => {
                             <div>New Report</div>
                         </button>
                     </div>
-                    {/* <div className="card-grid"> */}
-                    {/* {financialVisualizations.map((viz, index) => (
-              <div key={index} className="data-card">
-                <h4>{viz?.metricName}</h4>
-                <img
-                  src={viz.image}
-                  alt={viz.metricName}
-                  style={{ width: "100%" }}
-                />
-              </div>
-            ))} */}
-                    {/* </div> */}
                     <div
                         className="reports-box"
                         style={{ height: "auto", marginTop: "30px", padding: "10px" }}
@@ -716,23 +711,39 @@ const FinancialHealth = (props) => {
                     <div className="graph-gridsss">
                         {financialVisualizations.map((item, index) => (
                             <div key={index} style={{ marginBottom: '30px' }}>
-                                <Plot
-                                    data={item.figure.data}
-                                    layout={{
-                                        ...item.figure.layout,
-                                        autosize: true,
-                                        margin: { t: 40, l: 40, r: 40, b: 40 },
-                                    }}
-                                    style={{ width: '100%', height: '400px' }}
-                                    config={{
-                                        responsive: true,
-                                        displayModeBar: false,
-                                        displaylogo: false,
-                                    }}
-                                />
+                                {item.figure ? (
+                                    // Case 1: Plotly Graph
+                                    <Plot
+                                        data={item.figure.data}
+                                        layout={{
+                                            ...item.figure.layout,
+                                            autosize: true,
+                                            margin: { t: 40, l: 40, r: 40, b: 40 },
+                                        }}
+                                        style={{ width: '100%', height: '400px' }}
+                                        config={{
+                                            responsive: true,
+                                            displayModeBar: false,
+                                            displaylogo: false,
+                                        }}
+                                    />
+                                ) : item.image ? (
+                                    // Case 2: Image with title
+                                    <div style={{ textAlign: 'center' }}>
+                                        <img
+                                            src={item.image}
+                                            alt={item.metricName || `Attachment ${index + 1}`}
+                                            style={{width:'100%'}}
+                                        />
+                                          <h4 style={{ marginBottom: '10px', fontFamily: 'Inter', fontSize: '16px' }}>
+                                            {item.metricName || `Attachment ${index + 1}`}
+                                        </h4>
+                                    </div>
+                                ) : null}
                             </div>
                         ))}
                     </div>
+
 
                     <div
                         style={{
