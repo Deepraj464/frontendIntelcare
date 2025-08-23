@@ -4,13 +4,14 @@ import ScreeningTest from "./ScreeningTest";
 import StaffOnboarding from "./StaffOnboarding";
 import StaffComplianceDashboard from "./StaffComplianceDashboard";
 import DocumentVerification from "./DocumentVerification";
+import UploadFiles from "../../UploadFiles";
 
 const ResumeScreening = ({
   selectedRole,
   handleClick,
   setShowFeedbackPopup,
 }) => {
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeTab, setActiveTab] = useState("Resume Screening");
   const [showResults, setShowResults] = useState(false);
@@ -141,41 +142,36 @@ const ResumeScreening = ({
     <div className="hr-analysis-container">
       <div className="top-nav">
         <button
-          className={`nav-tab ${
-            activeTab === "Resume Screening" ? "active" : ""
-          }`}
+          className={`nav-tab ${activeTab === "Resume Screening" ? "active" : ""
+            }`}
           onClick={() => handleTabClick("Resume Screening")}
         >
           Resume Screening
         </button>
         <button
-          className={`nav-tab ${
-            activeTab === "Screening Test" ? "active" : ""
-          }`}
+          className={`nav-tab ${activeTab === "Screening Test" ? "active" : ""
+            }`}
           onClick={() => handleTabClick("Screening Test")}
         >
           Screening Test
         </button>
         <button
-          className={`nav-tab ${
-            activeTab === "Document Verfication" ? "active" : ""
-          }`}
+          className={`nav-tab ${activeTab === "Document Verfication" ? "active" : ""
+            }`}
           onClick={() => handleTabClick("Document Verfication")}
         >
           Document Verfication
         </button>
         <button
-          className={`nav-tab ${
-            activeTab === "Staff Onboarding" ? "active" : ""
-          }`}
+          className={`nav-tab ${activeTab === "Staff Onboarding" ? "active" : ""
+            }`}
           onClick={() => handleTabClick("Staff Onboarding")}
         >
           Staff Onboarding
         </button>
         <button
-          className={`nav-tab ${
-            activeTab === "Staff Compliance Check" ? "active" : ""
-          }`}
+          className={`nav-tab ${activeTab === "Staff Compliance Check" ? "active" : ""
+            }`}
           onClick={() => handleTabClick("Staff Compliance Check")}
         >
           Staff Compliance Check
@@ -190,54 +186,38 @@ const ResumeScreening = ({
               Upload your Zip folder with multiple staff resumes
             </p>
 
-            <div className="upload-section">
-              <div
-                className="upload-labels"
-                style={{ flexDirection: "row", justifyContent: "center" }}
-              >
-                Monthly Financial Health
-                <div className="info-icon">i</div>
-              </div>
-
-              <div
-                className={`upload-areass ${selectedFile ? "file-selected" : ""}`}
-                onClick={() => document.getElementById("hrFileInput").click()}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-              >
-                <div className="upload-iconss">📁</div>
-                <div className="upload-textss">
-                  {selectedFile ? selectedFile.name : "Drop file or browse"}
-                </div>
-                <div className="upload-subtext">
-                  {selectedFile
-                    ? "File selected successfully"
-                    : "Format: .zip .rar only"}
-                </div>
-                <input
-                  type="file"
-                  id="hrFileInput"
-                  style={{ display: "none" }}
-                  accept=".zip,.rar"
-                  onChange={handleFileSelect}
+            <div className="uploader-grid"
+              style={{ display: 'flex', justifyContent: 'center' }}>
+              <div style={{ width: '75%' }}>
+                <UploadFiles
+                  files={selectedFile}
+                  setFiles={setSelectedFile}
+                  // title={props.selectedRole}
+                  subtitle='Upload multiple .zip, .rar file'
+                  fileformat=".zip, .rar"
+                  removeFile={(index) => {
+                    setSelectedFile(prev => prev.filter((_, i) => i !== index));
+                  }}
+                  multiple={true}
+                  isProcessing={isAnalyzing}
                 />
               </div>
-
-              <button
-                className={`analyze-btn ${isAnalyzing ? "analyzing" : ""}`}
-                onClick={handleAnalyze}
-                disabled={isAnalyzing}
-              >
-                {isAnalyzing ? (
-                  <>
-                    <span className="spinner"></span>
-                    Analyzing...
-                  </>
-                ) : (
-                  "Analyse ⚙️"
-                )}
-              </button>
             </div>
+
+            <button
+              className={`analyze-btn ${isAnalyzing ? "analyzing" : ""}`}
+              onClick={handleAnalyze}
+              disabled={isAnalyzing}
+            >
+              {isAnalyzing ? (
+                <>
+                  <span className="spinner"></span>
+                  Analyzing...
+                </>
+              ) : (
+                "Analyse"
+              )}
+            </button>
           </div>
         )}
 
@@ -252,9 +232,8 @@ const ResumeScreening = ({
               {candidates.map((candidate) => (
                 <div
                   key={candidate.id}
-                  className={`candidate-card ${
-                    selectedCandidates.has(candidate.id) ? "selected" : ""
-                  }`}
+                  className={`candidate-card ${selectedCandidates.has(candidate.id) ? "selected" : ""
+                    }`}
                   onClick={() => toggleCandidateSelection(candidate.id)}
                 >
                   <div className="candidate-info">
@@ -276,11 +255,10 @@ const ResumeScreening = ({
                         {Array.from({ length: 5 }).map((_, i) => (
                           <span
                             key={i}
-                            className={`star ${
-                              i < Math.floor(candidate.score / 2)
-                                ? "filled"
-                                : ""
-                            }`}
+                            className={`star ${i < Math.floor(candidate.score / 2)
+                              ? "filled"
+                              : ""
+                              }`}
                           >
                             {i < Math.floor(candidate.score / 2) ? "★" : "☆"}
                           </span>

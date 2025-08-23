@@ -75,10 +75,10 @@ const PricingModal = ({ email }) => {
                         Unlock Everything for<br></br>Just $49/Month
                     </div>
                     <ul className="features-section">
-                        <li><IoIosArrowDropright color='#6548FF' size={20}/>1 User</li>
-                        <li><IoIosArrowDropright color='#6548FF' size={20}/>Unlimited use</li>
-                        <li><IoIosArrowDropright color='#6548FF' size={20}/>All Features Included</li>
-                        <li><IoIosArrowDropright color='#6548FF' size={20}/>No Commitment Cancel</li>
+                        <li><IoIosArrowDropright color='#6C4CDC' size={20}/>1 User</li>
+                        <li><IoIosArrowDropright color='#6C4CDC' size={20}/>Unlimited use</li>
+                        <li><IoIosArrowDropright color='#6C4CDC' size={20}/>All Features Included</li>
+                        <li><IoIosArrowDropright color='#6C4CDC' size={20}/>No Commitment Cancel</li>
                     </ul>
                     <button
                     className="buy-button"

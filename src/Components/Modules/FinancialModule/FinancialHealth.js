@@ -5,8 +5,12 @@ import SummaryReport from "../../SummaryReportViewer";
 import UploadFiles from "../../UploadFiles";
 import UploaderCSVBox from "../../UploaderCSVBox";
 import star from '../../../Images/star.png';
+import '../../../Styles/FinancialHealth.css';
 import '../../../Styles/UploaderPage.css';
 import NewReportIcon from '../../../Images/NewReportIcon.png';
+import Toggle from "react-toggle";
+import "react-toggle/style.css"
+import UploadFinancialFiles from "../../UploadFinancialFiles";
 
 const FinancialHealth = (props) => {
     const [financialReportFiles, setFinancialReportFiles] = useState([]);
@@ -19,6 +23,9 @@ const FinancialHealth = (props) => {
     const [financialprogress, setFinancialProgress] = useState(0);
     const [financialshowReport, setFinancialShowReport] = useState(false);
     const [isConsentChecked, setIsConsentChecked] = useState(false);
+    // New Addition......
+    const [selectedActor, setSelectedActor] = useState("NDIS");
+    const [syncEnabled, setSyncEnabled] = useState(false);
 
 
     const handleButtonClick = () => {
@@ -355,23 +362,171 @@ const FinancialHealth = (props) => {
         <>
             {(!financialshowReport) ? (
                 <>
-                    <div className="selectedModule">{props.selectedRole}</div>
-                    <div className="selectedModuleDescription">Upload your data and<br></br>get instant insights into spending, funding, and what needs attention</div>
-                    <div>
-                        <div className="uploader-grid">
-                            <UploaderCSVBox
-                                file={financialTemplate}
-                                setFile={setFinancialTemplate}
-                                title="Upload Your Template To Be Filled"
-                                subtitle=".XLSX or .CSV Format Only"
-                                removeFile={() => setFinancialTemplate(null)}
-                                disabled={true}
+
+                    {/* Header Section */}
+                    <div className="financial-header">
+                        <div className="role-selector">
+                            <div style={{ fontSize: '14px', fontWeight: '500', fontFamily: 'Inter' }}>Who are you?</div>
+                            <div className="role-toggle-container">
+                                <div
+                                    onClick={() => setSelectedActor('NDIS')}
+                                    style={{
+                                        backgroundColor: selectedActor === 'NDIS' ? '#6C4CDC' : '#FFFFFF',
+                                        color: selectedActor === 'NDIS' ? 'white' : '#6C4CDC',
+                                        borderTopLeftRadius: '4px',
+                                        borderBottomLeftRadius: '4px',
+                                        cursor: 'pointer',
+                                        padding: '6px 12px',
+                                        fontSize: '14px',
+                                        fontFamily: 'Inter',
+                                        fontWeight: '500',
+                                    }}
+                                    className="role-toggle"
+                                >
+                                    NDIS
+                                </div>
+                                <div
+                                    onClick={() => setSelectedActor('Aged Care')}
+                                    style={{
+                                        backgroundColor: selectedActor === 'Aged Care' ? '#6C4CDC' : '#FFFFFF',
+                                        color: selectedActor === 'Aged Care' ? 'white' : '#6C4CDC',
+                                        borderTopRightRadius: '4px',
+                                        borderBottomRightRadius: '4px',
+                                        cursor: 'pointer',
+                                        padding: '6px 12px',
+                                        fontSize: '14px',
+                                        fontFamily: 'Inter',
+                                        fontWeight: '500',
+                                    }}
+                                    className="role-toggle"
+                                >
+                                    Aged Care
+                                </div>
+                            </div>
+
+                        </div>
+                        <h1 className="titless">FINANCIAL HEALTH</h1>
+                        <div className="sync-toggle">
+                            <div style={{ fontSize: '14px', fontWeight: '500', fontFamily: 'Inter' }}>Sync With Your System</div>
+                            <Toggle
+                                checked={syncEnabled}
+                                onChange={() => setSyncEnabled(!syncEnabled)}
+                                className="custom-toggle"
+                                icons={false}  // ✅ No icons
                             />
-                            <div style={{ width: '100%' }}>
-                                <UploadFiles
+                        </div>
+                    </div>
+                    {/* Info Table */}
+                    <div className="info-table">
+                        <div className="table-headerss">
+                            <span>If You Upload This...</span>
+                            <span>Our AI Will Instantly...</span>
+                        </div>
+                        <div className="table-rowss">
+                            <div>Client Funding Statements (NDIS/HCP)</div>
+                            <ul>
+                                <li>Find unspent funds expiring soon.</li>
+                                <li>Show you which clients are under or over-utilising their plans</li>
+                            </ul>
+                        </div>
+                        <div className="table-rowss">
+                            <div>Timesheets & Roster Exports</div>
+                            <ul>
+                                <li>Pinpoint overtime hotspots and their cost</li>
+                                <li>Show wage cost vs revenue for every client and service.</li>
+                            </ul>
+                        </div>
+                        <div className="table-rowss">
+                            <div>Aged Receivables Report</div>
+                            <ul>
+                                <li>Triage overdue NDIS & client invoices.</li>
+                                <li>Predict next week's cash flow based on what's still unpaid.</li>
+                            </ul>
+                        </div>
+                        <div className="table-rowss">
+                            <div>Profit & Loss Statement</div>
+                            <ul>
+                                <li>Analyse your true service line profitability.</li>
+                                <li>Flag rising costs that are eroding your margin.</li>
+                            </ul>
+                        </div>
+                        <div className="table-rowss">
+                            <div>Service Delivery Logs</div>
+                            <ul>
+                                <li>Find unspent funds expiring soon.</li>
+                                <li>Show you which clients are under or over-utilising their plans</li>
+                            </ul>
+                        </div>
+                    </div>
+                    {/* Date DropDown */}
+                    <div className="date-section">
+                        {/* Report Start Date */}
+                        <div className="date-picker">
+                            <label style={{ fontSize: '14px', fontWeight: '500', fontFamily: 'Inter' }}>Report Start Date</label>
+                            <div className="date-inputs">
+                                <select>
+                                    <option value="">DD</option>
+                                    {Array.from({ length: 31 }, (_, i) => {
+                                        const day = (i + 1).toString().padStart(2, "0");
+                                        return (
+                                            <option key={day} value={day}>
+                                                {day}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                                <select>
+                                    <option value="">MM</option>
+                                    {Array.from({ length: 12 }, (_, i) => {
+                                        const monthValue = (i + 1).toString().padStart(2, "0"); // 01, 02, 03
+                                        const monthName = new Date(0, i).toLocaleString("en-US", { month: "short" }); // Jan, Feb
+                                        return (
+                                            <option key={monthValue} value={monthValue}>
+                                                {monthName}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Report End Date */}
+                        <div className="date-picker">
+                            <label style={{ fontSize: '14px', fontWeight: '500', fontFamily: 'Inter' }}>Report End Date</label>
+                            <div className="date-inputs">
+                                <select>
+                                    <option value="">DD</option>
+                                    {Array.from({ length: 31 }, (_, i) => {
+                                        const day = (i + 1).toString().padStart(2, "0");
+                                        return (
+                                            <option key={day} value={day}>
+                                                {day}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                                <select>
+                                    <option value="">MM</option>
+                                    {Array.from({ length: 12 }, (_, i) => {
+                                        const monthValue = (i + 1).toString().padStart(2, "0"); // 01, 02, 03
+                                        const monthName = new Date(0, i).toLocaleString("en-US", { month: "short" }); // Jan, Feb
+                                        return (
+                                            <option key={monthValue} value={monthValue}>
+                                                {monthName}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div className="uploader-grid" style={{ display: 'flex', justifyContent: 'center' }}>
+                            <div style={{ width: '50%' }}>
+                                <UploadFinancialFiles
                                     files={financialReportFiles}
                                     setFiles={setFinancialReportFiles}
-                                    title={props.selectedRole}
+                                    // title={props.selectedRole}
                                     subtitle='Upload multiple .xlsx, .csv or .xls files'
                                     fileformat=".xlsx, .csv, .xls"
                                     removeFile={(index) => {
@@ -384,6 +539,7 @@ const FinancialHealth = (props) => {
                             </div>
                         </div>
                     </div>
+
 
                     <button
                         className="analyse-btn"
@@ -401,7 +557,7 @@ const FinancialHealth = (props) => {
                 </>
             ) : (
                 <>
-                    <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', marginBottom: '24px',marginTop:'14px' }}>
+                    <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', marginBottom: '24px', marginTop: '14px' }}>
                         <button className="new-report-btn" onClick={resetFinancialHealthState}>
                             <img src={NewReportIcon} alt='newReporticon' style={{ width: '24px' }} /><div>New Report</div>
                         </button>

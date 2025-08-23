@@ -5,7 +5,7 @@
 
 .report-toggle {
   display: flex;
-  border: 1px solid #7b5fff;
+  border: 1px solid #6C4CDC;
   border-radius: 8px;
   overflow: hidden;
   width: fit-content;
@@ -19,14 +19,15 @@
   cursor: pointer;
   font-size: 13px;
   font-weight: 500;
-  color: #7b5fff;
+  color: #6c4cdc;
   transition: all 0.3s ease;
   min-width: 140px;
 }
 
 .report-toggle button.active {
-  background: linear-gradient(90deg, #7b5fff, #4a3cff);
+  /* background: linear-gradient(90deg, #6C4CDC, #4a3cff); */
   color: white;
+  background-color: #6C4CDC !important;
 }
 .page-title {
   margin-bottom: 16px;
@@ -63,7 +64,7 @@
   border-radius: 50%;
   padding: 4px 8px;
   cursor: help;
-  border: 1px solid #7b5fff;
+  border: 1px solid #6C4CDC;
 }
 
 .upload-box {
@@ -91,11 +92,12 @@
   display: inline-block;
   margin-top: 10px;
   padding: 4px 7px;
-  background: linear-gradient(90deg, #7b5fff, #4a3cff);
+  /* background: linear-gradient(90deg, #7b5fff, #4a3cff); */
   color: white;
   border-radius: 6px;
   cursor: pointer;
   font-size: small;
+  background-color: #6C4CDC !important;
 }
 
 .file-list {
@@ -125,13 +127,14 @@
 }
 
 .analyse-btns {
-  background: linear-gradient(90deg, #7b5fff, #4a3cff);
+  /* background: linear-gradient(90deg, #7b5fff, #4a3cff); */
   color: white;
   padding: 10px 16px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
+  background-color: #6C4CDC !important;
 }
 
 .events-grid {
@@ -187,11 +190,12 @@
 
 .ask-ai-input-wrapper button {
   padding: 8px 16px;
-  background: linear-gradient(90deg, #7b5fff, #4a3cff);
+  /* background: linear-gradient(90deg, #7b5fff, #4a3cff); */
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  background-color: #6C4CDC !important;
 }
 
 .results-box {

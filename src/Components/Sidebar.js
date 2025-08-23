@@ -19,6 +19,14 @@ import purpleIncidentReport from "../Images/purple_incidentReporting.png";
 import whiteIncidentReport from "../Images/white_incidentReporting.png";
 import purpleqirs from "../Images/purple_qirs.png";
 import whiteqirs from "../Images/white_qirs.png";
+import purpleSmartOnboarding from '../Images/purple_smartOnboarding.png';
+import whiteSmartOnboarding from '../Images/white_smartOnboarding.png';
+import purpleSmartRostering from '../Images/purple_smartRostering.png';
+import whiteSmartRostering from '../Images/white_smartRostering.png';
+import purpleEventandIncident from '../Images/purple_eventIncident.png';
+import whiteEventandIncident from '../Images/white_eventIncident.png';
+import purpleConnectSystem from '../Images/Purple_ConnectSystem.png';
+import whiteConnectSystem from '../Images/White_ConnectSystem.png';
 import lock from "../Images/lock.png";
 import { IoIosContact, IoIosLogOut } from "react-icons/io";
 import { FaChevronUp } from "react-icons/fa";
@@ -53,109 +61,106 @@ const Sidebar = ({
     // setShowRoles(!showRoles);
     setShowUploadReport(false);
   };
+  const ConnectButton = [
+    "Connect Your Systems"
+  ]
   const roles = [
     "Financial Health",
-    "SIRS Analysis",
-    "Quarterly Financial Reporting",
-    "Annual Financial Reporting",
-    "Incident Management",
-    "Custom Reporting",
+    "Care Services & Eligibility Analysis",
   ];
-  const reportButtons = [
-    "Care Services & eligibility Analysis",
-    "Incident Report",
-    "Quality and Risk Reporting",
-    "HR Analysis",
-    "Rostering Automation",
+  const AiAutomationButtons = [
+    "Smart Rostering",
+    "Smart Onboarding (Staff)",
   ];
   const NDISButton = [
     "Client Event & Incident Management",
-    "Audit & Registration Manager",
-    "Incident & Complaint Reporter",
-    "Restrictive Practice & Behaviour Support",
-    "Worker-Screening & HR Compliance",
-    "Financial & Claims Compliance",
-    "Participant Outcomes & Capacity-Building",
   ];
+  const AgedCareButton = [
+    "Quality and Risk Reporting",
+    "SIRS Analysis",
+    "Incident Report",
+    "Custom Reporting",
+    "Custom Incident Management",
+    "Quarterly Financial Reporting",
+    "Annual Financial Reporting",
+  ]
 
   const roleIcons = {
     "Financial Health": { white: whiteFinancial, purple: purpleFinanicial },
     "SIRS Analysis": { white: whiteSirs, purple: purpleSirs },
     "Quarterly Financial Reporting": { white: whiteQfr, purple: purpleQfr },
     "Annual Financial Reporting": { white: whiteAnnual, purple: purpleAnnual },
-    "Incident Management": {
-      white: whiteIncidentManagement,
-      purple: purpleIncidentManagement,
-    },
+    "Custom Incident Management": { white: whiteIncidentManagement, purple: purpleIncidentManagement },
     "Custom Reporting": { white: whitecustom, purple: purpleCustom },
-
-    "Care Services & eligibility Analysis": {
-      white: whiteCareplan,
-      purple: purpleCareplan,
-    },
-    "Incident Report": {
-      white: whiteIncidentReport,
-      purple: purpleIncidentReport,
-    },
+    "Care Services & Eligibility Analysis": { white: whiteCareplan, purple: purpleCareplan },
+    "Incident Report": { white: whiteIncidentReport, purple: purpleIncidentReport },
     "Quality and Risk Reporting": { white: whiteqirs, purple: purpleqirs },
-    "HR Analysis": { white: whiteIncidentReport, purple: purpleIncidentReport },
+    "Smart Onboarding (Staff)": { white: whiteSmartOnboarding, purple: purpleSmartOnboarding },
+    "Smart Rostering": { white: whiteSmartRostering, purple: purpleSmartRostering },
+    "Client Event & Incident Management": { white: whiteEventandIncident, purple: purpleEventandIncident },
+    "Connect Your Systems": { white: whiteConnectSystem, purple: purpleConnectSystem }
   };
 
   return (
     <div className="sidebar">
       <div className="logo" style={{ cursor: "pointer" }}>
-        <img
-          src={logo}
-          style={{ width: "75%", height: "auto" }}
-          alt="curkiLogo"
-        />
-        <div
-          style={{
-            border: "1px solid #c8c8c8",
-            padding: "4px 8px",
-            borderRadius: "20px",
-            color: "#c8c8c8",
-            marginLeft: "-10px",
-            fontSize: "8px",
-            marginBottom: "-20px",
-            marginTop: "10px",
-          }}
+        <img src={logo} style={{ width: "75%", height: "auto" }} alt="curkiLogo" />
+        <div style={{ border: "1px solid #c8c8c8", padding: "4px 8px", borderRadius: "20px", color: "#c8c8c8", marginLeft: "-10px", fontSize: "8px", marginBottom: "-20px", marginTop: "10px", }}
         >
           Beta
         </div>
       </div>
-      <div
-        className="sidebar-scroll-content"
-        style={{ overflowY: "auto", flex: 1 }}
-      >
+      <div className="sidebar-scroll-content" style={{ overflowY: "auto", flex: 1 }}>
+        <div>
+          {ConnectButton
+            .map((report) => {
+              const icon = roleIcons[report];
+              return (
+                <div key={report} className={`role-item ${activeItem === report ? "active-role" : ""}`}
+                  style={{ cursor: "pointer", opacity: 1, pointerEvents: "auto", border: '1px solid #CCCCCC', borderRadius: '14px', padding: '16px 10px', marginLeft: '20px', marginTop: '14px', marginBottom: '24px' }}
+                  onClick={() => {
+                    let reportType = report;
+                    setSelectedRole(reportType);
+                    setActiveItem(report);
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", }}>
+                    <img
+                      src={activeItem === report ? icon.purple : icon.white}
+                      alt={`${report} icon`}
+                      style={{ width: "30px", height: "30px" }}
+                    />
+                    <div>
+                      <p style={{ color: activeItem === report ? "#000000" : "#FFFFFF" }}>
+                        {report}
+                      </p>
+                      <p style={{ color: activeItem === report ? "#000000" : "#FFFFFF", fontSize: '12px' }}>Care Management, Financial, HR</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+        <div style={{ color: "white", fontSize: "18px", fontWeight: "bold", textAlign: "center", fontFamily: "Inter", marginBottom: "14px", alignItems: "center", gap: "6px", marginTop: "4px", }}
+        >
+          Aged Care/NDIS
+        </div>
         {showRoles && (
           <div className="roles-list">
             {roles.map((role) => {
               return (
-                <div
-                  key={role}
-                  className={`role-item ${
-                    activeItem === role ? "active-role" : ""
-                  }`}
+                <div key={role} className={`role-item ${activeItem === role ? "active-role" : ""}`}
                   onClick={() => {
-                    setSelectedRole(role);
+                    let reportType = role;
+                    if (role === "Care Services & Eligibility Analysis")
+                      reportType = "Care Plan Document";
+                    setSelectedRole(reportType);
                     setActiveItem(role);
                   }}
                   style={{ cursor: "pointer", opacity: 1, marginTop: "2px" }}
                 >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
-                    <img
-                      src={
-                        activeItem === role
-                          ? roleIcons[role].purple
-                          : roleIcons[role].white
-                      }
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", }}>
+                    <img src={activeItem === role ? roleIcons[role].purple : roleIcons[role].white}
                       alt={`${role} icon`}
                       style={{ width: "22px", height: "22px" }}
                     />
@@ -167,142 +172,25 @@ const Sidebar = ({
           </div>
         )}
         <div className="roles-list">
-          <div
-            style={{
-              color: "white",
-              fontSize: "18px",
-              fontWeight: "bold",
-              textAlign: "left",
-              marginLeft: "30px",
-              fontFamily: "Roboto",
-              marginBottom: "14px",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              marginTop: "4px",
-            }}
-          >
-            SUPPORT AT HOME/ HCP/ CHSP
-          </div>
-          {reportButtons
-            .filter((report) => report !== "Rostering Automation")
-            .map((report) => {
-              const isEnabled =
-                report === "Care Services & eligibility Analysis" ||
-                report === "Incident Report" ||
-                report === "Quality and Risk Reporting" ||
-                report === "HR Analysis";
-              const icon = roleIcons[report];
-              return (
-                <div
-                  key={report}
-                  className={`role-item ${
-                    activeItem === report ? "active-role" : ""
-                  }`}
-                  style={{
-                    cursor: isEnabled ? "pointer" : "not-allowed",
-                    marginTop: "2px",
-                    opacity: isEnabled ? 1 : 0.6,
-                    pointerEvents: isEnabled ? "auto" : "none",
-                  }}
-                  onClick={() => {
-                    if (!isEnabled) return;
-                    let reportType = report;
-                    if (report === "HR Analysis") reportType = "HR Analysis";
-                    else if (report === "Care Services & eligibility Analysis")
-                      reportType = "Care Plan Document";
-                    setSelectedRole(reportType);
-                    setActiveItem(report);
-                    setMajorTypeOfReport("SUPPORT AT HOME");
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
-                    {isEnabled && icon ? (
-                      <img
-                        src={activeItem === report ? icon.purple : icon.white}
-                        alt={`${report} icon`}
-                        style={{ width: "22px", height: "22px" }}
-                      />
-                    ) : (
-                      <img
-                        src={lock}
-                        alt="lock"
-                        style={{ width: "22px", height: "22px" }}
-                      />
-                    )}
-                    <p
-                      style={{
-                        color: isEnabled
-                          ? activeItem === report
-                            ? "#000000"
-                            : "#FFFFFF"
-                          : "#929592",
-                      }}
-                    >
-                      {report}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-        </div>
-        <div className="roles-list">
-          <div
-            style={{
-              color: "white",
-              fontSize: "18px",
-              fontWeight: "bold",
-              textAlign: "left",
-              marginLeft: "30px",
-              fontFamily: "Roboto",
-              marginBottom: "14px",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              marginTop: "4px",
-            }}
+          <div style={{ color: "white", fontSize: "18px", fontWeight: "bold", textAlign: "center", fontFamily: "Inter", marginBottom: "14px", alignItems: "center", gap: "6px", marginTop: "4px", }}
           >
             AI AUTOMATION
           </div>
-          {reportButtons
-            .filter((report) => report === "Rostering Automation")
+          {AiAutomationButtons
             .map((report) => {
-              const isEnabled = report === "Rostering Automation";
               const icon = roleIcons[report];
               return (
-                <div
-                  key={report}
-                  className={`role-item ${
-                    activeItem === report ? "active-role" : ""
-                  }`}
-                  style={{
-                    cursor: isEnabled ? "pointer" : "not-allowed",
-                    marginTop: "2px",
-                    opacity: isEnabled ? 1 : 0.6,
-                    pointerEvents: isEnabled ? "auto" : "none",
-                  }}
+                <div key={report} className={`role-item ${activeItem === report ? "active-role" : ""}`}
+                  style={{ cursor: "pointer", marginTop: "2px", opacity: 1, pointerEvents: "auto", }}
                   onClick={() => {
-                    if (!isEnabled) return;
                     let reportType = report;
                     setSelectedRole(reportType);
                     setActiveItem(report);
                     setMajorTypeOfReport("AI AUTOMATION");
                   }}
                 >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
-                    {isEnabled && icon ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", }}>
+                    {icon ? (
                       <img
                         src={activeItem === report ? icon.purple : icon.white}
                         alt={`${report} icon`}
@@ -315,15 +203,7 @@ const Sidebar = ({
                         style={{ width: "22px", height: "22px" }}
                       />
                     )}
-                    <p
-                      style={{
-                        color: isEnabled
-                          ? activeItem === report
-                            ? "#000000"
-                            : "#FFFFFF"
-                          : "#929592",
-                      }}
-                    >
+                    <p style={{ color: activeItem === report ? "#000000" : "#FFFFFF" }}>
                       {report}
                     </p>
                   </div>
@@ -335,19 +215,7 @@ const Sidebar = ({
         {/* NDIS (Locked) */}
         <div className="roles-list">
           <div
-            style={{
-              color: "white",
-              fontSize: "18px",
-              fontWeight: "bold",
-              textAlign: "left",
-              marginLeft: "30px",
-              fontFamily: "Roboto",
-              marginBottom: "14px",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              marginTop: "4px",
-            }}
+            style={{ color: "white", fontSize: "18px", fontWeight: "bold", textAlign: "center", fontFamily: "Inter", marginBottom: "14px", alignItems: "center", gap: "6px", marginTop: "4px", }}
           >
             NDIS
           </div>
@@ -359,9 +227,8 @@ const Sidebar = ({
             return (
               <div
                 key={report}
-                className={`role-item ${
-                  activeItem === report ? "active-role" : ""
-                }`}
+                className={`role-item ${activeItem === report ? "active-role" : ""
+                  }`}
                 style={{
                   cursor: isEnabled ? "pointer" : "not-allowed",
                   marginTop: "2px",
@@ -439,13 +306,68 @@ const Sidebar = ({
             );
           })}
         </div>
+        <div className="roles-list">
+          <div style={{ color: "white", fontSize: "18px", fontWeight: "bold", textAlign: "center", fontFamily: "Inter", marginBottom: "6px", alignItems: "center", gap: "6px", marginTop: "4px", }}
+          >
+            AGED CARE
+          </div>
+          <div style={{ fontSize: '14px', fontWeight: '400', color: 'white', fontFamily: 'Inter', textAlign: 'center', marginBottom: '14px' }}>SUPPORT AT HOME | HCP | CHSP</div>
+          {AgedCareButton
+            .map((report) => {
+              const icon = roleIcons[report];
+              return (
+                <div key={report} className={`role-item ${activeItem === report ? "active-role" : ""}`}
+                  style={{ cursor: "pointer", marginTop: "2px", opacity: 1, pointerEvents: "auto", }}
+                  onClick={() => {
+                    let reportType = report;
+                    if (report === "Care Services & Eligibility Analysis")
+                      reportType = "Care Plan Document";
+                    setSelectedRole(reportType);
+                    setActiveItem(report);
+                    setMajorTypeOfReport("SUPPORT AT HOME");
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    {icon ? (
+                      <img
+                        src={activeItem === report ? icon.purple : icon.white}
+                        alt={`${report} icon`}
+                        style={{ width: "22px", height: "22px" }}
+                      />
+                    ) : (
+                      <img
+                        src={lock}
+                        alt="lock"
+                        style={{ width: "22px", height: "22px" }}
+                      />
+                    )}
+                    <p
+                      style={{
+                        color: activeItem === report
+                          ? "#000000"
+                          : "#FFFFFF"
+                      }}
+                    >
+                      {report}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+        </div>
       </div>
       <>
         <div style={{ display: "flex", justifyContent: "center" }}>
           {showDropdown && (
             <button onClick={handleLogout} className="logout-button">
               {" "}
-              <IoIosLogOut size={24} color="#6548FF" />
+              <IoIosLogOut size={24} color="#6C4CDC" />
               Logout
             </button>
           )}
@@ -461,7 +383,7 @@ const Sidebar = ({
             marginBottom: "20px",
             padding: "11px 14px",
             borderRadius: "12px",
-            background: "#232627",
+            // background: "#232627",
             cursor: "pointer",
           }}
           onClick={() => {

@@ -23,7 +23,7 @@
   padding: 15px;
   border-radius: 12px;
   color: #fff;
-  font-weight: bold;
+  font-weight: 600;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   color: rgb(48, 46, 46);
 }
@@ -39,15 +39,16 @@
 }
 
 .orange {
-  background: linear-gradient(135deg, #ff8f42, #ff6b2d);
+  /* background: linear-gradient(135deg, #ff8f42, #ff6b2d); */
+  background: #14C8A8;
 }
 
 .purple {
-  background: linear-gradient(135deg, #a18fff, #7d6cff);
+  background: #6c4cdc
 }
 
 .blue {
-  background: linear-gradient(135deg, #42a5ff, #1e90ff);
+  background: #F6B74E;
 }
 
 .pink {

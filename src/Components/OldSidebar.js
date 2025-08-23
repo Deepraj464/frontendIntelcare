@@ -46,7 +46,7 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
         'Incident Management': { white: whiteIncidentManagement, purple: purpleIncidentManagement },
         'Custom Reporting': { white: whitecustom, purple: purpleCustom },
 
-        'Care Services & eligibility Analysis': { white: whiteCareplan, purple: purpleCareplan },
+        'Care Services & Eligibility Analysis': { white: whiteCareplan, purple: purpleCareplan },
         'Incident Report': { white: whiteIncidentReport, purple: purpleIncidentReport },
         'Quality and Risk Reporting': { white: whiteqirs, purple: purpleqirs },
     };
@@ -182,7 +182,7 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
             <>
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
                     {showDropdown && (
-                        <button onClick={handleLogout} className="logout-button" > <IoIosLogOut size={24} color="#6548FF" />Logout</button>
+                        <button onClick={handleLogout} className="logout-button" > <IoIosLogOut size={24} color="#6C4CDC" />Logout</button>
                     )}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignSelf: 'center', width: '90%', alignItems: 'center', border: '1px solid white', marginBottom: '20px', padding: '11px 14px', borderRadius: '12px', background: '#232627', cursor: 'pointer' }} onClick={() => {

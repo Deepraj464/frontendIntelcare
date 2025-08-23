@@ -32,7 +32,7 @@
   background: transparent;
   border: none;
   border-radius: 8px;
-  color: #64748b;
+  color: #6C4CDC;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -48,14 +48,14 @@
 }
 
 .nav-tab.active {
-  background: #8b5cf6;
+  background: #6c4cdc;
   color: white;
   box-shadow: 0 2px 4px rgba(139, 92, 246, 0.2);
 }
 
 .nav-tab:hover:not(.active) {
   background: rgba(139, 92, 246, 0.1);
-  color: #8b5cf6;
+  color: #6c4cdc;
 }
 
 .content-area {
@@ -75,7 +75,7 @@
 
 .page-subtitle {
   font-size: 16px;
-  color: #64748b;
+  color: #6C4CDC;
   margin-bottom: 50px;
   line-height: 1.5;
   font-weight: 400;
@@ -139,7 +139,7 @@
   width: 56px;
   height: 56px;
   margin: 0 auto 20px;
-  background: #8b5cf6;
+  background: #6C4CDC;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -156,16 +156,16 @@
 }
 
 .upload-subtext {
-  color: #64748b;
+  color: #6C4CDC;
   font-size: 14px;
   font-weight: 400;
 }
 
 .analyze-btn {
-  background: #8b5cf6;
+  background: #6c4cdc;
   border: none;
-  border-radius: 12px;
-  padding: 16px 32px;
+  border-radius: 20px;
+  padding: 10px 32px;
   color: white;
   font-size: 16px;
   font-weight: 600;
@@ -180,7 +180,7 @@
 }
 
 .analyze-btn:hover:not(:disabled) {
-  background: #7c3aed;
+  background: #6c4cdc;
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
 }
@@ -245,7 +245,7 @@
 }
 
 .coming-soon-message p {
-  color: #64748b;
+  color: #6C4CDC;
   font-size: 18px;
   margin: 0;
   font-weight: 500;
@@ -327,7 +327,7 @@
 .score-label {
   font-size: 16px;
   font-weight: 500;
-  color: #64748b;
+  color: #6C4CDC;
 }
 
 .score-value {
@@ -345,7 +345,7 @@
 
 .experience {
   font-size: 14px;
-  color: #64748b;
+  color: #6C4CDC;
   margin: 0;
   font-weight: 500;
 }
@@ -396,7 +396,7 @@
 }
 
 .sent-test-btn {
-  background: #64748b;
+  background: #6C4CDC;
   color: white;
   border: none;
   border-radius: 12px;

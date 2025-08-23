@@ -1,0 +1,123 @@
+.software-grid {
+    display: grid;
+    grid-template-columns: 30% 30% 30%;
+    column-gap: 5%;
+    justify-content: center;
+    margin: 60px 130px 30px 130px
+}
+
+.software-card {
+    position: relative;
+    border: 0.6px solid #B19CD8;
+    border-radius: 10px;
+    padding: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #fff;
+    height: 60px;
+    transition: all 0.3s ease;
+    margin-bottom: 22px;
+}
+.connected-badge {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    background: #28a745;
+    color: white;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    border-top-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+.software-card img {
+    width: 50%;
+    height: auto;
+    object-fit: contain;
+}
+
+.software-card.active {
+    border: 0.6px solid #6C4CDC;
+    box-shadow: 0 0 30px rgba(86, 21, 208, 0.4);
+    transform: scale(1);
+}
+
+.software-card:hover {
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    transform: scale(1.03);
+}
+
+.forms-group {
+    display: flex;
+    flex-direction: column;
+    margin: 0px 130px;
+    margin-bottom: 20px;
+}
+
+.connect-label {
+    text-align: left;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Inter';
+    margin-bottom: 6px;
+}
+
+.connect-input {
+    border: 1.5px solid #6C4CDC;
+    border-radius: 10px;
+
+}
+
+.connect-system-btn {
+    padding: 12px 24px;
+    border-radius: 20px;
+    font-size: 15px;
+    color: white;
+    font-family: 'Inter';
+    font-weight: 400;
+    outline: none;
+    background-color: #6C4CDC;
+    border: none;
+    margin-top: 4px;
+    cursor: pointer;
+}
+
+.employment-hero-logo {
+    width: 80% !important;
+    /* max-height: 40px; */
+}
+
+
+.xero-logo {
+    max-width: 40%;
+}
+
+.myob-logo {
+    max-width: 40%;
+}
+.connect-system-btn.disconnect-btn {
+    background-color: #E52F07; /* red */
+}
+
+.connect-system-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Spinner */
+.spinners {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(81, 11, 232, 0.4);
+    border-top: 3px solid #491de6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

@@ -209,7 +209,7 @@ const Sidebar = ({ onCollapse, selectedRole, setSelectedRole, showReport, setSho
             <>
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
                     {showDropdown && (
-                        <button onClick={handleLogout} className="logout-button" > <IoIosLogOut size={24} color="#6548FF" />Logout</button>
+                        <button onClick={handleLogout} className="logout-button" > <IoIosLogOut size={24} color="#6C4CDC" />Logout</button>
                     )}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignSelf: 'center', width: '90%', alignItems: 'center', border: '1px solid white', marginBottom: '20px', padding: '11px 14px', borderRadius: '12px', background: '#232627', cursor: 'pointer' }} onClick={() => {
@@ -282,7 +282,7 @@ const UploaderCSVBox = ({ file, setFile, title, removeFile, disabled = false }) 
                             style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
                         >
                             <div className="upload-icon">
-                                <FiUploadCloud color="#8b75FF" />
+                                <FiUploadCloud color="#6C4CDC" />
                             </div>
                             <div style={{ fontSize: '14px', fontWeight: '500', fontFamily: 'Inter', marginBottom: '6px' }}>Drop file or browse</div>
                             <p className="support-text">Format: .xlsx or .csv only</p>
@@ -394,7 +394,7 @@ const UploadReports = ({ files, setFiles, title, subtitle, removeFile, fileforma
                     <div className="upload-area">
                         <label htmlFor={`file-upload-${title}`} className="upload-label">
                             <div className="upload-icon">
-                                <FiUploadCloud color="#8b75FF" />
+                                <FiUploadCloud color="#6C4CDC" />
                             </div>
                             <div style={{ fontSize: '14px', fontWeight: '500', fontFamily: 'Inter', marginBottom: '6px' }}>
                                 Drop file or browse
@@ -476,7 +476,7 @@ const UploaderZipBox = ({ file, setFile, title, subtitle, removeFile, disabled =
                             style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
                         >
                             <div className="upload-icon">
-                                <FiUploadCloud color="#8b75FF" />
+                                <FiUploadCloud color="#6C4CDC" />
                             </div>
                             <div style={{ fontSize: '14px', fontWeight: '500', fontFamily: 'Inter', marginBottom: '6px' }}>Drop file or browse</div>
                             <p className="support-text">Only support zip files</p>
@@ -1724,7 +1724,7 @@ const UploaderPage = () => {
                                     <div style={{ flex: 1, marginTop: '10px', overflowY: 'auto', padding: '10px' }}>
                                         {messages.map((msg, index) => (
                                             <div key={index} style={{ display: 'flex', justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start', marginBottom: '8px' }}>
-                                                <div style={{ backgroundColor: msg.sender === 'user' ? '#fff' : '#6548FF', padding: '10px', borderRadius: '10px', maxWidth: '75%', fontSize: '14px', textAlign: 'left', color: msg.sender === 'user' ? 'black' : 'white', fontFamily: 'Inter' }}>
+                                                <div style={{ backgroundColor: msg.sender === 'user' ? '#fff' : '#6C4CDC', padding: '10px', borderRadius: '10px', maxWidth: '75%', fontSize: '14px', textAlign: 'left', color: msg.sender === 'user' ? 'black' : 'white', fontFamily: 'Inter' }}>
                                                     <MarkdownParser text={msg.text} />
                                                 </div>
                                             </div>
@@ -1733,7 +1733,7 @@ const UploaderPage = () => {
 
                                     <div style={{ position: 'relative', marginTop: '10px', marginBottom: '16px', width: '75%', display: 'flex', alignSelf: 'center' }}>
                                         <input type="text" placeholder="Type your question..." value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()} style={{ width: '100%', padding: '8px 40px 8px 8px', borderRadius: '10px', border: '1px solid #ccc' }} />
-                                        <FaPaperPlane onClick={handleSend} size={18} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: '#6548FF' }} />
+                                        <FaPaperPlane onClick={handleSend} size={18} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: '#6C4CDC' }} />
                                     </div>
                                 </div>
                             )}

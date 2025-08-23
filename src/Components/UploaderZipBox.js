@@ -46,7 +46,7 @@ const UploaderZipBox = ({ file, setFile, title, subtitle, removeFile, disabled =
                             style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
                         >
                             <div className="upload-icon">
-                                <FiUploadCloud color="#8b75FF" />
+                                <FiUploadCloud color="#6C4CDC" />
                             </div>
                             <div style={{ fontSize: '14px', fontWeight: '500', fontFamily: 'Inter', marginBottom: '6px' }}>Drop file or browse</div>
                             <p className="support-text">Only support zip files</p>
