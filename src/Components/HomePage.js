@@ -152,7 +152,7 @@ const HomePage = () => {
 
               <>
                 <div style={{ display: selectedRole === "Connect Your Systems" ? "block" : "none" }}>
-                  <SoftwareConnect />
+                  <SoftwareConnect user={user}/>
                 </div>
                 <div style={{ display: selectedRole === "Financial Health" ? "block" : "none" }}>
                   <FinancialHealth selectedRole="Financial Health" handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} user={user} />
