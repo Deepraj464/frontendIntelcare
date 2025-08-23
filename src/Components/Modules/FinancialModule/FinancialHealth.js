@@ -26,6 +26,10 @@ const FinancialHealth = (props) => {
     // New Addition......
     const [selectedActor, setSelectedActor] = useState("NDIS");
     const [syncEnabled, setSyncEnabled] = useState(false);
+    const [startDay, setStartDay] = useState("");
+    const [startMonth, setStartMonth] = useState("");
+    const [endDay, setEndDay] = useState("");
+    const [endMonth, setEndMonth] = useState("");
 
 
     const handleButtonClick = () => {
@@ -464,7 +468,7 @@ const FinancialHealth = (props) => {
                         <div className="date-picker">
                             <label style={{ fontSize: '14px', fontWeight: '500', fontFamily: 'Inter' }}>Report Start Date</label>
                             <div className="date-inputs">
-                                <select>
+                                <select value={startDay} onChange={(e) => setStartDay(e.target.value)}>
                                     <option value="">DD</option>
                                     {Array.from({ length: 31 }, (_, i) => {
                                         const day = (i + 1).toString().padStart(2, "0");
@@ -475,7 +479,7 @@ const FinancialHealth = (props) => {
                                         );
                                     })}
                                 </select>
-                                <select>
+                                <select value={startMonth} onChange={(e) => setStartMonth(e.target.value)}>
                                     <option value="">MM</option>
                                     {Array.from({ length: 12 }, (_, i) => {
                                         const monthValue = (i + 1).toString().padStart(2, "0"); // 01, 02, 03
@@ -494,7 +498,7 @@ const FinancialHealth = (props) => {
                         <div className="date-picker">
                             <label style={{ fontSize: '14px', fontWeight: '500', fontFamily: 'Inter' }}>Report End Date</label>
                             <div className="date-inputs">
-                                <select>
+                                <select value={endDay} onChange={(e) => setEndDay(e.target.value)}>
                                     <option value="">DD</option>
                                     {Array.from({ length: 31 }, (_, i) => {
                                         const day = (i + 1).toString().padStart(2, "0");
@@ -505,7 +509,7 @@ const FinancialHealth = (props) => {
                                         );
                                     })}
                                 </select>
-                                <select>
+                                <select value={endMonth} onChange={(e) => setEndMonth(e.target.value)}>
                                     <option value="">MM</option>
                                     {Array.from({ length: 12 }, (_, i) => {
                                         const monthValue = (i + 1).toString().padStart(2, "0"); // 01, 02, 03
