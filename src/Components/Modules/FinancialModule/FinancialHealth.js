@@ -251,7 +251,7 @@ const FinancialHealth = (props) => {
 
             const vizData = vizRes.data;
             console.log("Visualization Response:", vizData);
-   console.log('vizdata',vizData.data.attachments)
+            console.log('vizdata', vizData.data.attachments)
             // ✅ Save to state with better validation
             setFinancialReport(analysisData.final);
             const figures =
@@ -368,7 +368,7 @@ const FinancialHealth = (props) => {
         setFinancialShowReport(false);
         setIsConsentChecked(false);
     };
-    console.log('financial Visualizations',financialVisualizations)
+    console.log('financial Visualizations', financialVisualizations)
 
     return (
         <>
@@ -406,11 +406,11 @@ const FinancialHealth = (props) => {
                                     NDIS
                                 </div>
                                 <div
-                                    onClick={() => setSelectedActor("Aged Care")}
+                                    onClick={() => setSelectedActor("aged-care")}
                                     style={{
                                         backgroundColor:
-                                            selectedActor === "Aged Care" ? "#6C4CDC" : "#FFFFFF",
-                                        color: selectedActor === "Aged Care" ? "white" : "#6C4CDC",
+                                            selectedActor === "aged-care" ? "#6C4CDC" : "#FFFFFF",
+                                        color: selectedActor === "aged-care" ? "white" : "#6C4CDC",
                                         borderTopRightRadius: "4px",
                                         borderBottomRightRadius: "4px",
                                         cursor: "pointer",
@@ -672,6 +672,41 @@ const FinancialHealth = (props) => {
                             <div>New Report</div>
                         </button>
                     </div>
+                    <div className="graph-gridsss">
+                        {financialVisualizations.map((item, index) => (
+                            <div key={index} style={{ marginBottom: '30px' }}>
+                                {item.figure ? (
+                                    // Case 1: Plotly Graph
+                                    <Plot
+                                        data={item.figure.data}
+                                        layout={{
+                                            ...item.figure.layout,
+                                            autosize: true,
+                                            margin: { t: 40, l: 40, r: 40, b: 40 },
+                                        }}
+                                        style={{ width: '100%', height: '400px' }}
+                                        config={{
+                                            responsive: true,
+                                            displayModeBar: false,
+                                            displaylogo: false,
+                                        }}
+                                    />
+                                ) : item.image ? (
+                                    // Case 2: Image with title
+                                    <div style={{ textAlign: 'center' }}>
+                                        <img
+                                            src={item.image}
+                                            alt={item.metricName || `Attachment ${index + 1}`}
+                                            style={{ width: '100%' }}
+                                        />
+                                        <h4 style={{ marginBottom: '10px', fontFamily: 'Inter', fontSize: '16px' }}>
+                                            {item.metricName || `Attachment ${index + 1}`}
+                                        </h4>
+                                    </div>
+                                ) : null}
+                            </div>
+                        ))}
+                    </div>
                     <div
                         className="reports-box"
                         style={{ height: "auto", marginTop: "30px", padding: "10px" }}
@@ -704,87 +739,49 @@ const FinancialHealth = (props) => {
                                     color: "grey",
                                 }}
                             >
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        marginBottom: "10px",
+                                    }}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        id="aiConsent"
+                                        checked={isConsentChecked}
+                                        readOnly
+                                        style={{
+                                            width: "16px",
+                                            height: "16px",
+                                            marginRight: "8px",
+                                            accentColor: "green",
+                                            cursor: "pointer",
+                                        }}
+                                    />
+                                    <label htmlFor="aiConsent" style={{ cursor: "pointer" }}>
+                                        AI-generated content. Only to be used as a guide. I agree to
+                                        T&C on curki.ai website.
+                                    </label>
+                                </div>
+                                <button
+                                    onClick={handleButtonClick}
+                                    style={{
+                                        background:
+                                            "linear-gradient(180deg, rgba(139, 117, 255, 0.9) 27.88%, #6D51FF 100%)",
+                                        color: "white",
+                                        border: "none",
+                                        padding: "8px 16px",
+                                        borderRadius: "4px",
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    I understand
+                                </button>
                             </div>
                         </div>
                     </div>
-
-                    <div className="graph-gridsss">
-                        {financialVisualizations.map((item, index) => (
-                            <div key={index} style={{ marginBottom: '30px' }}>
-                                {item.figure ? (
-                                    // Case 1: Plotly Graph
-                                    <Plot
-                                        data={item.figure.data}
-                                        layout={{
-                                            ...item.figure.layout,
-                                            autosize: true,
-                                            margin: { t: 40, l: 40, r: 40, b: 40 },
-                                        }}
-                                        style={{ width: '100%', height: '400px' }}
-                                        config={{
-                                            responsive: true,
-                                            displayModeBar: false,
-                                            displaylogo: false,
-                                        }}
-                                    />
-                                ) : item.image ? (
-                                    // Case 2: Image with title
-                                    <div style={{ textAlign: 'center' }}>
-                                        <img
-                                            src={item.image}
-                                            alt={item.metricName || `Attachment ${index + 1}`}
-                                            style={{width:'100%'}}
-                                        />
-                                          <h4 style={{ marginBottom: '10px', fontFamily: 'Inter', fontSize: '16px' }}>
-                                            {item.metricName || `Attachment ${index + 1}`}
-                                        </h4>
-                                    </div>
-                                ) : null}
-                            </div>
-                        ))}
-                    </div>
-
-
-                    <div
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            marginBottom: "10px",
-                        }}
-                    >
-                        <input
-                            type="checkbox"
-                            id="aiConsent"
-                            checked={isConsentChecked}
-                            readOnly
-                            style={{
-                                width: "16px",
-                                height: "16px",
-                                marginRight: "8px",
-                                accentColor: "green",
-                                cursor: "pointer",
-                            }}
-                        />
-                        <label htmlFor="aiConsent" style={{ cursor: "pointer" }}>
-                            AI-generated content. Only to be used as a guide. I agree to
-                            T&C on curki.ai website.
-                        </label>
-                    </div>
-                    <button
-                        onClick={handleButtonClick}
-                        style={{
-                            background:
-                                "linear-gradient(180deg, rgba(139, 117, 255, 0.9) 27.88%, #6D51FF 100%)",
-                            color: "white",
-                            border: "none",
-                            padding: "8px 16px",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                        }}
-                    >
-                        I understand
-                    </button>
                 </>
             )}
         </>
