@@ -133,4 +133,11 @@
     outline: none;
     border-color: #5a3fe0; /* Slightly darker on focus */
   }
+  .graph-gridsss{
+    display: grid;
+    grid-template-columns: 48% 48%;
+    column-gap: 4%;
+    margin-bottom: 40px;
+    margin-top: 40px;
+  }
   
