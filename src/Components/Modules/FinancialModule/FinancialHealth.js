@@ -62,6 +62,17 @@ const FinancialHealth = (props) => {
         return buf;
     }
 
+    function toAWSDateTime(day, month, year = new Date().getFullYear()) {
+        if (!day || !month) return null; // Handle missing values
+    
+        // Ensure day and month are two digits
+        const dd = day.toString().padStart(2, '0');
+        const mm = month.toString().padStart(2, '0');
+    
+        return `${year}-${mm}-${dd}T00:00:00Z`;
+    }
+    
+
     const handleDownloadStandardExcel = async () => {
         if (!Array.isArray(standardFinancialExcelFile) || standardFinancialExcelFile.length === 0) {
             alert("No Standard Excel files to download.");
