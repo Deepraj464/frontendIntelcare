@@ -1,123 +1,145 @@
 import React, { useState } from "react";
 import "../../../Styles/SoftwareConnect.css";
-import AlayaCare from '../../../Images/Alayacare.png';
-import Xero from '../../../Images/Xero.png';
-import EmployementHero from '../../../Images/EmploymentHero.png';
-import VisualCare from '../../../Images/VisualCare.png';
-import QuickBooks from '../../../Images/IntuitQuickBooks.png';
-import Myp from '../../../Images/MypTech.png';
-import MyOB from '../../../Images/MyOb.png';
+import AlayaCare from "../../../Images/Alayacare.png";
+import Xero from "../../../Images/Xero.png";
+import EmployementHero from "../../../Images/EmploymentHero.png";
+import VisualCare from "../../../Images/VisualCare.png";
+import QuickBooks from "../../../Images/IntuitQuickBooks.png";
+import Myp from "../../../Images/MypTech.png";
+import MyOB from "../../../Images/MyOb.png";
+import axios from "axios";
 
-const SoftwareConnect = () => {
-    const [clientId, setClientId] = useState("");
-    const [secretId, setSecretId] = useState("");
-    const [selectedSoftware, setSelectedSoftware] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [connectedSoftware, setConnectedSoftware] = useState("");
+const SoftwareConnect = (props) => {
+  const [clientId, setClientId] = useState("");
+  const [secretId, setSecretId] = useState("");
+  const [selectedSoftware, setSelectedSoftware] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [connectedSoftware, setConnectedSoftware] = useState("");
 
-    const softwareList = [
-        { name: "AlayaCare", logo: AlayaCare },
-        { name: "Xero", logo: Xero },
-        { name: "EmploymentHero", logo: EmployementHero },
-        { name: "VisualCare", logo: VisualCare },
-        { name: "QuickBooks", logo: QuickBooks },
-        { name: "MYP Technologies", logo: Myp },
-        { name: "MYOB", logo: MyOB },
-    ];
+  const softwareList = [
+    { name: "AlayaCare", logo: AlayaCare },
+    { name: "Xero", logo: Xero },
+    { name: "EmploymentHero", logo: EmployementHero },
+    { name: "VisualCare", logo: VisualCare },
+    { name: "QuickBooks", logo: QuickBooks },
+    { name: "MYP Technologies", logo: Myp },
+    { name: "MYOB", logo: MyOB },
+  ];
 
-    const handleRegister = async (e) => {
-        e.preventDefault();
+  const handleRegister = async (e) => {
+    e.preventDefault();
 
-        if (!selectedSoftware) {
-            alert("Please select a software");
-            return;
+    if (!selectedSoftware) {
+      alert("Please select a software");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const payload = {
+        software: "myp",
+        // userEmail: props.user.email,
+        userEmail: "testuser@example.com", // <-- hardcoded for now
+        client_id: clientId,
+        secret_id: secretId,
+        status:
+          connectedSoftware === selectedSoftware ? "deregister" : "register",
+      };
+
+      console.log("Sending Payload:", payload);
+
+      const res = await axios.post(
+        "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/integrationCredsCheck",
+        payload,
+        {
+          headers: { "Content-Type": "application/json" },
         }
+      );
 
-        // Disconnect logic
-        if (connectedSoftware === selectedSoftware) {
-            setConnectedSoftware(null);
-            setClientId("");
-            setSecretId("");
-            return;
-        }
+      console.log("✅ Success:", res.data);
+      setConnectedSoftware(
+        connectedSoftware === selectedSoftware ? null : selectedSoftware
+      );
+    } catch (err) {
+      console.error("❌ Error in handleRegister:", err.response?.data || err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-        setIsLoading(true);
+  return (
+    <div className="software-connect-container">
+      <div className="software-grid">
+        {softwareList.map((software, index) => (
+          <div
+            key={index}
+            className={`software-card ${
+              selectedSoftware === software.name ? "active" : ""
+            }`}
+            onClick={() => setSelectedSoftware(software.name)}
+          >
+            <img
+              src={software.logo}
+              alt={software.name}
+              className={`software-logo ${
+                software.name === "EmploymentHero"
+                  ? "employment-hero-logo"
+                  : software.name === "QuickBooks"
+                  ? "quickbooks-logo"
+                  : software.name === "Xero"
+                  ? "xero-logo"
+                  : software.name === "MYOB"
+                  ? "myob-logo"
+                  : ""
+              }`}
+            />
+            {connectedSoftware === software.name && (
+              <div className="connected-badge">Connected</div>
+            )}
+          </div>
+        ))}
+      </div>
 
-        // Simulate API call
-        setTimeout(() => {
-            setIsLoading(false);
-            setConnectedSoftware(selectedSoftware);
-        }, 2000);
-    };
-
-    return (
-        <div className="software-connect-container">
-            <div className="software-grid">
-                {softwareList.map((software, index) => (
-                    <div
-                        key={index}
-                        className={`software-card ${selectedSoftware === software.name ? "active" : ""
-                            }`}
-                        onClick={() => setSelectedSoftware(software.name)}
-                    >
-                        <img
-                            src={software.logo}
-                            alt={software.name}
-                            className={`software-logo ${software.name === "EmploymentHero"
-                                ? "employment-hero-logo"
-                                : software.name === "QuickBooks"
-                                    ? "quickbooks-logo"
-                                    : software.name === "Xero"
-                                        ? "xero-logo"
-                                        : software.name === "MYOB"
-                                            ? "myob-logo"
-                                            : ""
-                                }`}
-                        />
-                        {connectedSoftware === software.name && (
-                            <div className="connected-badge">Connected</div>
-                        )}
-                    </div>
-                ))}
-            </div>
-
-            <div className="software-form" onSubmit={handleRegister}>
-                <div className="forms-group">
-                    <label className="connect-label">Client ID</label>
-                    <input
-                        type="text"
-                        value={clientId}
-                        onChange={(e) => setClientId(e.target.value)}
-                        placeholder="Enter Client ID"
-                        className="connect-input"
-                    />
-                </div>
-                <div className="forms-group">
-                    <label className="connect-label">Secret ID</label>
-                    <input
-                        type="text"
-                        value={secretId}
-                        onChange={(e) => setSecretId(e.target.value)}
-                        placeholder="Enter Secret ID"
-                        className="connect-input"
-                    />
-                </div>
-                {isLoading ? (
-                    <div style={{display:'flex',justifyContent:'center'}}>
-                    <div className="spinners"></div>
-                    </div>
-                ) :
-                    <button className={`connect-system-btn ${connectedSoftware === selectedSoftware ? "disconnect-btn" : ""}`} disabled={isLoading} onClick={handleRegister}>
-                        {connectedSoftware === selectedSoftware ? (
-                            "Disconnect"
-                        ) : (
-                            "Register"
-                        )}
-                    </button>
-                }
-            </div>
+      <div className="software-form" onSubmit={handleRegister}>
+        <div className="forms-group">
+          <label className="connect-label">Client ID</label>
+          <input
+            type="text"
+            value={clientId}
+            onChange={(e) => setClientId(e.target.value)}
+            placeholder="Enter Client ID"
+            className="connect-input"
+          />
         </div>
-    );
+        <div className="forms-group">
+          <label className="connect-label">Secret ID</label>
+          <input
+            type="text"
+            value={secretId}
+            onChange={(e) => setSecretId(e.target.value)}
+            placeholder="Enter Secret ID"
+            className="connect-input"
+          />
+        </div>
+        {isLoading ? (
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <div className="spinners"></div>
+          </div>
+        ) : (
+          <button
+            className={`connect-system-btn ${
+              connectedSoftware === selectedSoftware ? "disconnect-btn" : ""
+            }`}
+            disabled={isLoading}
+            onClick={handleRegister}
+          >
+            {connectedSoftware === selectedSoftware ? "Disconnect" : "Register"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default SoftwareConnect;
