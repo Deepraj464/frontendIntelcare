@@ -185,8 +185,7 @@ const FinancialHealth = (props) => {
 
             // Append required fields
             formData.append("type", type);
-            //   formData.append("email", props.user.email || "");
-            formData.append("email", "test@example.com" || "");
+            formData.append("email", props.user.email || "");
             formData.append("provider", selectedActor);
 
             // Only append dates if they exist
