@@ -20,12 +20,12 @@ const SoftwareConnect = (props) => {
 
   const softwareList = [
     { name: "AlayaCare", logo: AlayaCare },
-    { name: "Xero", logo: Xero },
     { name: "EmploymentHero", logo: EmployementHero },
-    { name: "VisualCare", logo: VisualCare },
-    { name: "QuickBooks", logo: QuickBooks },
     { name: "MYP Technologies", logo: Myp },
+    { name: "Xero", logo: Xero },
+    { name: "QuickBooks", logo: QuickBooks },
     { name: "MYOB", logo: MyOB },
+    { name: "VisualCare", logo: VisualCare },
   ];
 
   const handleRegister = async (e) => {
