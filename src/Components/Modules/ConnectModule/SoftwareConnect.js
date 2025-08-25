@@ -8,6 +8,8 @@ import QuickBooks from "../../../Images/IntuitQuickBooks.png";
 import Myp from "../../../Images/MypTech.png";
 import MyOB from "../../../Images/MyOb.png";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const SoftwareConnect = (props) => {
   const [clientId, setClientId] = useState("");
@@ -30,7 +32,7 @@ const SoftwareConnect = (props) => {
     e.preventDefault();
 
     if (!selectedSoftware) {
-      alert("Please select a software");
+      toast.warn("⚠️ Please select a software");
       return;
     }
 
@@ -39,8 +41,8 @@ const SoftwareConnect = (props) => {
     try {
       const payload = {
         software: "myp",
-        // userEmail: props.user.email,
-        userEmail: "testuser@example.com", // <-- hardcoded for now
+        // userEmail: "testuser@example.com", // <-- hardcoded for now
+        userEmail:props.user.email,
         client_id: clientId,
         secret_id: secretId,
         status:
@@ -58,11 +60,20 @@ const SoftwareConnect = (props) => {
       );
 
       console.log("✅ Success:", res.data);
-      setConnectedSoftware(
-        connectedSoftware === selectedSoftware ? null : selectedSoftware
-      );
+
+      if (connectedSoftware === selectedSoftware) {
+        setConnectedSoftware(null);
+        toast.success(`${selectedSoftware} disconnected successfully!`);
+      } else {
+        setConnectedSoftware(selectedSoftware);
+        toast.success(`${selectedSoftware} connected successfully!`);
+      }
     } catch (err) {
       console.error("❌ Error in handleRegister:", err.response?.data || err);
+      toast.error(
+        err.response?.data?.message ||
+          `Failed to ${connectedSoftware === selectedSoftware ? "disconnect" : "connect"} ${selectedSoftware}`
+      );
     } finally {
       setIsLoading(false);
     }
@@ -70,6 +81,8 @@ const SoftwareConnect = (props) => {
 
   return (
     <div className="software-connect-container">
+      <ToastContainer position="top-right" autoClose={3000} />
+
       <div className="software-grid">
         {softwareList.map((software, index) => (
           <div
