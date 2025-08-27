@@ -40,7 +40,7 @@ const SoftwareConnect = (props) => {
 
     try {
       const payload = {
-        software: "myp",
+        software: selectedSoftware,
         // userEmail: "testuser@example.com", // <-- hardcoded for now
         userEmail:props.user.email,
         client_id: clientId,
