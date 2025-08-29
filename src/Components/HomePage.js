@@ -47,7 +47,8 @@ const HomePage = () => {
   const [showReport, setShowReport] = useState(false);
   const [showFinalZipReport, setShowFinalZipReport] = useState(false);
   const [showUploadedReport, setShowUploadReport] = useState(false);
-
+  const [loadingUser, setLoadingUser] = useState(true);
+  console.log("user", user)
   const handleModalOpen = () => setModalVisible(true);
   const handleModalClose = () => setModalVisible(false);
 
@@ -93,6 +94,7 @@ const HomePage = () => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       setUser(currentUser);
       setShowSignIn(!currentUser);
+      setLoadingUser(false);
     });
     return () => unsubscribe();
   }, []);
@@ -151,9 +153,9 @@ const HomePage = () => {
               {showFeedbackPopup && <FeedbackModal userEmail={user?.email} />}
 
               <>
-                <div style={{ display: selectedRole === "Connect Your Systems" ? "block" : "none" }}>
-                  <SoftwareConnect user={user}/>
-                </div>
+                {!loadingUser && selectedRole === "Connect Your Systems" && user && (
+                  <SoftwareConnect user={user} />
+                )}
                 <div style={{ display: selectedRole === "Financial Health" ? "block" : "none" }}>
                   <FinancialHealth selectedRole="Financial Health" handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} user={user} />
                 </div>
