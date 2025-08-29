@@ -257,7 +257,11 @@ const FinancialHealth = (props) => {
       console.log("Calling visualization API...");
       const vizRes = await axios.post(
         "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/vizualize-reports",
-        { reportResponse: analysisData },
+        { 
+          reportResponse: analysisData,
+          from_date: fromDate,
+          to_date: toDate
+        },
         {
           headers: {
             "Content-Type": "application/json",
