@@ -28,6 +28,7 @@ import AiRostering from "./Modules/RosteringModule/Rostering";
 import ResumeScreening from "./Modules/SupportAtHomeModule.js/HRAnalysis";
 import Client_Event_Reporting from "./Modules/NDISModule/Client_Event_Reporting";
 import SoftwareConnect from "./Modules/ConnectModule/SoftwareConnect";
+import RosteringDashboard from "./Modules/RosteringModule/SmartRostering";
 
 const HomePage = () => {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -201,15 +202,7 @@ const HomePage = () => {
                 </div>
 
                 <div style={{ display: selectedRole === "Smart Rostering" ? "block" : "none" }}>
-                  <AiRostering
-                    userName={user?.displayName || "Emma"}
-                    coverage={92}
-                    uncoveredShifts={2}
-                    availableStaff={18}
-                    todayVisits={7}
-                    promptPlaceholder="Find 5 qualified support workers..."
-                    onSendPrompt={(text) => console.log("Prompt sent:", text)}
-                  />
+                  <RosteringDashboard/>
                 </div>
               </>
 

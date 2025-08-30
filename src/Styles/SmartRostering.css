@@ -1,0 +1,150 @@
+.rostering-dashboard {
+    margin-top: 60px;
+    text-align: center;
+    font-family: 'Inter';
+    background: #fafafa;
+    color: #222;
+  }
+  
+  .rostering-date {
+    font-size: 24px;
+    margin-bottom: 40px;
+    font-family: 'Inter';
+    color: black;
+  }
+  
+  .rostering-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  
+  .rostering-stat-card {
+    background: #F0EDF6;
+    padding: 40px 20px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .rostering-stat-card p {
+    margin-bottom: 14px;
+    font-size: 18px;
+    font-weight: 500;
+    font-family: 'Inter';
+    color: black;
+  }
+  
+  .rostering-circle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    color: #000000;
+    font-weight: 500;
+    font-size: 18px;
+  }
+  
+  .rostering-green {
+    background: #14C8A8;
+  }
+  
+  .rostering-orange {
+    background: #F6B74E;
+  }
+  
+  .rostering-upload-card {
+    border:0.76px dashed #6548FF;
+    border-radius: 8px;
+    padding: 20px;
+    background: #F0EDF6;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .rostering-upload-card p {
+    font-size: 14px;
+    margin: 0;
+  }
+  
+  .rostering-upload-card small {
+    font-size: 12px;
+    color: #666;
+    margin: 5px 0 15px;
+  }
+  
+ 
+  .rostering-upload-label {
+    background: #6C4CDC;
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    display: inline-block;
+    transition: background 0.2s ease;
+  }
+  
+  .rostering-upload-label:hover {
+    background: #5533d4;
+  }
+  
+  /* Input */
+  .rostering-input-box {
+    margin: 46px auto;
+    max-width: 600px;
+    text-align: center;
+  }
+  
+  .rostering-input-wrapper {
+    display: flex;
+    align-items: center;
+    background: #F0EDF6;
+    padding: 14px 18px;
+    border-radius: 18px;
+  }
+  
+  .rostering-search-icon {
+    margin-right: 12px;
+    align-self: flex-start;
+  }
+  
+  .rostering-input-wrapper textarea {
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 14px;
+    resize: none;      
+    padding-top: 4px;
+  }
+  
+  .rostering-send-btn {
+    background: #6a4df0;
+    border: none;
+    color: white;
+    font-size: 18px;
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    align-self: flex-end;
+    margin-left: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .rostering-invite {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #455A64;
+    cursor: pointer;
+  }
+  
