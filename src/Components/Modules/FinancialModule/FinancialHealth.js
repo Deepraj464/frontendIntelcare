@@ -132,42 +132,37 @@ const FinancialHealth = (props) => {
       alert("Please upload the report files or enable sync.");
       return;
     }
-
-    // Additional validation for sync mode
+  
     if (syncEnabled && (!startDay || !startMonth || !endDay || !endMonth)) {
       alert("Please select both start and end dates when sync is enabled.");
       return;
     }
-
+  
     props.handleClick();
     setIsFinancialProcessing(true);
     setFinancialProgress(1);
-
+  
     const interval = setInterval(() => {
       setFinancialProgress((prev) => (prev < 92 ? prev + 2 : prev));
     }, 5000);
-
+  
     try {
       const formData = new FormData();
-
-      // Determine type correctly
+  
       let type = "upload";
       if (syncEnabled && financialReportFiles.length > 0) {
         type = "hybrid";
       } else if (syncEnabled && financialReportFiles.length === 0) {
         type = "api";
       }
-
-      // Handle dates based on type
+  
       let fromDate = null;
       let toDate = null;
-
+  
       if (type === "api" || type === "hybrid") {
-        // Only create dates for sync-enabled modes
         fromDate = toAWSDateTime(startDay, startMonth);
         toDate = toAWSDateTime(endDay, endMonth);
-
-        // Validate dates were created successfully for sync modes
+  
         if (!fromDate || !toDate) {
           alert("Please select valid start and end dates for sync mode.");
           clearInterval(interval);
@@ -175,25 +170,27 @@ const FinancialHealth = (props) => {
           return;
         }
       } else if (type === "upload") {
-        // For upload mode, create default dates (current year)
         const currentYear = new Date().getFullYear();
         fromDate = `${currentYear}-01-01T00:00:00Z`;
         toDate = `${currentYear}-12-31T23:59:59Z`;
       }
-
-      // Validate user email
+  
       if (!props.user?.email) {
         alert("User email is required. Please log in again.");
         clearInterval(interval);
         setIsFinancialProcessing(false);
         return;
       }
-
-      // 🔧 FIX: Add email validation and better error handling
-      const userEmail = props.user.email.trim().toLowerCase();
+  
+      // ----------------------------
+      // OPTION 1: Hardcoded
+      const userEmail = "kris@curki.ai";
+  
+      // OPTION 2: Dynamic (preferred)
+      // const userEmail = props.user.email.trim().toLowerCase();
+      // ----------------------------
+  
       console.log("Using email:", userEmail);
-
-      // Debug logging
       console.log("Request payload:", {
         type,
         email: userEmail,
@@ -203,14 +200,12 @@ const FinancialHealth = (props) => {
         filesCount: financialReportFiles.length,
       });
 
-      // Append required fields
       formData.append("type", type);
-      formData.append("userEmail", userEmail); // 🔧 Use cleaned email
+      formData.append("userEmail", userEmail);
       formData.append("provider", selectedActor);
       formData.append("fromDate", fromDate);
       formData.append("toDate", toDate);
-
-      // Append files only if we have them
+  
       if (type === "upload" || type === "hybrid") {
         if (financialReportFiles.length === 0) {
           alert("No files selected for upload.");
@@ -218,126 +213,108 @@ const FinancialHealth = (props) => {
           setIsFinancialProcessing(false);
           return;
         }
-
-        financialReportFiles.forEach((file, index) => {
-          console.log(
-            `Appending file ${index + 1}:`,
-            file.name,
-            file.type,
-            file.size
-          );
-          formData.append("files", file);
+  
+        financialReportFiles.forEach((file, index) => { 
+        console.log(
+          `Appending file ${index + 1}:`,
+          file.name,
+          file.type,
+          file.size
+        );          formData.append("files", file);
         });
       }
-
       // Call ANALYSIS API with better error handling
       console.log("Calling analysis API...", formData);
       const analysisRes = await axios.post(
         "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/report-middleware",
         formData,
         {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          timeout: 300000, // 5 minutes timeout
+          headers: { "Content-Type": "multipart/form-data" },
+          timeout: 300000,
           maxContentLength: Infinity,
           maxBodyLength: Infinity,
         }
       );
-
+  
       const analysisData = analysisRes.data;
-      console.log("Analysis Response:", analysisData);
-
-      // Validate analysis response
-      if (!analysisData) {
-        throw new Error("Empty response from analysis API");
-      }
-
-      // Call VISUALIZATION API
+      if (!analysisData) throw new Error("Empty response from analysis API");
+  
+      // Visualization API payload
       console.log("Calling visualization API...");
       let vizPayload;
-
       if (userEmail === "kris@curki.ai") {
-        // Kris needs a normalized parsed wrapper
         vizPayload = {
           reportResponse: {
             parsed: {
               type,
               provider: selectedActor,
               final: analysisData?.final || analysisData?.parsed?.final || {},
-              figures: analysisData?.figures || analysisData?.parsed?.figures || []
-            }
+              figures: analysisData?.figures || analysisData?.parsed?.figures || [],
+            },
           },
           from_date: fromDate,
           to_date: toDate,
         };
       } else {
-        // Everyone else → forward entire analysisData
         vizPayload = {
           reportResponse: analysisData,
           from_date: fromDate,
           to_date: toDate,
         };
       }
+  
       const vizRes = await axios.post(
         "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/vizualize-reports",
         vizPayload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          timeout: 180000, // 3 minutes timeout
-        }
+        { headers: { "Content-Type": "application/json" }, timeout: 180000 }
       );
-
+  
       const vizData = vizRes.data;
-      console.log("Visualization Response:", vizData);
-
-      // Save to state with better validation
       setFinancialReport(analysisData.final);
+  
       const figures = Array.isArray(vizData?.data?.figures)
         ? vizData.data.figures
         : Array.isArray(vizData?.figures)
-          ? vizData.figures
-          : Array.isArray(vizData?.data?.attachments)
-            ? vizData.data.attachments.map((att, index) => ({
-              image: `data:image/png;base64,${att.file_base64}`,
-              metricName: att.filename
-                ? att.filename.replace(/\.[^/.]+$/, "") // Remove extension
-                : `Attachment ${index + 1}`,
-            }))
-            : [];
-
+        ? vizData.figures
+        : Array.isArray(vizData?.data?.attachments)
+        ? vizData.data.attachments.map((att, index) => ({
+            image: `data:image/png;base64,${att.file_base64}`,
+            metricName: att.filename
+              ? att.filename.replace(/\.[^/.]+$/, "")
+              : `Attachment ${index + 1}`,
+          }))
+        : [];
+  
       if (userEmail === "kris@curki.ai") {
         console.log("⏳ Delaying graph rendering for Kris by 3 minutes...");
-
-        // Keep progress visible during the delay
-        let delayProgress = 92; // resume from near-complete
+  
+        let delayProgress = 92;
         const delayInterval = setInterval(() => {
           delayProgress += 1;
           if (delayProgress <= 99) {
             setFinancialProgress(delayProgress);
           }
-        }, 2000); // every 2s tick toward 99%
-
+        }, 2000);
+  
         setTimeout(() => {
           clearInterval(delayInterval);
           setFinancialVisualizations(figures);
           setFinancialShowReport(true);
+  
+          // ✅ Complete only after delay
           setIsFinancialProcessing(false);
-          setFinancialProgress(100); // finally complete
-        }, 180000); // 3 minutes
+          setFinancialProgress(100);
+        }, 180000);
       } else {
-        // ✅ Everyone else → instant
         setFinancialVisualizations(figures);
         setFinancialShowReport(true);
+  
+        // ✅ Everyone else → instant
         setIsFinancialProcessing(false);
         setFinancialProgress(100);
       }
     } catch (err) {
       console.error("Error in analysis pipeline:", err);
-
-      // 🔧 ENHANCED ERROR HANDLING
       if (err.response) {
         const { status, data } = err.response;
         console.error("Server Error Details:", {
@@ -390,12 +367,18 @@ const FinancialHealth = (props) => {
         console.error("Unexpected error:", err.message);
         alert(`Unexpected error: ${err.message}`);
       }
-    } finally {
-      clearInterval(interval);
       setIsFinancialProcessing(false);
       setFinancialProgress(100);
+    } finally {
+      clearInterval(interval);
+  
+      // ⚠️ Important: For Kris, processing is stopped only in setTimeout
+      if (props.user?.email !== "kris@curki.ai") {
+        // nothing extra needed
+      }
     }
   };
+  
 
   const isButtonDisabled = !syncEnabled && financialReportFiles.length === 0;
 
