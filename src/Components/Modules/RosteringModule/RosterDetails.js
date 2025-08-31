@@ -15,9 +15,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE }) => {
     const client = rosteringResponse?.data?.client || {};
     
     // ✅ Only keep staff with role "SW"
-    const staffList = (rosteringResponse?.data?.staff_workers || []).filter(
-        staff => staff.role === "SW"
-    );
+    const staffList = rosteringResponse?.data?.staff_workers || []
 
     const request = rosteringResponse?.data?.request || {};
     const message = rosteringResponse?.data?.message || "";
@@ -142,9 +140,9 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE }) => {
                                     <div className="roster-staff-number">{index + 1}</div>
                                     <div style={{ fontSize: '14px', fontWeight: '600', color: 'black' }}>{staff.name}</div>
                                 </div>
-                                <p className="staff-details" style={{ fontWeight: '400' }}>Phone: <span style={{ color: 'black' }}>{staff.number}</span></p>
-                                <p className="staff-details" style={{ fontWeight: '400' }}>Role: <span style={{ color: 'black' }}>{staff.role}</span></p>
-                                <p className="staff-details" style={{ fontWeight: '400' }}>Email: <span style={{ color: 'black' }}>{staff.email}</span></p>
+                                <p className="staff-details" style={{ fontWeight: '400' }}>Rate: <span style={{ color: 'black' }}>{staff.hourly_rate}</span></p>
+                                <p className="staff-details" style={{ fontWeight: '400' }}>Gender: <span style={{ color: 'black' }}>{staff.gender}</span></p>
+                                <p className="staff-details" style={{ fontWeight: '400' }}>Age: <span style={{ color: 'black' }}>{staff.age}</span></p>
                             </div>
                         ))
                     ) : (
