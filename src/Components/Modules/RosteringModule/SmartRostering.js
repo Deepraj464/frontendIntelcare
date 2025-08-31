@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../../../Styles/SmartRostering.css";
 import { FiUploadCloud } from "react-icons/fi";
 import SearchIcon from '../../../Images/SearchIcon.png';
@@ -6,13 +6,17 @@ import { BiSend } from "react-icons/bi";
 import RosterDetails from "./RosterDetails";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import fileIcon from '../../../Images/FileIcon.png';
+import axios from "axios";
+
+const API_BASE = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net";
 
 const SmartRostering = () => {
     const [screen, setScreen] = useState(1);
     const [query, setQuery] = useState("");
     const [selectedFile, setSelectedFile] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [rosteringResponse, setRosteringResponse] = useState(null);
 
-    // Dynamic date
     const today = new Date();
     const options = { day: "2-digit", month: "short", year: "numeric" };
     const formattedDate = today.toLocaleDateString("en-GB", options);
@@ -33,16 +37,48 @@ const SmartRostering = () => {
     const removeFile = (index) => {
         setSelectedFile((prev) => prev.filter((_, i) => i !== index));
     };
+    useEffect(() => {
+        if (screen === 1) {
+            setQuery("");      
+            setSelectedFile([]);
+        }
+    }, [screen]);
+    // 🔹 Call backend rostering API (Controller 1)
+    const handleSubmit = async () => {
+        if (!query) {
+            alert("Please enter a query first.");
+            return;
+        }
 
+        setLoading(true);
+        try {
+            const formData = new FormData();
+            selectedFile.forEach((file) => formData.append("files", file));
+            formData.append("prompt", query);
+
+            // Use the correct endpoint for rostering
+            const response = await axios.post(`${API_BASE}/fetch-staff-client`, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+
+            console.log("Rostering API response:", response.data);
+            if (response.data)
+                setRosteringResponse(response.data);
+            setScreen(2);
+        } catch (error) {
+            console.error("Error calling rostering API:", error);
+            alert("Failed to fetch roster. Try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <>
-            {screen === 1 &&
+            {screen === 1 && (
                 <div className="rostering-dashboard">
-                    {/* Date */}
                     <h2 className="rostering-date">{formattedDate}</h2>
 
-                    {/* Metrics */}
                     <div className="rostering-stats-row">
                         <div className="rostering-stat-card">
                             <p>Shift Coverage %</p>
@@ -59,16 +95,15 @@ const SmartRostering = () => {
                             <span className="rostering-circle rostering-green">2</span>
                         </div>
                         <div className="rostering-upload-card">
-                            <div >
+                            <div>
                                 {selectedFile.map((file, index) => (
-                                    
-                                    <div  key={index} style={{border:'1px solid #6c4cdc',borderRadius:'10px',display:'flex',justifyContent:'space-between',padding:'8px 10px',marginBottom:'4px',width:'100%'}}>
+                                    <div key={index} style={{ border: '1px solid #6c4cdc', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', padding: '8px 10px', marginBottom: '4px', width: '100%' }}>
                                         <div style={{ display: 'flex', alignItems: 'center' }}>
                                             <div className="file-icon">
                                                 <img src={fileIcon} height={15} width={10} alt="Zip" />
                                             </div>
-                                            <div style={{ fontSize: '12px', fontFamily: 'Inter', fontWeight: '600', textAlign: 'start',marginRight:'10px' }}>
-                                                {file.name.length > 30 ? file.name.slice(0, 15) + "..." : file.name}
+                                            <div style={{ fontSize: '12px', fontFamily: 'Inter', fontWeight: '600', marginRight: '10px' }}>
+                                                {file.name.length > 20 ? file.name.slice(0, 15) + "..." : file.name}
                                             </div>
                                         </div>
                                         <div className="remove-btn" onClick={() => removeFile(index)}>
@@ -77,46 +112,30 @@ const SmartRostering = () => {
                                     </div>
                                 ))}
                             </div>
-                            {!selectedFile.length ?
-                                (<>
+                            {!selectedFile.length && (
+                                <>
                                     <div className="upload-icon">
                                         <FiUploadCloud color="#6C4CDC" />
                                     </div>
                                     <p>Browse Files</p>
                                     <small>Format: .xlsx, .csv, .xls only</small>
-                                    <div style={{ marginTop: "12px" }}>
-                                        <label htmlFor="rostering-file-upload" className="rostering-upload-label">
-                                            Browse Files
-                                            <input
-                                                type="file"
-                                                id="rostering-file-upload"
-                                                accept=".xlsx,.xls,.csv"
-                                                onChange={handleFileChange}
-                                                style={{ display: "none" }}
-                                            />
-                                        </label>
-                                    </div>
                                 </>
-                                ) : (
-                                    <>
-                                        <div style={{ marginTop: "12px" }}>
-                                            <label htmlFor="rostering-file-upload" className="rostering-upload-label">
-                                                Browse Files
-                                                <input
-                                                    type="file"
-                                                    id="rostering-file-upload"
-                                                    accept=".xlsx,.xls,.csv"
-                                                    onChange={handleFileChange}
-                                                    style={{ display: "none" }}
-                                                />
-                                            </label>
-                                        </div>
-                                    </>
-                                )}
+                            )}
+                            <div style={{ marginTop: "12px" }}>
+                                <label htmlFor="rostering-file-upload" className="rostering-upload-label">
+                                    Browse Files
+                                    <input
+                                        type="file"
+                                        id="rostering-file-upload"
+                                        accept=".xlsx,.xls,.csv"
+                                        onChange={handleFileChange}
+                                        style={{ display: "none" }}
+                                    />
+                                </label>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Input */}
                     <div className="rostering-input-box">
                         <div className="rostering-input-wrapper">
                             <div className="rostering-search-icon">
@@ -128,15 +147,22 @@ const SmartRostering = () => {
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                             />
-                            <button className="rostering-send-btn" onClick={() => { setScreen(2) }}><BiSend /></button>
+                            <button className="rostering-send-btn" onClick={handleSubmit} disabled={loading}>
+                                {loading ? "Sending..." : <BiSend />}
+                            </button>
                         </div>
                         <p className="rostering-invite">• Invite a Team Member</p>
                     </div>
                 </div>
-            }
-            {screen === 2 &&
-                <RosterDetails setScreen={setScreen} />
-            }
+            )}
+
+            {screen === 2 && (
+                <RosterDetails
+                    setScreen={setScreen}
+                    rosteringResponse={rosteringResponse}
+                    API_BASE={API_BASE}
+                />
+            )}
         </>
     );
 };
