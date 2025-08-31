@@ -231,7 +231,7 @@ const FinancialHealth = (props) => {
       }
 
       // Call ANALYSIS API with better error handling
-      console.log("Calling analysis API...",formData);
+      console.log("Calling analysis API...", formData);
       const analysisRes = await axios.post(
         "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/report-middleware",
         formData,
@@ -255,13 +255,33 @@ const FinancialHealth = (props) => {
 
       // Call VISUALIZATION API
       console.log("Calling visualization API...");
-      const vizRes = await axios.post(
-        "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/vizualize-reports",
-        { 
+      let vizPayload;
+
+      if (userEmail === "kris@curki.ai") {
+        // Kris needs a normalized parsed wrapper
+        vizPayload = {
+          reportResponse: {
+            parsed: {
+              type,
+              provider: selectedActor,
+              final: analysisData?.final || analysisData?.parsed?.final || {},
+              figures: analysisData?.figures || analysisData?.parsed?.figures || []
+            }
+          },
+          from_date: fromDate,
+          to_date: toDate,
+        };
+      } else {
+        // Everyone else → forward entire analysisData
+        vizPayload = {
           reportResponse: analysisData,
           from_date: fromDate,
-          to_date: toDate
-        },
+          to_date: toDate,
+        };
+      }
+      const vizRes = await axios.post(
+        "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/vizualize-reports",
+        vizPayload,
         {
           headers: {
             "Content-Type": "application/json",
@@ -278,18 +298,42 @@ const FinancialHealth = (props) => {
       const figures = Array.isArray(vizData?.data?.figures)
         ? vizData.data.figures
         : Array.isArray(vizData?.figures)
-        ? vizData.figures
-        : Array.isArray(vizData?.data?.attachments)
-        ? vizData.data.attachments.map((att, index) => ({
-            image: `data:image/png;base64,${att.file_base64}`,
-            metricName: att.filename
-              ? att.filename.replace(/\.[^/.]+$/, "") // Remove extension
-              : `Attachment ${index + 1}`,
-          }))
-        : [];
+          ? vizData.figures
+          : Array.isArray(vizData?.data?.attachments)
+            ? vizData.data.attachments.map((att, index) => ({
+              image: `data:image/png;base64,${att.file_base64}`,
+              metricName: att.filename
+                ? att.filename.replace(/\.[^/.]+$/, "") // Remove extension
+                : `Attachment ${index + 1}`,
+            }))
+            : [];
 
-      setFinancialVisualizations(figures);
-      setFinancialShowReport(true);
+      if (userEmail === "kris@curki.ai") {
+        console.log("⏳ Delaying graph rendering for Kris by 3 minutes...");
+
+        // Keep progress visible during the delay
+        let delayProgress = 92; // resume from near-complete
+        const delayInterval = setInterval(() => {
+          delayProgress += 1;
+          if (delayProgress <= 99) {
+            setFinancialProgress(delayProgress);
+          }
+        }, 2000); // every 2s tick toward 99%
+
+        setTimeout(() => {
+          clearInterval(delayInterval);
+          setFinancialVisualizations(figures);
+          setFinancialShowReport(true);
+          setIsFinancialProcessing(false);
+          setFinancialProgress(100); // finally complete
+        }, 180000); // 3 minutes
+      } else {
+        // ✅ Everyone else → instant
+        setFinancialVisualizations(figures);
+        setFinancialShowReport(true);
+        setIsFinancialProcessing(false);
+        setFinancialProgress(100);
+      }
     } catch (err) {
       console.error("Error in analysis pipeline:", err);
 
@@ -307,11 +351,11 @@ const FinancialHealth = (props) => {
           if (data?.error === "No credentials found for this email") {
             alert(
               `❌ Authentication Error\n\n` +
-                `No API credentials found for: ${props.user?.email}\n\n` +
-                `Solutions:\n` +
-                `1. Contact admin to set up your credentials\n` +
-                `2. Switch to "Upload" mode (disable sync)\n` +
-                `3. Verify your email is correct`
+              `No API credentials found for: ${props.user?.email}\n\n` +
+              `Solutions:\n` +
+              `1. Contact admin to set up your credentials\n` +
+              `2. Switch to "Upload" mode (disable sync)\n` +
+              `3. Verify your email is correct`
             );
           } else {
             alert("API endpoint not found. Please contact support.");
