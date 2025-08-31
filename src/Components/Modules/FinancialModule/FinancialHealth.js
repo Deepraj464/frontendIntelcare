@@ -188,9 +188,15 @@ const FinancialHealth = (props) => {
         setIsFinancialProcessing(false);
         return;
       }
-
-      // 🔧 FIX: Add email validation and better error handling
-      const userEmail = "kris@curki.ai"
+  
+      // ----------------------------
+      // OPTION 1: Hardcoded
+      // const userEmail = "kris@curki.ai";
+  
+      // OPTION 2: Dynamic (preferred)
+      const userEmail = props.user.email.trim().toLowerCase();
+      // ----------------------------
+  
       console.log("Using email:", userEmail);
 
       // Debug logging
