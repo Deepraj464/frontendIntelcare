@@ -184,10 +184,10 @@ const FinancialHealth = (props) => {
   
       // ----------------------------
       // OPTION 1: Hardcoded
-      const userEmail = "kris@curki.ai";
+      // const userEmail = "kris@curki.ai";
   
       // OPTION 2: Dynamic (preferred)
-      // const userEmail = props.user.email.trim().toLowerCase();
+      const userEmail = props.user.email.trim().toLowerCase();
       // ----------------------------
   
       console.log("Using email:", userEmail);
