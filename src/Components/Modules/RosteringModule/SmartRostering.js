@@ -22,16 +22,15 @@ const SmartRostering = () => {
     const formattedDate = today.toLocaleDateString("en-GB", options);
 
     const handleFileChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            setSelectedFile((prev) => {
-                if (prev.length >= 2) {
-                    alert("You can only upload a maximum of 2 files");
-                    return prev;
-                }
-                return [...prev, file];
-            });
-        }
+        const files = Array.from(event.target.files); // take all selected files
+        setSelectedFile((prev) => {
+            const combined = [...prev, ...files];
+            if (combined.length > 2) {
+                alert("You can only upload a maximum of 2 files");
+                return combined.slice(0, 2); // keep only first 2
+            }
+            return combined;
+        });
     };
 
     const removeFile = (index) => {
@@ -130,6 +129,7 @@ const SmartRostering = () => {
                                         accept=".xlsx,.xls,.csv"
                                         onChange={handleFileChange}
                                         style={{ display: "none" }}
+                                        multiple
                                     />
                                 </label>
                             </div>
