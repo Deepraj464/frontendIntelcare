@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "../../../Styles/ClientEvent.css";
+import UploadFiles from "../../UploadFiles";
+import star from '../../../Images/star.png';
 
 const BASE_URL =
   "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io";
 
-const Client_Event_Reporting = () => {
+const Client_Event_Reporting = (props) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [reportMode, setReportMode] = useState("one-time");
   const [loading, setLoading] = useState(false);
@@ -13,6 +15,7 @@ const Client_Event_Reporting = () => {
   const [askAIResult, setAskAIResult] = useState(null);
   const [question, setQuestion] = useState("");
   const [loadingAskAI, setLoadingAskAI] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleFileChange = (e) => {
     const filesArray = Array.from(e.target.files);
@@ -28,21 +31,32 @@ const Client_Event_Reporting = () => {
       alert("Please select at least one file");
       return;
     }
-
+  
     setLoading(true);
     setStage3Data(null);
     setAskAIResult(null);
-
+    setUploadProgress(0);
+  
+    let fakeProgressInterval;
+  
     try {
       const formData = new FormData();
       selectedFiles.forEach((file) => formData.append("files", file));
-
+  
       const params = {
         include_text: 0,
         run_stage3: 1,
         concurrency: 4,
       };
-
+  
+      // 🔹 Start fake gradual progress immediately
+      fakeProgressInterval = setInterval(() => {
+        setUploadProgress((prev) => {
+          if (prev < 95) return prev + 1; // keep it below 100%
+          return prev;
+        });
+      }, 300); // adjust speed here
+  
       const processRes = await axios.post(
         `${BASE_URL}/clients-events/report`,
         formData,
@@ -52,11 +66,10 @@ const Client_Event_Reporting = () => {
           timeout: 900000,
         }
       );
-
+  
       if (processRes.data?.stage3) {
         const s3 = processRes.data.stage3;
-
-        // Convert object to array of event strings, sorted by number
+  
         const eventsArray = Array.isArray(s3)
           ? s3
           : Object.keys(s3)
@@ -66,18 +79,28 @@ const Client_Event_Reporting = () => {
                 return numA - numB;
               })
               .map((key) => s3[key]);
-
+  
         setStage3Data(eventsArray);
       } else {
         alert("Stage 3 data not found in response");
       }
+  
+      // ✅ Jump to 100% once backend responds
+      setUploadProgress(100);
     } catch (err) {
       console.error("Error:", err);
       alert("Something went wrong! Check console for details.");
     } finally {
       setLoading(false);
+      if (fakeProgressInterval) clearInterval(fakeProgressInterval);
+  
+      // reset after a short delay
+      setTimeout(() => setUploadProgress(0), 1000);
     }
   };
+  
+  
+  
 
   const handleAskAI = async () => {
     if (!stage3Data) {
@@ -116,7 +139,7 @@ const Client_Event_Reporting = () => {
 
       setAskAIResult(
         askAIRes.data.answer_markdown.replace(/\. /g, ".\n\n") ||
-          "No answer received"
+        "No answer received"
       );
     } catch (err) {
       console.error("Ask AI Error:", err.response?.data || err);
@@ -154,58 +177,40 @@ const Client_Event_Reporting = () => {
       {/* One Time Mode */}
       {reportMode === "one-time" && (
         <>
-          <h1 className="page-title">Client Event & Incident Reporting</h1>
-          <p className="page-subtitle">Upload your data</p>
-
-          {/* Upload */}
-          <div className="upload-container">
-            <div className="upload-header">
-              <span className="upload-title">
-                Client Event & Incident Reporting
-              </span>
-              <div className="info-icon" title="Upload files for analysis">
-                i
+          <>
+            <div className="selectedModule">{props.selectedRole}</div>
+            <div className="selectedModuleDescription">Upload your data and<br></br>get instant insights into spending, funding, and what needs attention</div>
+            <div
+              className="uploader-grid"
+              style={{ display: 'flex', justifyContent: 'center' }}
+            >
+              <div style={{ width: '50%' }}>
+                <UploadFiles
+                  files={selectedFiles}
+                  setFiles={setSelectedFiles}
+                  title={props.selectedRole}
+                  subtitle="Upload multiple .docx, .xlsx, .xls, .csv, .pdf file"
+                  fileformat=".xlsx,.csv,.xls,.docx,.pdf"
+                  removeFile={(index) => {
+                    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+                  }}
+                  multiple={true}
+                  isProcessing={loading}
+                />
               </div>
             </div>
 
-            <div className="upload-box">
-              <div className="upload-icon">☁️</div>
-              <div className="upload-text">Drop file or browse</div>
-              <div className="upload-format">
-                Format: .docx, .xlsx, .xls, .csv, .pdf
-              </div>
-              <input
-                type="file"
-                multiple
-                onChange={handleFileChange}
-                accept=".docx,.xlsx,.xls,.csv,.pdf"
-                id="file-input"
-                style={{ display: "none" }}
-              />
-              <label htmlFor="file-input" className="browse-files-btn">
-                Browse Files
-              </label>
-            </div>
-
-            {selectedFiles.length > 0 && (
-              <div className="file-list">
-                {selectedFiles.map((file, idx) => (
-                  <p key={idx} className="file-name">
-                    {file.name}
-                  </p>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Analyse Button */}
-          <button
-            className="analyse-btns"
-            onClick={handleAnalyse}
-            disabled={loading}
-          >
-            {loading ? "Analysing..." : "Analyse ✨"}
-          </button>
+            <button
+              className="analyse-btn"
+              disabled={loading}
+              style={{ backgroundColor: '#000', marginTop: '20px' }}
+              onClick={handleAnalyse}
+            >
+              {loading
+                ? `Analysing...${uploadProgress}%`
+                : <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>Analyse<img src={star} alt='img' style={{ width: '20px', height: '20px' }} /></div>}
+            </button>
+          </>
 
           {/* Stage 3 Events */}
           {stage3Data && (
@@ -244,7 +249,7 @@ const Client_Event_Reporting = () => {
 
               {askAIResult && (
                 <div className="results-box">
-                  <h3>AskAI Answer</h3>
+                  <h3>AI Answer</h3>
                   <p>{askAIResult}</p>
                 </div>
               )}

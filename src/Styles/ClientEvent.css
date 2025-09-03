@@ -159,13 +159,15 @@
 .event-card h4 {
   margin-bottom: 10px;
   font-size: 16px;
-  color: #007bff;
+  color: #6c4cdc;
+  font-family: 'Inter';
 }
 
 .event-content {
   font-size: 14px;
   line-height: 1.5;
-  color: #333;
+  color: #000000;
+  font-family: 'Inter';
 }
 
 .ask-ai-container {
@@ -234,7 +236,7 @@
 }
 
 .report-type-badge {
-  background: #007bff;
+  background: #6C4CDC;
   color: white;
   padding: 6px; /* Equal padding all around */
   border-radius: 50%; /* Circular shape */
