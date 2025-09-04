@@ -16,11 +16,25 @@ const SmartRostering = () => {
     const [selectedFile, setSelectedFile] = useState([]);
     const [loading, setLoading] = useState(false);
     const [rosteringResponse, setRosteringResponse] = useState(null);
-
+    const [rosteringMetrics, setRosteringMetrics] = useState(null);
     const today = new Date();
     const options = { day: "2-digit", month: "short", year: "numeric" };
     const formattedDate = today.toLocaleDateString("en-GB", options);
+    useEffect(() => {
+        const fetchRosteringData = async () => {
+            try {
+                const response = await axios.get(
+                    "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/get-header-metrices"
+                );
+                setRosteringMetrics(response.data);
+            } catch (error) {
+                console.error("Error fetching rostering data:", error);
+            } 
+        };
 
+        fetchRosteringData();
+    }, []);
+    console.log("rosteringResponse",rosteringMetrics)
     const handleFileChange = (event) => {
         const files = Array.from(event.target.files); // take all selected files
         setSelectedFile((prev) => {
@@ -85,17 +99,17 @@ const SmartRostering = () => {
                     <div className="rostering-stats-row">
                         <div className="rostering-stat-card">
                             <p>Shift Coverage %</p>
-                            <span className="rostering-circle rostering-green">2</span>
+                            <span className="rostering-circle rostering-green">{rosteringMetrics.shift_coverage ? rosteringMetrics.shift_coverage : 2}</span>
                         </div>
 
                         <div className="rostering-stat-card">
                             <p>At-Risk Shifts</p>
-                            <span className="rostering-circle rostering-orange">2</span>
+                            <span className="rostering-circle rostering-orange">{rosteringMetrics.Unallocated_shift ? rosteringMetrics.Unallocated_shift : 2}</span>
                         </div>
 
                         <div className="rostering-stat-card">
                             <p>Staff Utilisation %</p>
-                            <span className="rostering-circle rostering-green">2</span>
+                            <span className="rostering-circle rostering-green">{rosteringMetrics.staff_utilisation ? rosteringMetrics.staff_utilisation : 2}</span>
                         </div>
                         <div className="rostering-upload-card">
                             <div>
