@@ -12,6 +12,7 @@ const HRAdminView = ({
   selectedRole,
   handleClick,
   setShowFeedbackPopup,
+  role
 }) => {
   const [selectedFile, setSelectedFile] = useState([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -294,7 +295,7 @@ const HRAdminView = ({
         )}
 
         {activeTab === "Screening Test Creation" && <ScreeningTestCreation/>}
-        {activeTab === "Staff Onboarding" && <StaffOnboarding />}
+        {activeTab === "Staff Onboarding" && <StaffOnboarding role={role}/>}
         {activeTab === "Staff Compliance Check" && <StaffComplianceDashboard />}
         {activeTab === "Document Verfication" && <AdminDocumentVerification/>}
       </div>

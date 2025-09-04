@@ -44,7 +44,7 @@ const HRAnalysis = () => {
             </div>
 
             <div>
-                {role === "Admin" ? <HRAdminView /> : <HRStaffView />}
+                {role === "Admin" ? <HRAdminView role={role}/> : <HRStaffView role={role}/>}
             </div>
         </div>
     );
