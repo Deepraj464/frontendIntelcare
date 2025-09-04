@@ -126,182 +126,204 @@ const FinancialHealth = (props) => {
     URL.revokeObjectURL(url);
   };
 
-const handleAnalyse = async () => {
-  // Validation checks
-  if (financialReportFiles.length === 0 && !syncEnabled) {
-    alert("Please upload the report files or enable sync.");
-    return;
-  }
-  if (syncEnabled && (!startDay || !startMonth || !endDay || !endMonth)) {
-    alert("Please select both start and end dates when sync is enabled.");
-    return;
-  }
-
-  props.handleClick();
-  setIsFinancialProcessing(true);
-  setFinancialProgress(1);
-
-  const interval = setInterval(() => {
-    setFinancialProgress((prev) => (prev < 92 ? prev + 2 : prev));
-  }, 5000);
-
-  try {
-    const formData = new FormData();
-
-    // Determine type correctly
-    let type = "upload";
-    if (syncEnabled && financialReportFiles.length > 0) type = "hybrid";
-    else if (syncEnabled && financialReportFiles.length === 0) type = "api";
-
-    // Handle dates
-    let fromDate, toDate;
-    if (type === "api" || type === "hybrid") {
-      fromDate = toAWSDateTime(startDay, startMonth);
-      toDate = toAWSDateTime(endDay, endMonth);
-      if (!fromDate || !toDate) {
-        alert("Please select valid start and end dates for sync mode.");
-        clearInterval(interval);
-        setIsFinancialProcessing(false);
-        return;
-      }
-    } else {
-      const currentYear = new Date().getFullYear();
-      fromDate = `${currentYear}-01-01T00:00:00Z`;
-      toDate = `${currentYear}-12-31T23:59:59Z`;
+  const handleAnalyse = async () => {
+    // Validation checks
+    if (financialReportFiles.length === 0 && !syncEnabled) {
+      alert("Please upload the report files or enable sync.");
+      return;
     }
-
-    // Validate user email
-    if (!props.user?.email) {
-      alert("User email is required. Please log in again.");
-      clearInterval(interval);
-      setIsFinancialProcessing(false);
+    if (syncEnabled && (!startDay || !startMonth || !endDay || !endMonth)) {
+      alert("Please select both start and end dates when sync is enabled.");
       return;
     }
 
-    // const userEmail = props.user.email.trim().toLowerCase();
-    const userEmail = "kris@curki.ai"
-    // console.log("Using email:", userEmail);
+    props.handleClick();
+    setIsFinancialProcessing(true);
+    setFinancialProgress(1);
 
-    // Append required fields
-    formData.append("type", type);
-    formData.append("userEmail", userEmail);
-    formData.append("provider", selectedActor);
-    formData.append("fromDate", fromDate);
-    formData.append("toDate", toDate);
+    const interval = setInterval(() => {
+      setFinancialProgress((prev) => (prev < 92 ? prev + 2 : prev));
+    }, 5000);
 
-    // Append files if needed
-    if (type === "upload" || type === "hybrid") {
-      if (financialReportFiles.length === 0) {
-        alert("No files selected for upload.");
+    try {
+      const formData = new FormData();
+
+      // Determine type correctly
+      let type = "upload";
+      if (syncEnabled && financialReportFiles.length > 0) type = "hybrid";
+      else if (syncEnabled && financialReportFiles.length === 0) type = "api";
+
+      // Handle dates
+      let fromDate, toDate;
+      if (type === "api" || type === "hybrid") {
+        fromDate = toAWSDateTime(startDay, startMonth);
+        toDate = toAWSDateTime(endDay, endMonth);
+        if (!fromDate || !toDate) {
+          alert("Please select valid start and end dates for sync mode.");
+          clearInterval(interval);
+          setIsFinancialProcessing(false);
+          return;
+        }
+      } else {
+        const currentYear = new Date().getFullYear();
+        fromDate = `${currentYear}-01-01T00:00:00Z`;
+        toDate = `${currentYear}-12-31T23:59:59Z`;
+      }
+
+      // Validate user email
+      if (!props.user?.email) {
+        alert("User email is required. Please log in again.");
         clearInterval(interval);
         setIsFinancialProcessing(false);
         return;
       }
-      financialReportFiles.forEach((file) => formData.append("files", file));
-    }
 
-    // --- Step 1: Call Analysis API ---
-    const reportEndpoint = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/report-middleware"
-    const analysisRes = await axios.post(
-      userEmail === "kris@curki.ai" ? `${reportEndpoint}?fmt=b64` : reportEndpoint,
-      formData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity,
+      const userEmail = props.user.email.trim().toLowerCase();
+      // const userEmail = "kris@curki.ai"
+      // console.log("Using email:", userEmail);
+
+      // Append required fields
+      formData.append("type", type);
+      formData.append("userEmail", userEmail);
+      formData.append("provider", selectedActor);
+      formData.append("fromDate", fromDate);
+      formData.append("toDate", toDate);
+
+      // Append files if needed
+      if (type === "upload" || type === "hybrid") {
+        if (financialReportFiles.length === 0) {
+          alert("No files selected for upload.");
+          clearInterval(interval);
+          setIsFinancialProcessing(false);
+          return;
+        }
+        financialReportFiles.forEach((file) => formData.append("files", file));
       }
-    );
 
-    const analysisData = analysisRes.data;
-    if (!analysisData) throw new Error("Empty response from analysis API");
-
-    // --- Step 2: Build Visualization Payload ---
-    let vizPayload;
-    if (userEmail === "kris@curki.ai") {
-      vizPayload = {
-        reportResponse: {
-          parsed: {
-            type,
-            provider: selectedActor,
-            final: analysisData?.final || analysisData?.parsed?.final || {},
-            figures: analysisData?.figures || analysisData?.parsed?.figures || [],
-          },
-        },
-        from_date: fromDate,
-        to_date: toDate,
-      };
-    } else {
-      vizPayload = {
-        reportResponse: analysisData,
-        from_date: fromDate,
-        to_date: toDate,
-      };
-    }
-
-    // --- Step 3: Call Visualization API ---
-    let vizData = null;
-    if (userEmail !== "kris@curki.ai") {
-      console.log("hiiiiii")
-      const vizRes = await axios.post(
-        "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/vizualize-reports",
-        vizPayload,
-        { headers: { "Content-Type": "application/json" } }
+      // --- Step 1: Call Analysis API ---
+      const reportEndpoint = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/report-middleware"
+      const analysisRes = await axios.post(
+        userEmail === "kris@curki.ai" ? `${reportEndpoint}?fmt=b64` : reportEndpoint,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+        }
       );
-      console.log("vizRes",vizRes)
-      vizData = vizRes.data;
+      console.log("analysisRes", analysisRes)
+      const analysisData = analysisRes.data;
+
+      if (!analysisData) throw new Error("Empty response from analysis API");
+
+      // --- Step 2: Build Visualization Payload ---
+      let vizPayload;
+      if (userEmail === "kris@curki.ai") {
+        vizPayload = {
+          reportResponse: {
+            parsed: {
+              type,
+              provider: selectedActor,
+              final: analysisData?.final || analysisData?.parsed?.final || {},
+              figures: analysisData?.figures || analysisData?.parsed?.figures || [],
+            },
+          },
+          from_date: fromDate,
+          to_date: toDate,
+        };
+      } else {
+        vizPayload = {
+          reportResponse: analysisData,
+          from_date: fromDate,
+          to_date: toDate,
+        };
+      }
+
+      // --- Step 3: Call Visualization API ---
+      let vizData = null;
+      if (userEmail !== "kris@curki.ai") {
+        const vizRes = await axios.post(
+          "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/vizualize-reports",
+          vizPayload,
+          { headers: { "Content-Type": "application/json" } }
+        );
+        console.log("vizRes", vizRes)
+        vizData = vizRes.data;
+      }
+
+      // --- Step 4: Normalize Figures ---
+      const normalizeFigures = (source) => {
+        console.log("source", source)
+        // Case: Kris or image-based figures
+        if (Array.isArray(source?.figures)) {
+          return source.figures.map((fig, i) => {
+            if (fig.data_base64) {
+              return {
+                type: "image",
+                image: `data:${fig.mime || "image/png"};base64,${fig.data_base64}`,
+                metricName: fig.key || `Figure ${i + 1}`,
+              };
+            }
+            if (fig.figure) {
+              return {
+                type: "json",
+                figure: fig.figure,
+                metricName: fig.key || `Figure ${i + 1}`,
+              };
+            }
+            return null;
+          }).filter(Boolean);
+        }
+
+        // Case: Non-Kris viz JSON charts
+        if (Array.isArray(source?.data?.figures)) {
+          return source.data.figures.map((fig, i) => ({
+            type: "json",
+            figure: fig.figure,
+            metricName: fig.key || `Figure ${i + 1}`,
+          }));
+        }
+
+        // Case: attachments (PNG images)
+        if (Array.isArray(source?.data?.attachments)) {
+          return source.data.attachments.map((att, i) => ({
+            type: "image",
+            image: `data:image/png;base64,${att.file_base64}`,
+            metricName: att.filename
+              ? att.filename.replace(/\.[^/.]+$/, "")
+              : `Attachment ${i + 1}`,
+          }));
+        }
+
+        return [];
+      };
+
+
+      const figures = normalizeFigures(userEmail === "kris@curki.ai" ? analysisData : vizData);
+
+      // --- Step 5: Save state ---
+      setFinancialReport(analysisData.final);
+      setFinancialVisualizations(figures);
+      setFinancialShowReport(true);
+      setIsFinancialProcessing(false);
+      setFinancialProgress(100);
+
+    } catch (err) {
+      console.error("Error in analysis pipeline:", err);
+      if (err.response) {
+        const { status, data } = err.response;
+        alert(`Error ${status}: ${data?.error || data?.message || "Unknown server error"}`);
+      } else if (err.request) {
+        alert("Network error. Please check your internet connection.");
+      } else {
+        alert(`Unexpected error: ${err.message}`);
+      }
+    } finally {
+      clearInterval(interval);
+      setIsFinancialProcessing(false);
+      setFinancialProgress(100);
     }
-
-    // --- Step 4: Normalize Figures ---
-    const normalizeFigures = (source) => {
-      if (Array.isArray(source?.figures)) {
-        return source.figures.map((fig, i) => ({
-          image: `data:${fig.mime || "image/png"};base64,${fig.data_base64}`,
-          metricName: fig.key || `Figure ${i + 1}`,
-        }));
-      }
-      if (Array.isArray(source?.data?.figures)) {
-        console.log("jjkkvbkxvbkxbv")
-        return source.data.figures.map((fig, i) => ({
-          image: `data:${fig.mime || "image/png"};base64,${fig.data_base64}`,
-          metricName: fig.key || `Figure ${i + 1}`,
-        }));
-      }
-      if (Array.isArray(source?.data?.attachments)) {
-        return source.data.attachments.map((att, i) => ({
-          image: `data:image/png;base64,${att.file_base64}`,
-          metricName: att.filename
-            ? att.filename.replace(/\.[^/.]+$/, "")
-            : `Attachment ${i + 1}`,
-        }));
-      }
-      return [];
-    };
-
-    const figures = normalizeFigures(userEmail === "kris@curki.ai" ? analysisData : vizData);
-
-    // --- Step 5: Save state ---
-    setFinancialReport(analysisData.final);
-    setFinancialVisualizations(figures);
-    setFinancialShowReport(true);
-    setIsFinancialProcessing(false);
-    setFinancialProgress(100);
-
-  } catch (err) {
-    console.error("Error in analysis pipeline:", err);
-    if (err.response) {
-      const { status, data } = err.response;
-      alert(`Error ${status}: ${data?.error || data?.message || "Unknown server error"}`);
-    } else if (err.request) {
-      alert("Network error. Please check your internet connection.");
-    } else {
-      alert(`Unexpected error: ${err.message}`);
-    }
-  } finally {
-    clearInterval(interval);
-    setIsFinancialProcessing(false);
-    setFinancialProgress(100);
-  }
-};
+  };
 
   const isButtonDisabled = !syncEnabled && financialReportFiles.length === 0;
 
