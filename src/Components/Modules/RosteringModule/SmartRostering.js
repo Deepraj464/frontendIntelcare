@@ -34,7 +34,7 @@ const SmartRostering = () => {
 
         fetchRosteringData();
     }, []);
-    console.log("rosteringResponse",rosteringMetrics)
+    // console.log("rosteringResponse",rosteringMetrics)
     const handleFileChange = (event) => {
         const files = Array.from(event.target.files); // take all selected files
         setSelectedFile((prev) => {
@@ -99,17 +99,17 @@ const SmartRostering = () => {
                     <div className="rostering-stats-row">
                         <div className="rostering-stat-card">
                             <p>Shift Coverage %</p>
-                            <span className="rostering-circle rostering-green">{rosteringMetrics.shift_coverage ? rosteringMetrics.shift_coverage : 2}</span>
+                            <span className="rostering-circle rostering-green">{rosteringMetrics?.shift_coverage ? rosteringMetrics?.shift_coverage : 2}</span>
                         </div>
 
                         <div className="rostering-stat-card">
                             <p>At-Risk Shifts</p>
-                            <span className="rostering-circle rostering-orange">{rosteringMetrics.Unallocated_shift ? rosteringMetrics.Unallocated_shift : 2}</span>
+                            <span className="rostering-circle rostering-orange">{rosteringMetrics?.Unallocated_shift ? rosteringMetrics?.Unallocated_shift : 2}</span>
                         </div>
 
                         <div className="rostering-stat-card">
                             <p>Staff Utilisation %</p>
-                            <span className="rostering-circle rostering-green">{rosteringMetrics.staff_utilisation ? rosteringMetrics.staff_utilisation : 2}</span>
+                            <span className="rostering-circle rostering-green">{rosteringMetrics?.staff_utilisation ? rosteringMetrics?.staff_utilisation : 2}</span>
                         </div>
                         <div className="rostering-upload-card">
                             <div>
