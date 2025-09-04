@@ -1,50 +1,22 @@
 import React, { useState } from "react";
 import "../../../Styles/ResumeScreening.css";
-import ScreeningTest from "./ScreeningTest";
 import StaffOnboarding from "./StaffOnboarding";
 import StaffComplianceDashboard from "./StaffComplianceDashboard";
-import DocumentVerification from "./DocumentVerification";
 import UploadFiles from "../../UploadFiles";
 import ScreeningTestCreation from "./ScreeningTestCreation";
 import AdminDocumentVerification from "./AdminDocumentVerification";
 
 const HRAdminView = ({
-  selectedRole,
   handleClick,
   setShowFeedbackPopup,
-  role
+  role,
+  selectedRole
 }) => {
   const [selectedFile, setSelectedFile] = useState([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeTab, setActiveTab] = useState("Resume Screening");
   const [showResults, setShowResults] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState(new Set());
-
-  const handleFileSelect = (event) => {
-    const file = event.target.files[0];
-    if (file && (file.name.endsWith(".zip") || file.name.endsWith(".rar"))) {
-      setSelectedFile(file);
-    } else {
-      alert("Please upload only .zip or .rar files");
-    }
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.dataTransfer.dropEffect = "copy";
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const file = e.dataTransfer.files[0];
-    if (file && (file.name.endsWith(".zip") || file.name.endsWith(".rar"))) {
-      setSelectedFile(file);
-    } else {
-      alert("Please drop only .zip or .rar files");
-    }
-  };
 
   const handleAnalyze = async () => {
     if (!selectedFile) {
@@ -184,7 +156,7 @@ const HRAdminView = ({
       <div className="content-area">
         {activeTab === "Resume Screening" && !showResults && (
           <div className="upload-section-container">
-            <h1 className="page-title">Resume Screening</h1>
+            {/* <h1 className="page-title">Resume Screening</h1> */}
             <p className="page-subtitle">
               Upload your Zip folder with multiple staff resumes
             </p>
@@ -195,7 +167,7 @@ const HRAdminView = ({
                 <UploadFiles
                   files={selectedFile}
                   setFiles={setSelectedFile}
-                  // title={props.selectedRole}
+                  title='Resume Screening'
                   subtitle='Upload multiple .zip, .rar file'
                   fileformat=".zip, .rar"
                   removeFile={(index) => {

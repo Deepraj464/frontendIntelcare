@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import HRAdminView from "./HRAdminView";
 import HRStaffView from "./HRStaffView";
 
-const HRAnalysis = () => {
+const HRAnalysis = (props) => {
     const [role, setRole] = useState("Admin");
 
     return (
@@ -44,7 +44,7 @@ const HRAnalysis = () => {
             </div>
 
             <div>
-                {role === "Admin" ? <HRAdminView role={role}/> : <HRStaffView role={role}/>}
+                {role === "Admin" ? <HRAdminView role={role} selectedRole={props.selectedRole}/> : <HRStaffView role={role}/>}
             </div>
         </div>
     );
