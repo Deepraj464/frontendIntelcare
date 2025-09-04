@@ -44,6 +44,10 @@ const SmartRostering = () => {
     }, [screen]);
     // 🔹 Call backend rostering API (Controller 1)
     const handleSubmit = async () => {
+        if (selectedFile.length !== 2) {
+            alert("Please upload exactly 2 files before sending.");
+            return;
+        }
         if (!query) {
             alert("Please enter a query first.");
             return;

@@ -3,7 +3,7 @@ import "../../../Styles/StaffOnboarding.css";
 import { FaRegEdit } from "react-icons/fa";
 import { ReactSortable } from "react-sortablejs"; // ✅ new package
 import { FaPencilAlt } from "react-icons/fa";
-const StaffOnboarding = () => {
+const StaffOnboarding = (props) => {
   const [expandedSections, setExpandedSections] = useState({});
   const [selectedLecture, setSelectedLecture] = useState("2");
   const [lectureCompletionStatus, setLectureCompletionStatus] = useState({});
@@ -177,7 +177,7 @@ const StaffOnboarding = () => {
                 style={{ cursor: "pointer" }}
                 onClick={() => setIsEditMode(!isEditMode)}
               >
-                <FaRegEdit size={18} />
+               {props.role==='Admin' && <FaRegEdit size={18} /> } 
               </span>
             </div>
           </div>
@@ -190,9 +190,9 @@ const StaffOnboarding = () => {
             chosenClass="sortable-chosen"
             animation={200}
             disabled={!isEditMode}
-             scroll={true}              // ✅ enable auto-scroll
-  scrollSensitivity={80}     // ✅ how close to edge before scroll (px)
-  scrollSpeed={15}   
+            scroll={true}              // ✅ enable auto-scroll
+            scrollSensitivity={80}     // ✅ how close to edge before scroll (px)
+            scrollSpeed={15}
           >
             {sections.map((section, index) => {
               const isExpanded = expandedSections[section.id];
@@ -228,7 +228,7 @@ const StaffOnboarding = () => {
                             }}
                             style={{ marginLeft: "8px", cursor: "pointer" }}
                           >
-                             <FaPencilAlt size={16} color="#6c4cdc" />
+                           {props.role==='Admin' && <FaPencilAlt size={16} color="#6c4cdc" /> } 
                           </span>
                         </>
                       )}
@@ -254,9 +254,9 @@ const StaffOnboarding = () => {
                       }
                       animation={200}
                       disabled={!isEditMode}
-                       scroll={true}              // ✅ enable auto-scroll
-  scrollSensitivity={80}     // ✅ how close to edge before scroll (px)
-  scrollSpeed={15}   
+                      scroll={true}              // ✅ enable auto-scroll
+                      scrollSensitivity={80}     // ✅ how close to edge before scroll (px)
+                      scrollSpeed={15}
                     >
                       {section.items.map((item, itemIndex) => {
                         const isActive = selectedLecture === item.id;
@@ -317,7 +317,7 @@ const StaffOnboarding = () => {
                                   }}
                                   style={{ cursor: "pointer" }}
                                 >
-                                   <FaPencilAlt size={16} color="#6c4cdc" />
+                                 {props.role==='Admin' && <FaPencilAlt size={16} color="#6c4cdc" />} 
                                 </span>
                               )}
                             </div>

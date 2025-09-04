@@ -25,10 +25,11 @@ import CareServicesEligibility from "./Modules/SupportAtHomeModule.js/CareServic
 import IncidentReport from "./Modules/SupportAtHomeModule.js/IncidentReport";
 import QualityandRisk from "./Modules/SupportAtHomeModule.js/QualityandRisk";
 import AiRostering from "./Modules/RosteringModule/Rostering";
-import ResumeScreening from "./Modules/SupportAtHomeModule.js/HRAnalysis";
+import ResumeScreening from "./Modules/SupportAtHomeModule.js/HRStaffView";
 import Client_Event_Reporting from "./Modules/NDISModule/Client_Event_Reporting";
 import SoftwareConnect from "./Modules/ConnectModule/SoftwareConnect";
 import RosteringDashboard from "./Modules/RosteringModule/SmartRostering";
+import HRAnalysis from "./Modules/SupportAtHomeModule.js/HRAnalysis";
 
 const HomePage = () => {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -186,7 +187,7 @@ const HomePage = () => {
                 </div>
 
                 <div style={{ display: selectedRole === "Smart Onboarding (Staff)" ? "block" : "none" }}>
-                  <ResumeScreening handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} />
+                  <HRAnalysis handleClick={handleClick} selectedRole = "Smart Onboarding (Staff)" setShowFeedbackPopup={setShowFeedbackPopup} />
                 </div>
 
                 <div style={{ display: selectedRole === "Care Plan Document" ? "block" : "none" }}>

@@ -1,0 +1,151 @@
+/* Container */
+.admin-verification-container {
+    display: flex;
+    height: 100%;
+    gap: 2%;
+    overflow: hidden;
+    font-family: 'Inter';
+  }
+  
+  /* Left User List */
+  .admin-user-list {
+    width: 30%;
+    /* padding-right: 12px; */
+    background: #fafafa;
+  }
+  
+  .admin-user-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  
+  .admin-user-item:hover {
+    background: #f4f4f4;
+  }
+  
+  .admin-user-item.admin-active {
+    border: 1px solid #a4f0d6;
+    background: #f3fffb;
+    box-shadow: 0 0 8px rgba(0, 200, 150, 0.25);
+  }
+  
+  /* Avatar */
+  .admin-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #F0EDF6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #93312B;
+    font-size: 14px;
+  }
+  
+  /* User Details */
+  .admin-user-name {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    color: #333;
+    text-align: left;
+  }
+  
+  .admin-user-email {
+    font-size: 12px;
+    color: gray;
+    margin: 0;
+    text-align: left;
+  }
+  
+  /* Right Panel */
+  .admin-verification-panel {
+    flex: 1;
+    padding: 24px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    width: 68%;
+  }
+  
+  .admin-panel-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 16px;
+    color: #222;
+  }
+  
+  /* Status List */
+  .admin-status-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+  }
+  
+  .admin-status-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0;
+    font-size: 14px;
+    color: #444;
+  }
+  
+  .admin-status-icon {
+    font-size: 16px;
+  }
+  
+  /* Search Section */
+  .admin-search-container {
+    margin-top: 20px;
+  }
+  
+  .admin-search-label {
+    font-size: 14px;
+    color: gray;
+    margin-bottom: 8px;
+    display: block;
+  }
+  
+  .admin-search-box {
+    display: flex;
+    align-items: center;
+    background: #f6f2fc;
+    border-radius: 8px;
+    padding: 8px 12px;
+  }
+  
+  .admin-search-icon {
+    margin-right: 8px;
+  }
+  
+  .admin-search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 14px;
+  }
+  
+  .admin-search-btn {
+    background: #6c3df4;
+    border: none;
+    color: white;
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .admin-search-btn:hover {
+    background: #5a2be0;
+  }
+  
