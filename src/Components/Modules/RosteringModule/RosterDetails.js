@@ -10,7 +10,6 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE }) => {
     const [selected, setSelected] = useState([]);
     const [showSuccess, setShowSuccess] = useState(false);
     const [broadcasting, setBroadcasting] = useState(false);
-
     // Extract data from backend response
     const client = rosteringResponse?.data?.client || {};
     
@@ -19,7 +18,6 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE }) => {
 
     const request = rosteringResponse?.data?.request || {};
     const message = rosteringResponse?.data?.message || "";
-
     const handleSelect = (id) => {
         if (selected.includes(id)) {
             setSelected(selected.filter((s) => s !== id));
@@ -140,7 +138,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE }) => {
                                     <div className="roster-staff-number">{index + 1}</div>
                                     <div style={{ fontSize: '14px', fontWeight: '600', color: 'black' }}>{staff.name}</div>
                                 </div>
-                                <p className="staff-details" style={{ fontWeight: '400' }}>Rate: <span style={{ color: 'black' }}>{staff.hourly_rate}</span></p>
+                                <p className="staff-details" style={{ fontWeight: '400' }}>Rate: <span style={{ color: 'black' }}>${staff.hourly_rate}/hour</span></p>
                                 <p className="staff-details" style={{ fontWeight: '400' }}>Gender: <span style={{ color: 'black' }}>{staff.gender}</span></p>
                                 <p className="staff-details" style={{ fontWeight: '400' }}>Age: <span style={{ color: 'black' }}>{staff.age}</span></p>
                             </div>
