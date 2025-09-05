@@ -202,46 +202,83 @@ const FinancialHealth = (props) => {
 
       // --- Step 1: Call Analysis API ---
       const reportEndpoint = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/report-middleware"
-      const analysisRes = await axios.post(
-        userEmail === "kris@curki.ai" ? `${reportEndpoint}?fmt=b64` : reportEndpoint,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          maxContentLength: Infinity,
-          maxBodyLength: Infinity,
-        }
-      );
-      console.log("analysisRes", analysisRes)
-      const analysisData = analysisRes.data;
+let analysisData = null;
 
-      if (!analysisData) throw new Error("Empty response from analysis API");
+if (userEmail === "kris@curki.ai" && type === "api") {
+  // Call immediately
+  const analysisRes = await axios.post(
+    reportEndpoint,
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+    }
+  );
+  console.log("Fast analysisRes", analysisRes);
+  analysisData = analysisRes.data;
+
+  if (!analysisData) throw new Error("Empty response from analysis API");
+
+  // Artificial delay: wait 45s before continuing
+  await new Promise((resolve) => setTimeout(resolve, 45000));
+} else {
+  // Normal flow
+  const analysisRes = await axios.post(
+    reportEndpoint,
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+    }
+  );
+  console.log("analysisRes", analysisRes);
+  analysisData = analysisRes.data;
+
+  if (!analysisData) throw new Error("Empty response from analysis API");
+}
 
       // --- Step 2: Build Visualization Payload ---
       let vizPayload;
-      if (userEmail === "kris@curki.ai") {
-        vizPayload = {
-          reportResponse: {
-            parsed: {
-              type,
-              provider: selectedActor,
-              final: analysisData?.final || analysisData?.parsed?.final || {},
-              figures: analysisData?.figures || analysisData?.parsed?.figures || [],
-            },
-          },
-          from_date: fromDate,
-          to_date: toDate,
-        };
-      } else {
-        vizPayload = {
-          reportResponse: analysisData,
-          from_date: fromDate,
-          to_date: toDate,
-        };
-      }
+
+if (userEmail === "kris@curki.ai") {
+  if (type === "api") {
+    // Kris + API = requires parsed wrapping
+    vizPayload = {
+      reportResponse: {
+        parsed: {
+          type,
+          provider: selectedActor,
+          final: analysisData?.final || analysisData?.parsed?.final || {},
+          figures: analysisData?.figures || analysisData?.parsed?.figures || [],
+        },
+      },
+      from_date: fromDate,
+      to_date: toDate,
+    };
+  } else {
+    // Kris + Upload/Hybrid = use response directly
+    vizPayload = {
+      reportResponse: analysisData,
+      from_date: fromDate,
+      to_date: toDate,
+    };
+  }
+} else {
+  // Non-Kris = normal behavior
+  vizPayload = {
+    reportResponse: analysisData,
+    from_date: fromDate,
+    to_date: toDate,
+  };
+}
+
 
       // --- Step 3: Call Visualization API ---
       let vizData = null;
-      if (userEmail !== "kris@curki.ai") {
+      console.log("vizload",vizPayload)
+      if (userEmail !== "kris@curki.ai" || (userEmail === "kris@curki.ai" && type === "upload")) {
         const vizRes = await axios.post(
           "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/vizualize-reports",
           vizPayload,
@@ -299,7 +336,7 @@ const FinancialHealth = (props) => {
       };
 
 
-      const figures = normalizeFigures(userEmail === "kris@curki.ai" ? analysisData : vizData);
+      const figures = normalizeFigures(userEmail === "kris@curki.ai" && type !== "upload" ? analysisData : vizData);
 
       // --- Step 5: Save state ---
       setFinancialReport(analysisData.final);
