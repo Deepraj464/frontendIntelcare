@@ -1,14 +1,30 @@
 import { getDatabase, ref, get, update } from "firebase/database";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 const SubscriptionStatus = (user, setShowPricingModal) => {
   useEffect(() => {
     if (!user) return;
 
+    // ✅ Only check subscription for this email
+    if (user?.email === "noah@caringways.com.au" || user?.email === "utkarsh@curki.ai" || user?.email === "kris@curki.ai") {
+      setShowPricingModal(false);
+      return;
+    }
+
     const db = getDatabase();
     const paymentRef = ref(db, `users/${user.uid}/paymentInfo`);
 
     const now = new Date();
+
+    const fallbackToCreationTimeCheck = () => {
+      const creationDate = new Date(user?.metadata?.creationTime);
+      const daysSinceCreation = (now - creationDate) / (1000 * 60 * 60 * 24);
+      if (daysSinceCreation > 30) {
+        setShowPricingModal(true);
+      } else {
+        setShowPricingModal(false);
+      }
+    };
 
     get(paymentRef)
       .then((snapshot) => {
@@ -24,9 +40,7 @@ const SubscriptionStatus = (user, setShowPricingModal) => {
             if (daysSincePayment > 30) {
               // Show modal and update status in Firebase
               setShowPricingModal(true);
-              update(paymentRef, {
-                paymentStatus: "not paid",
-              });
+              update(paymentRef, { paymentStatus: "not paid" });
             } else {
               setShowPricingModal(false); // ✅ Hide modal if still within subscription
             }
@@ -41,17 +55,7 @@ const SubscriptionStatus = (user, setShowPricingModal) => {
         console.error("Error fetching paymentInfo:", err);
         fallbackToCreationTimeCheck();
       });
-
-    const fallbackToCreationTimeCheck = () => {
-      const creationDate = new Date(user?.metadata?.creationTime);
-      const daysSinceCreation = (now - creationDate) / (1000 * 60 * 60 * 24);
-      if (daysSinceCreation > 30) {
-        setShowPricingModal(true);
-      } else {
-        setShowPricingModal(false);
-      }
-    };
-  }, [user]); // ✅ Runs again on refresh because `user` changes or rehydrates
+  }, [user, setShowPricingModal]);
 };
 
 export default SubscriptionStatus;
