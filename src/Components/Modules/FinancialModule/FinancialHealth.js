@@ -700,7 +700,7 @@ if (userEmail === "kris@curki.ai") {
                     layout={{
                       ...item.figure.layout,
                       autosize: true,
-                      margin: { t: 40, l: 40, r: 40, b: 40 },
+                      margin: { t: 120, l: 40, r: 40, b: 40 },
                     }}
                     style={{ width: "100%", height: "400px" }}
                     config={{
