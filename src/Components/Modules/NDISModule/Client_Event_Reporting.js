@@ -102,52 +102,52 @@ const Client_Event_Reporting = (props) => {
   
   
 
-  const handleAskAI = async () => {
-    if (!stage3Data) {
-      alert("Please run analysis first");
-      return;
-    }
-    if (!question.trim()) {
-      alert("Please enter a question");
-      return;
-    }
+  // const handleAskAI = async () => {
+  //   if (!stage3Data) {
+  //     alert("Please run analysis first");
+  //     return;
+  //   }
+  //   if (!question.trim()) {
+  //     alert("Please enter a question");
+  //     return;
+  //   }
 
-    setLoadingAskAI(true);
-    setAskAIResult(null);
+  //   setLoadingAskAI(true);
+  //   setAskAIResult(null);
 
-    try {
-      const stage3Obj = {};
-      stage3Data.forEach((content, idx) => {
-        stage3Obj[`event${idx + 1}`] = content;
-      });
+  //   try {
+  //     const stage3Obj = {};
+  //     stage3Data.forEach((content, idx) => {
+  //       stage3Obj[`event${idx + 1}`] = content;
+  //     });
 
-      const formData = new FormData();
-      selectedFiles.forEach((file) => formData.append("files", file));
-      formData.append("question", question);
-      formData.append("stage3", JSON.stringify(stage3Obj));
-      formData.append("concurrency", 6);
-      formData.append("include_text", 0);
+  //     const formData = new FormData();
+  //     selectedFiles.forEach((file) => formData.append("files", file));
+  //     formData.append("question", question);
+  //     formData.append("stage3", JSON.stringify(stage3Obj));
+  //     formData.append("concurrency", 6);
+  //     formData.append("include_text", 0);
 
-      const askAIRes = await axios.post(
-        `${BASE_URL}/clients-events/askai`,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          timeout: 900000,
-        }
-      );
+  //     const askAIRes = await axios.post(
+  //       `${BASE_URL}/clients-events/askai`,
+  //       formData,
+  //       {
+  //         headers: { "Content-Type": "multipart/form-data" },
+  //         timeout: 900000,
+  //       }
+  //     );
 
-      setAskAIResult(
-        askAIRes.data.answer_markdown.replace(/\. /g, ".\n\n") ||
-        "No answer received"
-      );
-    } catch (err) {
-      console.error("Ask AI Error:", err.response?.data || err);
-      alert("Something went wrong in Ask AI! Check console for details.");
-    } finally {
-      setLoadingAskAI(false);
-    }
-  };
+  //     setAskAIResult(
+  //       askAIRes.data.answer_markdown.replace(/\. /g, ".\n\n") ||
+  //       "No answer received"
+  //     );
+  //   } catch (err) {
+  //     console.error("Ask AI Error:", err.response?.data || err);
+  //     alert("Something went wrong in Ask AI! Check console for details.");
+  //   } finally {
+  //     setLoadingAskAI(false);
+  //   }
+  // };
 
   const monthlyReports = [
     { date: "12 Aug", type: "SE", format: "Txt", link: "#" },
@@ -232,7 +232,7 @@ const Client_Event_Reporting = (props) => {
           )}
 
           {/* Ask AI Section */}
-          {stage3Data && (
+          {/* {stage3Data && (
             <div className="ask-ai-container">
               <label style={{ marginLeft: "8px" }}>Ask AI a Question:</label>
               <div className="ask-ai-input-wrapper">
@@ -254,7 +254,7 @@ const Client_Event_Reporting = (props) => {
                 </div>
               )}
             </div>
-          )}
+          )} */}
         </>
       )}
 
