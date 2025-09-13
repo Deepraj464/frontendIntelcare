@@ -24,76 +24,139 @@ const SignIn = ({ show, onClose }) => {
   if (!show) return null;
 
   // Handle Sign In or Sign Up
-  const handleAuth = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true); // Show loader
-    console.log(isSignUp);
+const handleAuth = async (e) => {
+  e.preventDefault();
+  setError("");
+  setLoading(true); // Show loader
+  console.log(isSignUp);
 
-    try {
-      if (isSignUp) {
-        await createUserWithEmailAndPassword(auth, email, password);
-        const templateParams = {
-          message: "A new user just signed up!",
-          email: email,
-        };
+  try {
+    if (isSignUp) {
+      // Create Firebase user
+      await createUserWithEmailAndPassword(auth, email, password);
 
-        try {
-          await emailjs.send(
-            "service_6otxz7o",
-            "template_fxslvkj",
-            templateParams,
-            "hp6wyNEGYtFRXcOSs"
-          );
-          console.log("Email sent successfully");
-        } catch (emailError) {
-          console.error("Failed to send email:", emailError);
-        }
-        alert("Account created successfully!");
-      }
-      await signInWithEmailAndPassword(auth, email, password);
-      alert("Login successful!");
-      onClose(); // Close popup after login
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false); // Hide loader
-    }
-  };
+      // EmailJS notification
+      const templateParams = {
+        message: "A new user just signed up!",
+        email: email,
+      };
 
-  // Google Sign-In
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      console.log(result?.user?.email);
-      if (result._tokenResponse.isNewUser) {
-        const templateParams = {
-          message: "A new user just signed up!",
-          email: result?.user?.email,
-        };
-
-        try {
-          await emailjs.send(
-            "service_6otxz7o",
-            "template_fxslvkj",
-            templateParams,
-            "hp6wyNEGYtFRXcOSs"
-          );
-          console.log("Email sent successfully");
-        } catch (emailError) {
-          console.error("Failed to send email:", emailError);
-        }
+      try {
+        await emailjs.send(
+          "service_6otxz7o",
+          "template_fxslvkj",
+          templateParams,
+          "hp6wyNEGYtFRXcOSs"
+        );
+        console.log("Email sent successfully");
+      } catch (emailError) {
+        console.error("Failed to send email:", emailError);
       }
 
-      alert("Google Sign-In successful!");
-      onClose();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      // Mailchimp Welcome flow
+      try {
+        const mailchimpRes = await fetch(
+          "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/mailchimp/contact",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email,
+              first_name: email.split("@")[0],
+              last_name: "",
+              tag: "Welcome",
+            }),
+          }
+        );
+
+        const mailchimpData = await mailchimpRes.json();
+        if (mailchimpRes.ok) {
+          console.log("User added to Mailchimp Welcome flow:", mailchimpData);
+        } else {
+          console.error("Mailchimp error:", mailchimpData);
+        }
+      } catch (mailchimpError) {
+        console.error("Failed to sync with Mailchimp:", mailchimpError);
+      }
+
+      alert("Account created successfully!");
     }
-  };
+
+    // Login flow (for both signup and login)
+    await signInWithEmailAndPassword(auth, email, password);
+    alert("Login successful!");
+    onClose(); // Close popup after login
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false); // Hide loader
+  }
+};
+
+// Google Sign-In
+const handleGoogleSignIn = async () => {
+  setLoading(true);
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    console.log(result?.user?.email);
+
+    if (result._tokenResponse.isNewUser) {
+      const newEmail = result?.user?.email;
+
+      // EmailJS notification
+      const templateParams = {
+        message: "A new user just signed up!",
+        email: newEmail,
+      };
+
+      try {
+        await emailjs.send(
+          "service_6otxz7o",
+          "template_fxslvkj",
+          templateParams,
+          "hp6wyNEGYtFRXcOSs"
+        );
+        console.log("Email sent successfully");
+      } catch (emailError) {
+        console.error("Failed to send email:", emailError);
+      }
+
+      // Mailchimp Welcome flow
+      try {
+        const mailchimpRes = await fetch(
+          "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/mailchimp/contact",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: newEmail,
+              first_name: newEmail.split("@")[0],
+              last_name: "",
+              tag: "Welcome",
+            }),
+          }
+        );
+
+        const mailchimpData = await mailchimpRes.json();
+        if (mailchimpRes.ok) {
+          console.log("Google user added to Mailchimp Welcome flow:", mailchimpData);
+        } else {
+          console.error("Mailchimp error:", mailchimpData);
+        }
+      } catch (mailchimpError) {
+        console.error("Failed to sync with Mailchimp:", mailchimpError);
+      }
+    }
+
+    alert("Google Sign-In successful!");
+    onClose();
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
   const handleFacebookSignIn = async () => {
     setLoading(true);
     try {
