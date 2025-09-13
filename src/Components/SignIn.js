@@ -61,10 +61,10 @@ const handleAuth = async (e) => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              email,
-              first_name: email.split("@")[0],
-              last_name: "",
-              tag: "Welcome",
+              email:"ap5277478@gmail.com",
+              first_name: "Aman",
+              last_name: "Patel",
+              tag: "Welcome Flow",
             }),
           }
         );
@@ -129,15 +129,16 @@ const handleGoogleSignIn = async () => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              email: newEmail,
-              first_name: newEmail.split("@")[0],
-              last_name: "",
-              tag: "Welcome",
+              email:"ap5277478@gmail.com",
+              first_name: "Aman",
+              last_name: "Patel",
+              tag: "Welcome Flow",
             }),
           }
         );
 
         const mailchimpData = await mailchimpRes.json();
+        console.log("mailchimpData",mailchimpData)
         if (mailchimpRes.ok) {
           console.log("Google user added to Mailchimp Welcome flow:", mailchimpData);
         } else {
