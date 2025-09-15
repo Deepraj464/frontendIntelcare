@@ -7,6 +7,7 @@ import VisualCare from "../../../Images/VisualCare.png";
 import QuickBooks from "../../../Images/IntuitQuickBooks.png";
 import Myp from "../../../Images/MypTech.png";
 import MyOB from "../../../Images/MyOb.png";
+import CareVision from '../../../Images/CareVision.png';
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -15,6 +16,7 @@ const SoftwareConnect = (props) => {
     { name: "AlayaCare", logo: AlayaCare },
     { name: "VisualCare", logo: VisualCare },
     { name: "MYP Technologies", logo: Myp },
+    { name: 'CareVision', logo: CareVision },
     { name: "Xero", logo: Xero },
     { name: "QuickBooks", logo: QuickBooks },
     { name: "MYOB", logo: MyOB },
@@ -34,7 +36,7 @@ const SoftwareConnect = (props) => {
 
       try {
         console.log("Making GET request for user:", props.user.email);
-        
+
         // Use the correct endpoint from your router: /getSoftwares
         const response = await fetch(
           `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/getSoftwares?userEmail=${encodeURIComponent(props.user.email)}`,
@@ -54,7 +56,7 @@ const SoftwareConnect = (props) => {
 
         const data = await response.json();
         console.log("Success response:", data);
-        
+
         const integrations = data.integrations || data || [];
         setIntegrations(integrations);
 
@@ -177,14 +179,14 @@ const SoftwareConnect = (props) => {
               src={software.logo}
               alt={software.name}
               className={`software-logo ${software.name === "EmploymentHero"
-                  ? "employment-hero-logo"
-                  : software.name === "QuickBooks"
-                    ? "quickbooks-logo"
-                    : software.name === "Xero"
-                      ? "xero-logo"
-                      : software.name === "MYOB"
-                        ? "myob-logo"
-                        : ""
+                ? "employment-hero-logo"
+                : software.name === "QuickBooks"
+                  ? "quickbooks-logo"
+                  : software.name === "Xero"
+                    ? "xero-logo"
+                    : software.name === "MYOB"
+                      ? "myob-logo"
+                      : ""
                 }`}
             />
             {integrations.some((i) => i.software === software.name) && (
