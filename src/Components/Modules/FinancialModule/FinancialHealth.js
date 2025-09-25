@@ -13,6 +13,8 @@ import "react-toggle/style.css";
 import UploadFinancialFiles from "../../UploadFinancialFiles";
 import ChartsDisplay from "../../ChartDisplay";
 import Plot from "react-plotly.js";
+import response from "./response_api_only";
+import PreviewDataSection from "./PreviewDataSection";
 
 const FinancialHealth = (props) => {
   const [financialReportFiles, setFinancialReportFiles] = useState([]);
@@ -35,7 +37,65 @@ const FinancialHealth = (props) => {
   const [startMonth, setStartMonth] = useState("");
   const [endDay, setEndDay] = useState("");
   const [endMonth, setEndMonth] = useState("");
+  const [apiExcelUrls, setApiExcelUrls] = useState([]);
+  const [title, setTitle] = useState("");
+  const raw = response
+  // console.log("raw",raw)
+  // const excelUrls = Object.values(raw.excel_exports)
+  //   .flat()
+  //   .map(item => item.data_url)
+  //   .filter(Boolean);
+  // console.log("excel urls", excelUrls)
 
+  const [titleArray, setTitleArray] = useState([]);
+
+  // Inside your useEffect for merging API files
+  // useEffect(() => {
+  //   try {
+  //     const mergedWorkbook = XLSX.utils.book_new();
+  //     const usedSheetNames = new Set();
+
+  //     const excelFiles = Object.values(raw.excel_exports).flat();
+  //     const titlesArray = [];
+
+  //     for (const fileData of excelFiles) {
+  //       let base64 = fileData.data_url;
+  //       let fileTitle = fileData.title;
+  //       titlesArray.push(fileTitle);
+
+  //       const base64String = base64.includes("base64,") ? base64.split("base64,")[1] : base64;
+  //       const binary = atob(base64String);
+  //       const arrayBuffer = new ArrayBuffer(binary.length);
+  //       const view = new Uint8Array(arrayBuffer);
+  //       for (let i = 0; i < binary.length; i++) view[i] = binary.charCodeAt(i) & 0xff;
+
+  //       const workbook = XLSX.read(arrayBuffer, { type: "array" });
+
+  //       for (const sheetName of workbook.SheetNames) {
+  //         let newSheetName = fileTitle.slice(0, 31);
+  //         let counter = 1;
+  //         while (usedSheetNames.has(newSheetName)) {
+  //           const suffix = `_${counter++}`;
+  //           newSheetName = fileTitle.slice(0, 31 - suffix.length) + suffix;
+  //         }
+  //         usedSheetNames.add(newSheetName);
+  //         XLSX.utils.book_append_sheet(mergedWorkbook, workbook.Sheets[sheetName], newSheetName);
+  //       }
+  //     }
+
+  //     setTitleArray(titlesArray);
+
+  //     const wbout = XLSX.write(mergedWorkbook, { bookType: "xlsx", type: "binary" });
+  //     const blob = new Blob([s2ab(wbout)], {
+  //       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  //     });
+
+  //     const url = URL.createObjectURL(blob);
+  //     setApiExcelUrls([url]);
+  //   } catch (err) {
+  //     console.error("Error merging API Excel files:", err);
+  //   }
+  // }, [raw?.excel_exports]);
   const handleButtonClick = () => {
     setIsConsentChecked(true);
   };
@@ -202,82 +262,82 @@ const FinancialHealth = (props) => {
 
       // --- Step 1: Call Analysis API ---
       const reportEndpoint = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/report-middleware"
-let analysisData = null;
+      let analysisData = null;
 
-if (userEmail === "kris@curki.ai" && type === "api") {
-  // Call immediately
-  const analysisRes = await axios.post(
-    reportEndpoint,
-    formData,
-    {
-      headers: { "Content-Type": "multipart/form-data" },
-      maxContentLength: Infinity,
-      maxBodyLength: Infinity,
-    }
-  );
-  console.log("Fast analysisRes", analysisRes);
-  analysisData = analysisRes.data;
+      if (userEmail === "kris@curki.ai" && type === "api") {
+        // Call immediately
+        const analysisRes = await axios.post(
+          reportEndpoint,
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity,
+          }
+        );
+        console.log("Fast analysisRes", analysisRes);
+        analysisData = analysisRes.data;
 
-  if (!analysisData) throw new Error("Empty response from analysis API");
+        if (!analysisData) throw new Error("Empty response from analysis API");
 
-  // Artificial delay: wait 45s before continuing
-  await new Promise((resolve) => setTimeout(resolve, 45000));
-} else {
-  // Normal flow
-  const analysisRes = await axios.post(
-    reportEndpoint,
-    formData,
-    {
-      headers: { "Content-Type": "multipart/form-data" },
-      maxContentLength: Infinity,
-      maxBodyLength: Infinity,
-    }
-  );
-  console.log("analysisRes", analysisRes);
-  analysisData = analysisRes.data;
+        // Artificial delay: wait 45s before continuing
+        await new Promise((resolve) => setTimeout(resolve, 45000));
+      } else {
+        // Normal flow
+        const analysisRes = await axios.post(
+          reportEndpoint,
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity,
+          }
+        );
+        console.log("analysisRes", analysisRes);
+        analysisData = analysisRes.data;
 
-  if (!analysisData) throw new Error("Empty response from analysis API");
-}
+        if (!analysisData) throw new Error("Empty response from analysis API");
+      }
 
       // --- Step 2: Build Visualization Payload ---
       let vizPayload;
 
-if (userEmail === "kris@curki.ai") {
-  if (type === "api") {
-    // Kris + API = requires parsed wrapping
-    vizPayload = {
-      reportResponse: {
-        parsed: {
-          type,
-          provider: selectedActor,
-          final: analysisData?.final || analysisData?.parsed?.final || {},
-          figures: analysisData?.figures || analysisData?.parsed?.figures || [],
-        },
-      },
-      from_date: fromDate,
-      to_date: toDate,
-    };
-  } else {
-    // Kris + Upload/Hybrid = use response directly
-    vizPayload = {
-      reportResponse: analysisData,
-      from_date: fromDate,
-      to_date: toDate,
-    };
-  }
-} else {
-  // Non-Kris = normal behavior
-  vizPayload = {
-    reportResponse: analysisData,
-    from_date: fromDate,
-    to_date: toDate,
-  };
-}
+      if (userEmail === "kris@curki.ai") {
+        if (type === "api") {
+          // Kris + API = requires parsed wrapping
+          vizPayload = {
+            reportResponse: {
+              parsed: {
+                type,
+                provider: selectedActor,
+                final: analysisData?.final || analysisData?.parsed?.final || {},
+                figures: analysisData?.figures || analysisData?.parsed?.figures || [],
+              },
+            },
+            from_date: fromDate,
+            to_date: toDate,
+          };
+        } else {
+          // Kris + Upload/Hybrid = use response directly
+          vizPayload = {
+            reportResponse: analysisData,
+            from_date: fromDate,
+            to_date: toDate,
+          };
+        }
+      } else {
+        // Non-Kris = normal behavior
+        vizPayload = {
+          reportResponse: analysisData,
+          from_date: fromDate,
+          to_date: toDate,
+        };
+      }
 
 
       // --- Step 3: Call Visualization API ---
       let vizData = null;
-      console.log("vizload",vizPayload)
+      console.log("vizload", vizPayload)
       if (userEmail !== "kris@curki.ai" || (userEmail === "kris@curki.ai" && type === "upload")) {
         const vizRes = await axios.post(
           "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/vizualize-reports",
@@ -335,7 +395,57 @@ if (userEmail === "kris@curki.ai") {
         return [];
       };
 
+      if (type === "api") {
+        if (raw?.excel_exports) {
+          try {
+            const mergedWorkbook = XLSX.utils.book_new();
+            const usedSheetNames = new Set();
 
+            const excelFiles = Object.values(raw.excel_exports).flat();
+            const titlesArray = [];
+
+            for (const fileData of excelFiles) {
+              let base64 = fileData.data_url;
+              let fileTitle = fileData.title;
+              titlesArray.push(fileTitle);
+
+              const base64String = base64.includes("base64,") ? base64.split("base64,")[1] : base64;
+              const binary = atob(base64String);
+              const arrayBuffer = new ArrayBuffer(binary.length);
+              const view = new Uint8Array(arrayBuffer);
+              for (let i = 0; i < binary.length; i++) view[i] = binary.charCodeAt(i) & 0xff;
+
+              const workbook = XLSX.read(arrayBuffer, { type: "array" });
+
+              for (const sheetName of workbook.SheetNames) {
+                let newSheetName = fileTitle.slice(0, 31);
+                let counter = 1;
+                while (usedSheetNames.has(newSheetName)) {
+                  const suffix = `_${counter++}`;
+                  newSheetName = fileTitle.slice(0, 31 - suffix.length) + suffix;
+                }
+                usedSheetNames.add(newSheetName);
+                XLSX.utils.book_append_sheet(mergedWorkbook, workbook.Sheets[sheetName], newSheetName);
+              }
+            }
+
+            setTitleArray(titlesArray);
+
+            const wbout = XLSX.write(mergedWorkbook, { bookType: "xlsx", type: "binary" });
+            const blob = new Blob([s2ab(wbout)], {
+              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            });
+
+            const url = URL.createObjectURL(blob);
+            setApiExcelUrls([url]);
+          } catch (err) {
+            console.error("Error merging API Excel files:", err);
+          }
+        }
+      } else {
+        setApiExcelUrls([]); // clear for non-API types
+      }
+      console.log("apiExcelUrls in handle analyse", apiExcelUrls)
       const figures = normalizeFigures(userEmail === "kris@curki.ai" && type !== "upload" ? analysisData : vizData);
 
       // --- Step 5: Save state ---
@@ -389,9 +499,14 @@ if (userEmail === "kris@curki.ai") {
   console.log("financial Visualizations", financialVisualizations);
 
   return (
+
     <>
       {!financialshowReport ? (
         <>
+          {/* <PreviewDataSection
+            apiExcelUrls={apiExcelUrls}
+            titles={titleArray} // pass titles as a prop
+          /> */}
           {/* Header Section */}
           <div className="financial-header">
             <div className="role-selector">
@@ -753,6 +868,10 @@ if (userEmail === "kris@curki.ai") {
                 selectedRole={props.selectedRole}
                 resetFinancialHealthState={resetFinancialHealthState}
               />
+              {financialReport && <PreviewDataSection
+                apiExcelUrls={apiExcelUrls}
+                titles={titleArray} // pass titles as a prop
+              />}
               <div
                 style={{
                   display: "flex",
