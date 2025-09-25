@@ -394,14 +394,14 @@ const FinancialHealth = (props) => {
 
         return [];
       };
-
+      console.log("vizPayload?.reportResponse?.excel_exports",vizPayload?.reportResponse?.excel_exports)
       if (type === "api") {
-        if (raw?.excel_exports) {
+        if (vizPayload?.reportResponse?.excel_exports) {
           try {
             const mergedWorkbook = XLSX.utils.book_new();
             const usedSheetNames = new Set();
 
-            const excelFiles = Object.values(raw.excel_exports).flat();
+            const excelFiles = Object.values(vizPayload?.reportResponse?.excel_exports).flat();
             const titlesArray = [];
 
             for (const fileData of excelFiles) {
@@ -868,10 +868,12 @@ const FinancialHealth = (props) => {
                 selectedRole={props.selectedRole}
                 resetFinancialHealthState={resetFinancialHealthState}
               />
-              {financialReport && <PreviewDataSection
-                apiExcelUrls={apiExcelUrls}
-                titles={titleArray} // pass titles as a prop
-              />}
+              {financialReport && apiExcelUrls?.length > 0 && (
+  <PreviewDataSection
+    apiExcelUrls={apiExcelUrls}
+    titles={titleArray} // pass titles as a prop
+  />
+)}
               <div
                 style={{
                   display: "flex",
