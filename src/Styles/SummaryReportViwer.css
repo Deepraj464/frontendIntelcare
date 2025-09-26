@@ -138,6 +138,33 @@
   font-weight: 600;
   margin-bottom: 10px;
 }
+.financial-health-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+
+.financial-health-markdown th,
+.financial-health-markdown td {
+  border: 1px solid #ccc;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.financial-health-markdown th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+}
+
+.financial-health-markdown strong {
+  font-weight: bold;
+  color: #000;
+}
+
+.financial-health-markdown em {
+  font-style: italic;
+}
+
 
 .compliance-high {
   color: green;
