@@ -1,4 +1,4 @@
-import React, { useState,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import axios from "axios";
 import UploadFiles from "../../UploadFiles";
@@ -34,6 +34,21 @@ const CustomReporting = (props) => {
 
         console.log('doing custom Reporting.......');
         try {
+            const driveForm = new FormData();
+            customReportFiles.forEach((file) => {
+                driveForm.append("files", file); 
+            });
+
+            console.log("Uploading to Google Drive API...",driveForm);
+            const driveResponse = await axios.post(
+                "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/upload-to-drive",
+                driveForm,
+                {
+                    headers: { "Content-Type": "multipart/form-data" },
+                }
+            );
+
+            console.log("✅ Drive upload response:", driveResponse.data);
             const payrollForm = new FormData();
             customReportFiles.forEach((file, index) => {
                 payrollForm.append(`source${index + 1}`, file, file.name);
@@ -106,7 +121,7 @@ const CustomReporting = (props) => {
             const timer = setTimeout(() => {
                 props.setShowFeedbackPopup(true);
             }, 60000); // 1 minute
-    
+
             return () => clearTimeout(timer); // Clear on unmount or change
         }
     }, [showCustomReport]);
@@ -165,7 +180,7 @@ const CustomReporting = (props) => {
                 <>
                     <div className="reports-box" style={{ height: 'auto', marginTop: '30px', padding: '10px' }}>
                         <div style={{ backgroundColor: '#FFFFFF', padding: '10px 30px', borderRadius: '10px' }}>
-                            <SummaryReport summaryText={customReport} selectedRole={props.selectedRole} handledownloadPayrollFile={handledownloadPayrollFile} resetCustomReportingState={resetCustomReportingState}/>
+                            <SummaryReport summaryText={customReport} selectedRole={props.selectedRole} handledownloadPayrollFile={handledownloadPayrollFile} resetCustomReportingState={resetCustomReportingState} />
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', fontSize: '13px', color: 'grey' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
                                     <input type="checkbox" id="aiConsent" checked={isConsentChecked} readOnly style={{ width: '16px', height: '16px', marginRight: '8px', accentColor: 'green', cursor: 'pointer' }} />
