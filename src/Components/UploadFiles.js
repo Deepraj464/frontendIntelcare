@@ -51,11 +51,18 @@ const UploadFiles = ({ files, setFiles, title, subtitle, removeFile, fileformat,
             )}
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px', marginBottom: '30px' }}>
                 <div className="uploader-title" style={{ marginBottom: '0px' }}>{title}</div>
-                {(title === 'SIRS Analysis' || title === 'Custom Reporting' || title === 'Care Plan Document' || title === 'Incident Report') &&
+                {(title === 'SIRS Analysis' || title === 'Custom Reporting' || title === 'Care Plan Document' || title === 'Incident Report' || title === 'Incident Auditing') && (
                     <Tippy
-                        content={<div style={{ width: '450px', height: 'auto', padding: '4px', fontSize: '15px', fontWeight: '600' }}><img src={title === 'Custom Reporting' ? customPlaceHolder : TooltipPlaceholder} alt='tooltip' style={{ width: '100%' }} /> {content}</div>}
-                        trigger="mouseenter focus click" // shows on hover or click
-                        interactive={true} // allows the tooltip to stay open on click
+                        content={
+                            <div style={{ width: '450px', height: 'auto', padding: '4px', fontSize: '15px', fontWeight: '600' }}>
+                                {title !== 'Incident Auditing' && (
+                                    <img src={title === 'Custom Reporting' ? customPlaceHolder : TooltipPlaceholder} alt="tooltip" style={{ width: '100%' }} />
+                                )}
+                                {content}
+                            </div>
+                        }
+                        trigger="mouseenter focus click"
+                        interactive={true}
                         placement="right"
                         theme="custom"
                     >
@@ -63,7 +70,8 @@ const UploadFiles = ({ files, setFiles, title, subtitle, removeFile, fileformat,
                             <IoMdInformationCircleOutline size={22} color="#5B36E1" />
                         </div>
                     </Tippy>
-                }
+                )}
+
 
             </div>
 

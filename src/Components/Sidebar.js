@@ -27,6 +27,8 @@ import purpleEventandIncident from '../Images/purple_eventIncident.png';
 import whiteEventandIncident from '../Images/white_eventIncident.png';
 import purpleConnectSystem from '../Images/Purple_ConnectSystem.png';
 import whiteConnectSystem from '../Images/White_ConnectSystem.png';
+import purpleIncidentAuditing from '../Images/puple_incident_Auditing.png';
+import whiteIncidentAuditing from '../Images/white_incident_Auditing.png';
 import lock from "../Images/lock.png";
 import { IoIosContact, IoIosLogOut } from "react-icons/io";
 import { FaChevronUp } from "react-icons/fa";
@@ -74,6 +76,7 @@ const Sidebar = ({
   ];
   const NDISButton = [
     "Client Event & Incident Management",
+    "Incident Auditing"
   ];
   const AgedCareButton = [
     "Quality and Risk Reporting",
@@ -98,6 +101,7 @@ const Sidebar = ({
     "Smart Onboarding (Staff)": { white: whiteSmartOnboarding, purple: purpleSmartOnboarding },
     "Smart Rostering": { white: whiteSmartRostering, purple: purpleSmartRostering },
     "Client Event & Incident Management": { white: whiteEventandIncident, purple: purpleEventandIncident },
+    "Incident Auditing":{white:whiteIncidentAuditing,purple:purpleIncidentAuditing},
     "Connect Your Systems": { white: whiteConnectSystem, purple: purpleConnectSystem }
   };
 

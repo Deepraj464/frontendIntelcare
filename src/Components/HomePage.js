@@ -30,6 +30,7 @@ import Client_Event_Reporting from "./Modules/NDISModule/Client_Event_Reporting"
 import SoftwareConnect from "./Modules/ConnectModule/SoftwareConnect";
 import RosteringDashboard from "./Modules/RosteringModule/SmartRostering";
 import HRAnalysis from "./Modules/SupportAtHomeModule.js/HRAnalysis";
+import IncidentAuditing from "./Modules/NDISModule/IncidentAuditing";
 
 const HomePage = () => {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -168,6 +169,9 @@ const HomePage = () => {
 
                 <div style={{ display: selectedRole === "Client Event & Incident Management" ? "block" : "none" }}>
                   <Client_Event_Reporting selectedRole='Client Event & Incident Management'/>
+                </div>
+                <div style={{ display: selectedRole === "Incident Auditing" ? "block" : "none" }}>
+                  <IncidentAuditing selectedRole='Incident Auditing'/>
                 </div>
 
                 <div style={{ display: selectedRole === "Quarterly Financial Reporting" ? "block" : "none" }}>
