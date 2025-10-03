@@ -5,6 +5,7 @@ import StaffComplianceDashboard from "./StaffComplianceDashboard";
 import UploadFiles from "../../UploadFiles";
 import ScreeningTestCreation from "./ScreeningTestCreation";
 import AdminDocumentVerification from "./AdminDocumentVerification";
+import AdminCourseCreation from "./AdminCourseCreation";
 
 const HRAdminView = ({
   handleClick,
@@ -75,68 +76,68 @@ const HRAdminView = ({
     setSelectedCandidates(new Set());
   };
 
-const candidates = [
-  {
-    id: 1,
-    name: "Robert Drowski",
-    score: 8,
-    experience: "2 years",
-    skills: [
-      "Medication Administration",
-      "Manual Handling Competency",
-      "First Aid & CPR Certification",
-      "Infection Control Training",
-    ],
-  },
-  {
-    id: 2,
-    name: "Sarah Johnson",
-    score: 9,
-    experience: "3 years",
-    skills: [
-      "Dementia Care Training",
-      "Positive Behaviour Support (PBS)",
-      "Mental Health First Aid",
-      "Wound Care & Pressure Injury Management",
-    ],
-  },
-  {
-    id: 3,
-    name: "Michael Chen",
-    score: 7,
-    experience: "1.5 years",
-    skills: [
-      "PEG Feeding & Enteral Nutrition",
-      "Catheter & Continence Care",
-      "Diabetes Management",
-      "Palliative & End-of-Life Care",
-    ],
-  },
-  {
-    id: 4,
-    name: "Emily Rodriguez",
-    score: 8,
-    experience: "4 years",
-    skills: [
-      "Falls Prevention & Risk Assessment",
-      "NDIS Worker Screening Check",
-      "NDIS Orientation Module",
-      "Certificate III/IV in Individual Support",
-    ],
-  },
-  {
-    id: 5,
-    name: "David Thompson",
-    score: 9,
-    experience: "5 years",
-    skills: [
-      "Care Documentation Systems (Procura, AutumnCare, Lumary, Carelink+)",
-      "NDIS Practice Standards Knowledge",
-      "Restrictive Practices & Safeguarding Compliance",
-      "Assistive Technology Proficiency",
-    ],
-  },
-];
+  const candidates = [
+    {
+      id: 1,
+      name: "Robert Drowski",
+      score: 8,
+      experience: "2 years",
+      skills: [
+        "Medication Administration",
+        "Manual Handling Competency",
+        "First Aid & CPR Certification",
+        "Infection Control Training",
+      ],
+    },
+    {
+      id: 2,
+      name: "Sarah Johnson",
+      score: 9,
+      experience: "3 years",
+      skills: [
+        "Dementia Care Training",
+        "Positive Behaviour Support (PBS)",
+        "Mental Health First Aid",
+        "Wound Care & Pressure Injury Management",
+      ],
+    },
+    {
+      id: 3,
+      name: "Michael Chen",
+      score: 7,
+      experience: "1.5 years",
+      skills: [
+        "PEG Feeding & Enteral Nutrition",
+        "Catheter & Continence Care",
+        "Diabetes Management",
+        "Palliative & End-of-Life Care",
+      ],
+    },
+    {
+      id: 4,
+      name: "Emily Rodriguez",
+      score: 8,
+      experience: "4 years",
+      skills: [
+        "Falls Prevention & Risk Assessment",
+        "NDIS Worker Screening Check",
+        "NDIS Orientation Module",
+        "Certificate III/IV in Individual Support",
+      ],
+    },
+    {
+      id: 5,
+      name: "David Thompson",
+      score: 9,
+      experience: "5 years",
+      skills: [
+        "Care Documentation Systems (Procura, AutumnCare, Lumary, Carelink+)",
+        "NDIS Practice Standards Knowledge",
+        "Restrictive Practices & Safeguarding Compliance",
+        "Assistive Technology Proficiency",
+      ],
+    },
+  ];
 
 
   return (
@@ -168,7 +169,7 @@ const candidates = [
             }`}
           onClick={() => handleTabClick("Staff Onboarding")}
         >
-          Staff Onboarding
+          Edit Training
         </button>
         <button
           className={`nav-tab ${activeTab === "Staff Compliance Check" ? "active" : ""
@@ -291,11 +292,12 @@ const candidates = [
             </div>
           </div>
         )}
-
-        {activeTab === "Screening Test Creation" && <ScreeningTestCreation/>}
-        {activeTab === "Staff Onboarding" && <StaffOnboarding role={role}/>}
+        {activeTab === "Screening Test Creation" && <ScreeningTestCreation />}
         {activeTab === "Staff Compliance Check" && <StaffComplianceDashboard />}
-        {activeTab === "Document Verfication" && <AdminDocumentVerification/>}
+        </div>
+      <div className="content-areasss">
+        {activeTab === "Staff Onboarding" && <AdminCourseCreation />}
+        {activeTab === "Document Verfication" && <AdminDocumentVerification />}
       </div>
     </div>
   );
