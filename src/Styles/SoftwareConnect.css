@@ -8,13 +8,55 @@
 
 .software-grid {
     display: grid;
-    grid-auto-flow: column;
-    grid-template-rows: repeat(3, auto);
-    /* gap: 20px; */
+    grid-template-columns: repeat(3, 1fr);
+    /* 3 columns */
+    grid-template-rows: repeat(4, auto);
+    /* up to 4 rows */
     column-gap: 5%;
     justify-content: center;
-    margin: 60px 130px 30px 130px
-  }
+    margin: 60px 130px 30px 130px;
+}
+
+.software-grid>div:nth-child(1) {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.software-grid>div:nth-child(2) {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.software-grid>div:nth-child(3) {
+    grid-column: 1;
+    grid-row: 3;
+}
+
+.software-grid>div:nth-child(4) {
+    grid-column: 1;
+    grid-row: 4;
+}
+
+.software-grid>div:nth-child(5) {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.software-grid>div:nth-child(6) {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+.software-grid>div:nth-child(7) {
+    grid-column: 2;
+    grid-row: 3;
+}
+
+.software-grid>div:nth-child(8) {
+    grid-column: 3;
+    grid-row: 1;
+}
+
 
 .software-card {
     position: relative;
@@ -30,6 +72,7 @@
     transition: all 0.3s ease;
     margin-bottom: 22px;
 }
+
 .connected-badge {
     position: absolute;
     top: 0px;
@@ -44,7 +87,7 @@
 }
 
 .software-card img {
-    width: 50%;
+    width: 60%;
     height: auto;
     object-fit: contain;
 }
@@ -108,8 +151,10 @@
 .myob-logo {
     max-width: 40%;
 }
+
 .connect-system-btn.disconnect-btn {
-    background-color: #E52F07; /* red */
+    background-color: #E52F07;
+    /* red */
 }
 
 .connect-system-btn:disabled {
@@ -128,6 +173,11 @@
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }

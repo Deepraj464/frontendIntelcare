@@ -61,9 +61,9 @@ const handleAuth = async (e) => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              email:"ap5277478@gmail.com",
-              first_name: "Aman",
-              last_name: "Patel",
+              email:email,
+              first_name:name,
+              last_name: " ",
               tag: "Welcome Flow",
             }),
           }
@@ -102,6 +102,8 @@ const handleGoogleSignIn = async () => {
 
     if (result._tokenResponse.isNewUser) {
       const newEmail = result?.user?.email;
+      const newName=result?.user?.displayName;
+
 
       // EmailJS notification
       const templateParams = {
@@ -129,9 +131,9 @@ const handleGoogleSignIn = async () => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              email:"ap5277478@gmail.com",
-              first_name: "Aman",
-              last_name: "Patel",
+              email:newEmail,
+              first_name: newName,
+              last_name: " ",
               tag: "Welcome Flow",
             }),
           }
