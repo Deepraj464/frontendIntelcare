@@ -94,8 +94,8 @@ const SmartRostering = () => {
         <>
             {screen === 1 && (
                 <div className="rostering-dashboard">
-                <h2 className="rostering-date">{formattedDate}</h2>
-                    <div className="info-table"  style={{marginBottom:'40px'}}>
+                    <h2 className="rostering-date">{formattedDate}</h2>
+                    <div className="info-table" style={{ marginBottom: '40px' }}>
                         <div className="table-headerss">
                             <span>If You Upload This...</span>
                             <span>Our AI Will Instantly...</span>
@@ -103,13 +103,19 @@ const SmartRostering = () => {
                         <div className="table-rowss">
                             <div>Fortnightly Roster Schedule.</div>
                             <ul>
-                                <li>Ensures 100% shift coverage with no missed or unfilled shifts.</li>
-                                <li>Sends automatic SMS invites to fill shifts instantly.</li>
-                                <li>Analyses overtime patterns and past shift history.</li>
-                                <li>Matches client care needs with the best-suited staff.</li>
-                                <li>Factors in hourly rates, distance, and availability.</li>
-                                <li>Recommends the top 5 most cost-efficient staff for each shift.</li>
-                                <li>Keeps rosters profitable, compliant, and fully staffed in minutes.</li>
+                                <div style={{padding:'0px 0px 8px 0px' }}>
+                                    <li>Ensures 100% shift coverage with no missed or unfilled shifts.</li>
+                                    <li>Sends automatic SMS invites to fill shifts instantly.</li>
+                                </div>
+                                <div style={{padding:'8px 0px' }}>
+                                    <li>Analyses overtime patterns and past shift history.</li>
+                                    <li>Matches client care needs with the best-suited staff.</li>
+                                </div>
+                                <div style={{padding:'8px 0px' }}>
+                                    <li>Factors in hourly rates, distance, and availability.</li>
+                                    <li>Recommends the top 5 most cost-efficient staff for each shift.</li>
+                                    <li>Keeps rosters profitable, compliant, and fully staffed in minutes.</li>
+                                </div>
                             </ul>
                         </div>
                     </div>

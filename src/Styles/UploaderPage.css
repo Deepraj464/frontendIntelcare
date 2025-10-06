@@ -176,7 +176,7 @@ html,
   margin-top: 14px;
 }
 .uploaddiv.disabled {
-  background: #e0e0e0; /* light gray background */
+  background: #e0e0e0 !important; /* light gray background */
   border: 0.76px solid #ccc;
   color: #888; /* gray text */
   cursor: not-allowed;
