@@ -1,104 +1,124 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../../../Styles/StaffOnboarding.css";
 import { FaRegEdit } from "react-icons/fa";
 import { ReactSortable } from "react-sortablejs"; // ✅ new package
 import { FaPencilAlt } from "react-icons/fa";
+import { getAllModulesApi } from "./AdminCourseApis";
 const StaffOnboarding = (props) => {
+  console.log('StaffOnboarding props', props);
   const [expandedSections, setExpandedSections] = useState({});
   const [selectedLecture, setSelectedLecture] = useState("2");
   const [lectureCompletionStatus, setLectureCompletionStatus] = useState({});
   const [editingSection, setEditingSection] = useState(null);
   const [editingLecture, setEditingLecture] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [modules, setModules] = useState([]);
+  const AdminEmail = props?.user?.email;
+  console.log("AdminEmail:", AdminEmail);
+  const getSectionProgress = (section) => {
+    const total = section.items.length;
+    const completed = section.items.filter((item) => lectureCompletionStatus[item.id]).length;
 
-  const [sections, setSections] = useState([
-    {
-      id: "s1",
-      name: "Understanding the Australian Aged Care & Disability Sector",
-      lectures: 4,
-      duration: "51m",
-      progress: "25% finish (1/4)",
-      items: [
-        { id: "1", title: "Overview of the aged care system, NDIS, and My Aged Care", duration: "07:31" },
-        { id: "2", title: "Consumer-directed care principles", duration: "07:31" },
-        { id: "3", title: "Rights & responsibilities under the Aged Care Quality Standards", duration: "07:31" },
-        { id: "4", title: "Cultural safety & diversity in service delivery", duration: "07:31" },
-      ],
-    },
-    {
-      id: "s2",
-      name: "Person-Centred & Dignity-Focused Care",
-      lectures: 52,
-      duration: "5h 49m",
-      progress: "0% finish (0/52)",
-      items: [
-        { id: "5", title: "Understanding person-centred care principles", duration: "08:15" },
-        { id: "6", title: "Respecting individual choices and preferences", duration: "06:42" },
-        { id: "7", title: "Maintaining dignity in care delivery", duration: "09:30" },
-        { id: "8", title: "Supporting independence and autonomy", duration: "07:18" },
-      ],
-    },
-    {
-      id: "s3",
-      name: "Safe Work Practices & Manual Handling",
-      lectures: 43,
-      duration: "51m",
-      progress: "0% finish (0/43)",
-      items: [
-        { id: "9", title: "Workplace health and safety fundamentals", duration: "12:30" },
-        { id: "10", title: "Manual handling techniques and equipment", duration: "15:45" },
-        { id: "11", title: "Risk assessment and hazard identification", duration: "10:20" },
-      ],
-    },
-    {
-      id: "s4",
-      name: "Communication & Professional Boundaries",
-      lectures: 137,
-      duration: "10h 6m",
-      progress: "0% finish (0/137)",
-      items: [
-        { id: "12", title: "Effective communication techniques", duration: "11:15" },
-        { id: "13", title: "Professional boundaries and relationships", duration: "09:40" },
-        { id: "14", title: "Conflict resolution strategies", duration: "13:25" },
-      ],
-    },
-    {
-      id: "s5",
-      name: "Medication Assistance & Health Monitoring",
-      lectures: 21,
-      duration: "38m",
-      progress: "0% finish (0/21)",
-      items: [
-        { id: "15", title: "Medication administration guidelines", duration: "14:20" },
-        { id: "16", title: "Health monitoring and vital signs", duration: "12:10" },
-        { id: "17", title: "Emergency response procedures", duration: "11:30" },
-      ],
-    },
-    {
-      id: "s6",
-      name: "Recognising & Responding to Abuse, Neglect & Deterioration",
-      lectures: 39,
-      duration: "1h 31m",
-      progress: "0% finish (0/39)",
-      items: [
-        { id: "18", title: "Identifying signs of abuse and neglect", duration: "16:45" },
-        { id: "19", title: "Reporting procedures and documentation", duration: "13:20" },
-        { id: "20", title: "Supporting clients through difficult situations", duration: "18:15" },
-      ],
-    },
-    {
-      id: "s7",
-      name: "Documentation, Reporting & Compliance",
-      lectures: 7,
-      duration: "1h 17m",
-      progress: "0% finish (0/7)",
-      items: [
-        { id: "21", title: "Documentation standards and requirements", duration: "19:30" },
-        { id: "22", title: "Incident reporting procedures", duration: "15:25" },
-        { id: "23", title: "Compliance monitoring and audits", duration: "22:15" },
-      ],
-    },
-  ]);
+    if (total === 0) return "0% finish (0/0)";
+    const percent = Math.round((completed / total) * 100);
+    return `${percent}% finish (${completed}/${total})`;
+  };
+  const getVideoDuration = (url) => {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement("video");
+      video.preload = "metadata";
+
+      video.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(video.src);
+        const duration = video.duration; // in seconds
+        resolve(duration);
+      };
+
+      video.onerror = () => reject("Failed to load video metadata");
+      video.src = url;
+    });
+  };
+
+  useEffect(() => {
+    const fetchModules = async () => {
+      try {
+        const rawModules = await getAllModulesApi(AdminEmail);
+        console.log("Fetched modules:", rawModules);
+
+        // normalize: convert `lectures` → `lessons`
+        const normalizedModules = rawModules.map(m => ({
+          id: m.id,
+          title: m.title,
+          lessons: m.lectures || [],   // ✅ map lectures to lessons,
+        }));
+        console.log("Normalized modules:", normalizedModules);
+        setModules(normalizedModules);
+      } catch (err) {
+        console.error("❌ Error fetching modules:", err);
+        alert("Failed to load modules");
+      }
+    };
+
+    fetchModules();
+  }, []);
+  console.log("Fetched Modules", modules);
+  const [sections, setSections] = useState([]);
+  useEffect(() => {
+    const fetchDurations = async () => {
+      const processedModules = await Promise.all(
+        modules.map(async (mod) => {
+          const lectures = await Promise.all(
+            (mod.lectures || mod.lessons || []).map(async (lec) => {
+              if (lec.type === "video" && lec.attachment?.sasUrl) {
+                try {
+                  const sec = await getVideoDuration(lec.attachment.sasUrl);
+                  const min = Math.floor(sec / 60);
+                  const s = Math.floor(sec % 60);
+                  return {
+                    ...lec,
+                    durationSeconds: sec,
+                    duration: `${min}:${s.toString().padStart(2, "0")}`,
+                  };
+                } catch {
+                  return { ...lec, durationSeconds: 0, duration: "00:00" };
+                }
+              }
+              return { ...lec, durationSeconds: 0, duration: "—" }; // for docs
+            })
+          );
+
+          // sum total module duration
+          const totalSec = lectures.reduce((sum, l) => sum + (l.durationSeconds || 0), 0);
+          const hrs = Math.floor(totalSec / 3600);
+          const mins = Math.floor((totalSec % 3600) / 60);
+          const secs = Math.floor(totalSec % 60);
+          const totalFormatted =
+            hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m ${secs.toString().padStart(2, "0")}s`;
+
+          return {
+            id: mod.id,
+            name: mod.title,
+            lectures: lectures.length,
+            duration: totalFormatted,
+            progress: `0% finish (0/${lectures.length})`,
+            items: lectures.map((l) => ({
+              id: l.id,
+              title: l.title,
+              duration: l.duration,
+              type: l.type,
+              attachment: l.attachment,
+            })),
+          };
+        })
+      );
+
+      setSections(processedModules);
+    };
+
+    if (modules.length) fetchDurations();
+  }, [modules]);
+
+
 
   const toggleSection = (sectionId) => {
     setExpandedSections((prev) => ({
@@ -123,7 +143,7 @@ const StaffOnboarding = (props) => {
     for (const section of sections) {
       const lecture = section.items.find((item) => item.id === selectedLecture);
       if (lecture) {
-        return `${selectedLecture}. ${lecture.title}`;
+        return `${lecture.title}`;
       }
     }
     return "";
@@ -153,14 +173,38 @@ const StaffOnboarding = (props) => {
         {/* LEFT: Video Section */}
         <div className="video-section">
           <div className="video-player">
-            <video className="video-thumbnail" controls width="100%" height="auto">
-              <source
-                src="https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4"
-                type="video/mp4"
-              />
-              Your browser does not support the video tag.
-            </video>
+            {(() => {
+              const selected = sections
+                .flatMap((s) => s.items)
+                .find((item) => item.id === selectedLecture);
+              console.log("Selected lecture:", selected);
+              if (!selected) {
+                return <p>Select a lecture to start</p>;
+              }
+
+              if (selected.type === "video") {
+                return (
+                  <video className="video-thumbnail" controls width="100%" height="auto">
+                    <source src={selected.attachment?.sasUrl || selected.attachment?.url} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                );
+              } else if (selected.type === "document") {
+                return (
+                  <iframe
+                    src={`https://docs.google.com/gview?url=${encodeURIComponent(
+                      selected.attachment?.sasUrl || selected.attachment?.url
+                    )}&embedded=true`}
+                    width="100%"
+                    height="600"
+                    title={selected.title}
+                    style={{ border: "none" }}
+                  />
+                );
+              }
+            })()}
           </div>
+
           <p className="video-title">
             <strong>{getSelectedLectureTitle()}</strong>
           </p>
@@ -177,7 +221,7 @@ const StaffOnboarding = (props) => {
                 style={{ cursor: "pointer" }}
                 onClick={() => setIsEditMode(!isEditMode)}
               >
-               {props.role==='Admin' && <FaRegEdit size={18} /> } 
+                {props.role === 'Admin' && <FaRegEdit size={18} />}
               </span>
             </div>
           </div>
@@ -228,14 +272,13 @@ const StaffOnboarding = (props) => {
                             }}
                             style={{ marginLeft: "8px", cursor: "pointer" }}
                           >
-                           {props.role==='Admin' && <FaPencilAlt size={16} color="#6c4cdc" /> } 
+                            {props.role === 'Admin' && <FaPencilAlt size={16} color="#6c4cdc" />}
                           </span>
                         </>
                       )}
                     </div>
                     <span className="section-progress">
-                      {section.lectures} lectures · {section.duration}
-                      {section.progress && ` · ${section.progress}`}
+                      {section.lectures} lectures · {section.duration} · {getSectionProgress(section)}
                     </span>
                   </div>
 
@@ -295,7 +338,7 @@ const StaffOnboarding = (props) => {
                                   className={`lecture-title ${isCompleted ? "completed" : ""
                                     }`}
                                 >
-                                  {item.id}. {item.title}
+                                  {item.title}
                                 </span>
                               )}
                             </div>
@@ -317,7 +360,7 @@ const StaffOnboarding = (props) => {
                                   }}
                                   style={{ cursor: "pointer" }}
                                 >
-                                 {props.role==='Admin' && <FaPencilAlt size={16} color="#6c4cdc" />} 
+                                  {props.role === 'Admin' && <FaPencilAlt size={16} color="#6c4cdc" />}
                                 </span>
                               )}
                             </div>

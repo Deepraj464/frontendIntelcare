@@ -8,13 +8,14 @@ const HRStaffView = ({
   selectedRole,
   handleClick,
   setShowFeedbackPopup,
+  user
 }) => {
   const [selectedFile, setSelectedFile] = useState([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeTab, setActiveTab] = useState("Screening Test");
   const [showResults, setShowResults] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState(new Set());
-
+  
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
     if (file && (file.name.endsWith(".zip") || file.name.endsWith(".rar"))) {
@@ -164,7 +165,7 @@ const HRStaffView = ({
 
       <div className="content-area">
         {activeTab === "Screening Test" && <ScreeningTest />}
-        {activeTab === "Staff Onboarding" && <StaffOnboarding />}
+        {activeTab === "Staff Onboarding" && <StaffOnboarding user={user}/>}
         {activeTab === "Document Verfication" && <DocumentVerification />}
       </div>
     </div>

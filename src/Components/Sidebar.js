@@ -27,6 +27,8 @@ import purpleEventandIncident from '../Images/purple_eventIncident.png';
 import whiteEventandIncident from '../Images/white_eventIncident.png';
 import purpleConnectSystem from '../Images/Purple_ConnectSystem.png';
 import whiteConnectSystem from '../Images/White_ConnectSystem.png';
+import purpleIncidentAuditing from '../Images/puple_incident_Auditing.png';
+import whiteIncidentAuditing from '../Images/white_incident_Auditing.png';
 import lock from "../Images/lock.png";
 import { IoIosContact, IoIosLogOut } from "react-icons/io";
 import { FaChevronUp } from "react-icons/fa";
@@ -66,14 +68,15 @@ const Sidebar = ({
   ]
   const roles = [
     "Financial Health",
-    "Care Services & Eligibility Analysis",
+    "Client Profitability & Service",
   ];
   const AiAutomationButtons = [
     "Smart Rostering",
     "Smart Onboarding (Staff)",
   ];
   const NDISButton = [
-    "Client Event & Incident Management",
+    "Participant Events & Incident Management",
+    "Incident Auditing"
   ];
   const AgedCareButton = [
     "Quality and Risk Reporting",
@@ -92,12 +95,13 @@ const Sidebar = ({
     "Annual Financial Reporting": { white: whiteAnnual, purple: purpleAnnual },
     "Custom Incident Management": { white: whiteIncidentManagement, purple: purpleIncidentManagement },
     "Custom Reporting": { white: whitecustom, purple: purpleCustom },
-    "Care Services & Eligibility Analysis": { white: whiteCareplan, purple: purpleCareplan },
+    "Client Profitability & Service": { white: whiteCareplan, purple: purpleCareplan },
     "Incident Report": { white: whiteIncidentReport, purple: purpleIncidentReport },
     "Quality and Risk Reporting": { white: whiteqirs, purple: purpleqirs },
     "Smart Onboarding (Staff)": { white: whiteSmartOnboarding, purple: purpleSmartOnboarding },
     "Smart Rostering": { white: whiteSmartRostering, purple: purpleSmartRostering },
-    "Client Event & Incident Management": { white: whiteEventandIncident, purple: purpleEventandIncident },
+    "Participant Events & Incident Management": { white: whiteEventandIncident, purple: purpleEventandIncident },
+    "Incident Auditing":{white:whiteIncidentAuditing,purple:purpleIncidentAuditing},
     "Connect Your Systems": { white: whiteConnectSystem, purple: purpleConnectSystem }
   };
 
@@ -152,8 +156,8 @@ const Sidebar = ({
                 <div key={role} className={`role-item ${activeItem === role ? "active-role" : ""}`}
                   onClick={() => {
                     let reportType = role;
-                    if (role === "Care Services & Eligibility Analysis")
-                      reportType = "Care Plan Document";
+                    if (role === "Client Profitability & Service")
+                      reportType = "Client Profitability & Service";
                     setSelectedRole(reportType);
                     setActiveItem(role);
                   }}
@@ -241,8 +245,8 @@ const Sidebar = ({
                   let reportType = report;
 
                   // Map UI names to internal report types
-                  if (report === "Client Event & Incident Management")
-                    reportType = "Client Event & Incident Management";
+                  if (report === "Participant Events & Incident Management")
+                    reportType = "Participant Events & Incident Management";
                   else if (report === "Audit & Registration Manager")
                     reportType = "Audit & Registration Manager";
                   else if (report === "Incident & Complaint Reporter")
@@ -321,7 +325,7 @@ const Sidebar = ({
                   onClick={() => {
                     let reportType = report;
                     if (report === "Care Services & Eligibility Analysis")
-                      reportType = "Care Plan Document";
+                      reportType = "Client Profitability & Service";
                     setSelectedRole(reportType);
                     setActiveItem(report);
                     setMajorTypeOfReport("SUPPORT AT HOME");

@@ -39,7 +39,7 @@
 
 .download-report-btn {
   padding: 14px 20px;
-  background: linear-gradient(180deg, rgba(139, 117, 255, 0.9) 27.88%, #6D51FF 100%);
+  /* background: linear-gradient(180deg, rgba(139, 117, 255, 0.9) 27.88%, #6D51FF 100%); */
   color: white;
   border: none;
   border-radius: 10px;
@@ -47,6 +47,7 @@
   cursor: pointer;
   display: flex;
   align-items: center;
+  background-color: #6c4cdc;
 }
 
 .new-report-btn {
@@ -122,6 +123,10 @@
   margin-left: 20px;
   padding-left: 10px;
 }
+.financial-health-markdown ol {
+  margin-left: 20px;
+  padding-left: 10px;
+}
 
 .financial-health-markdown li {
   margin-bottom: 6px;
@@ -130,6 +135,13 @@
 .financial-health-markdown p {
   margin: 10px 0px;
   line-height: 1.5;
+}
+.financial-health-markdown > p:first-of-type {
+  text-align: center;
+}
+
+.financial-health-markdown h1{
+text-align: center;
 }
 
 .financial-health-markdown h2,
@@ -255,4 +267,18 @@
 
 .sirs-markdown ul {
   margin-left: 30px;
+}
+.download-reportsss-btnsss{
+  background-color: rgb(108, 76, 220);
+  color: rgb(255, 255, 255);
+  border: none;
+  border-radius: 40px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
 }

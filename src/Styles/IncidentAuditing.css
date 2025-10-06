@@ -1,0 +1,128 @@
+/* Import Inter font if not already imported */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Container for Markdown content */
+.response-section, .tab-content {
+  font-family: 'Inter', sans-serif;
+  color: #111;
+  line-height: 1.6;
+}
+
+/* Paragraphs */
+.response-section p {
+  margin: 0.5em 0;
+}
+
+/* Headings */
+.response-section h1,
+.response-section h2,
+.response-section h3,
+.response-section h4,
+.response-section h5,
+.response-section h6 {
+  margin: 0.8em 0 0.4em;
+  font-weight: 600;
+  color: #222;
+}
+
+/* Lists */
+.response-section ul,
+.response-section ol {
+  margin: 0.5em 0 0.5em 1.5em;
+  padding-left: 0;
+}
+
+.response-section li {
+  margin: 0.3em 0;
+  padding-left: 0.3em;
+}
+
+/* Nested lists */
+.response-section ul ul,
+.response-section ol ol,
+.response-section ul ol,
+.response-section ol ul {
+  margin-left: 1.2em;
+}
+
+/* Tables */
+.response-section table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.response-section th,
+.response-section td {
+  border: 1px solid #ccc;
+  padding: 6px 10px;
+  text-align: left;
+}
+
+.response-section th {
+  background-color: #f0f0f0;
+}
+
+/* Code blocks */
+.response-section pre {
+  background-color: #f8f8f8;
+  padding: 10px;
+  border-radius: 5px;
+  overflow-x: auto;
+  margin: 0.5em 0;
+  font-family: 'Inter', monospace;
+}
+
+.response-section code {
+  font-family: 'Inter', monospace;
+  background-color: #f2f2f2;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+.tab-buttons{
+    margin-top: 15px;
+    padding-bottom: 15px;
+    width:60%;
+    display: flex;
+    gap: 0;
+    margin-bottom: 20px;
+    justify-content: center;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+.report-tab{
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: #6C4CDC;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: inherit;
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+.report-tab.active {
+    background: #6c4cdc;
+    color: white;
+    box-shadow: 0 2px 4px rgba(139, 92, 246, 0.2);
+  }
+  
+  .report-tab:hover:not(.active) {
+    background: rgba(139, 92, 246, 0.1);
+    color: #6c4cdc;
+  }
+  

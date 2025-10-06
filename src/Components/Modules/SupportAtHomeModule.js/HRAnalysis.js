@@ -4,7 +4,7 @@ import HRStaffView from "./HRStaffView";
 
 const HRAnalysis = (props) => {
     const [role, setRole] = useState("Admin");
-
+    console.log('HRAnalysis props',props);
     return (
         <div style={{ padding: "20px" }}>
             <div style={{ display: 'flex', justifyContent: 'end' }}>
@@ -43,8 +43,32 @@ const HRAnalysis = (props) => {
                 </div>
             </div>
 
+            <div className="info-table">
+                <div className="table-headerss">
+                    <span>If You Upload This...</span>
+                    <span>Our AI Will Instantly...</span>
+                </div>
+                <div className="table-rowss">
+                    <div>Candidates Resumes (PDF/ZIP file).</div>
+                    <ul>
+                        <div style={{ padding:'0px 0px 8px 0px' }}>
+                            <li>Screens top candidates based on role suitability.</li>
+                            <li>Sends tailored screening questions instantly.</li>
+                        </div>
+                        <div style={{ padding: '8px 0px' }}>
+                            <li>Verifies all compliance documents automatically.</li>
+                            <li>Onboards staff with preloaded training videos.</li>
+                        </div>
+                        <div style={{ padding: '8px 0px' }}>
+                            <li>Continuously monitors and flags expiring or missing documents.</li>
+                            <li>Ensures your workforce stays compliant, trained, and job-ready at all times.</li>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+
             <div>
-                {role === "Admin" ? <HRAdminView role={role} selectedRole={props.selectedRole}/> : <HRStaffView role={role}/>}
+                {role === "Admin" ? <HRAdminView role={role} selectedRole={props.selectedRole} user={props?.user}/> : <HRStaffView role={role} user={props?.user}/>}
             </div>
         </div>
     );

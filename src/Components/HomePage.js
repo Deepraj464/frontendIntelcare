@@ -30,6 +30,7 @@ import Client_Event_Reporting from "./Modules/NDISModule/Client_Event_Reporting"
 import SoftwareConnect from "./Modules/ConnectModule/SoftwareConnect";
 import RosteringDashboard from "./Modules/RosteringModule/SmartRostering";
 import HRAnalysis from "./Modules/SupportAtHomeModule.js/HRAnalysis";
+import IncidentAuditing from "./Modules/NDISModule/IncidentAuditing";
 
 const HomePage = () => {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -166,8 +167,11 @@ const HomePage = () => {
                   <SirsAnalysis selectedRole="SIRS Analysis" handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} />
                 </div>
 
-                <div style={{ display: selectedRole === "Client Event & Incident Management" ? "block" : "none" }}>
-                  <Client_Event_Reporting selectedRole='Client Event & Incident Management'/>
+                <div style={{ display: selectedRole === "Participant Events & Incident Management" ? "block" : "none" }}>
+                  <Client_Event_Reporting selectedRole='Participant Events & Incident Management'/>
+                </div>
+                <div style={{ display: selectedRole === "Incident Auditing" ? "block" : "none" }}>
+                  <IncidentAuditing selectedRole='Incident Auditing'/>
                 </div>
 
                 <div style={{ display: selectedRole === "Quarterly Financial Reporting" ? "block" : "none" }}>
@@ -187,11 +191,11 @@ const HomePage = () => {
                 </div>
 
                 <div style={{ display: selectedRole === "Smart Onboarding (Staff)" ? "block" : "none" }}>
-                  <HRAnalysis handleClick={handleClick} selectedRole = "Smart Onboarding (Staff)" setShowFeedbackPopup={setShowFeedbackPopup} />
+                  <HRAnalysis handleClick={handleClick} selectedRole = "Smart Onboarding (Staff)" setShowFeedbackPopup={setShowFeedbackPopup} user={user}/>
                 </div>
 
-                <div style={{ display: selectedRole === "Care Plan Document" ? "block" : "none" }}>
-                  <CareServicesEligibility selectedRole="Care Plan Document" handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} />
+                <div style={{ display: selectedRole === "Client Profitability & Service" ? "block" : "none" }}>
+                  <CareServicesEligibility selectedRole="Client Profitability & Service" handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} />
                 </div>
 
                 <div style={{ display: selectedRole === "Incident Report" ? "block" : "none" }}>

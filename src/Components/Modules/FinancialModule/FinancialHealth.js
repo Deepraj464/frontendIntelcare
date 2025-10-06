@@ -394,7 +394,7 @@ const FinancialHealth = (props) => {
 
         return [];
       };
-      console.log("vizPayload?.reportResponse?.excel_exports",vizPayload?.reportResponse?.excel_exports)
+      console.log("vizPayload?.reportResponse?.excel_exports", vizPayload?.reportResponse?.excel_exports)
       if (type === "api") {
         if (vizPayload?.reportResponse?.excel_exports) {
           try {
@@ -584,7 +584,7 @@ const FinancialHealth = (props) => {
               <span>Our AI Will Instantly...</span>
             </div>
             <div className="table-rowss">
-              <div>Client Funding Statements (NDIS/HCP)</div>
+              <div>Finance System - Profit & Loss Statement</div>
               <ul>
                 <li>Find unspent funds expiring soon.</li>
                 <li>
@@ -593,14 +593,14 @@ const FinancialHealth = (props) => {
               </ul>
             </div>
             <div className="table-rowss">
-              <div>Timesheets & Roster Exports</div>
+              <div>Care Management System - Client Funding & Service Utilisation Report</div>
               <ul>
                 <li>Pinpoint overtime hotspots and their cost</li>
                 <li>Show wage cost vs revenue for every client and service.</li>
               </ul>
             </div>
             <div className="table-rowss">
-              <div>Aged Receivables Report</div>
+              <div>Rostering System - Timesheets & Roster Export Report</div>
               <ul>
                 <li>Triage overdue NDIS & client invoices.</li>
                 <li>
@@ -609,14 +609,14 @@ const FinancialHealth = (props) => {
               </ul>
             </div>
             <div className="table-rowss">
-              <div>Profit & Loss Statement</div>
+              <div>Accounts/Claims System - Aged Receivables & Claims Report</div>
               <ul>
                 <li>Analyse your true service line profitability.</li>
                 <li>Flag rising costs that are eroding your margin.</li>
               </ul>
             </div>
             <div className="table-rowss">
-              <div>Service Delivery Logs</div>
+              <div>Service Delivery System - Service Delivery Log Report</div>
               <ul>
                 <li>Find unspent funds expiring soon.</li>
                 <li>
@@ -869,11 +869,11 @@ const FinancialHealth = (props) => {
                 resetFinancialHealthState={resetFinancialHealthState}
               />
               {financialReport && apiExcelUrls?.length > 0 && (
-  <PreviewDataSection
-    apiExcelUrls={apiExcelUrls}
-    titles={titleArray} // pass titles as a prop
-  />
-)}
+                <PreviewDataSection
+                  apiExcelUrls={apiExcelUrls}
+                  titles={titleArray} // pass titles as a prop
+                />
+              )}
               <div
                 style={{
                   display: "flex",

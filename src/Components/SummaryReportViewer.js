@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { MdOutlineFileDownload } from "react-icons/md";
 import "../Styles/SummaryReportViwer.css";
 import ReactMarkdown from "react-markdown";
@@ -7,6 +7,8 @@ import rehypeRaw from "rehype-raw";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
 import NewReportIcon from "../Images/NewReportIcon.png";
+import icon2 from "../Images/Icon (2).png";
+import { PiPlusCircleFill, PiMinusCircleFill } from "react-icons/pi";
 
 const SummaryReport = ({
   summaryText,
@@ -21,6 +23,8 @@ const SummaryReport = ({
   resetIncidentReportState,
   resetCareServicesEligibilityState,
   resetCustomReportingState,
+  showCarePlanDownloadButton,
+  handleDownloadCarePlanData
 }) => {
   // console.log(showDownloadButton);
   const parsedResponse =
@@ -28,9 +32,11 @@ const SummaryReport = ({
       ? JSON.parse(summaryText)
       : summaryText;
   console.log(parsedResponse);
+  const [isCompletnessAuditOpen, setIsCompletenessAuditOpen] = useState(false);
 
   const compliance_level = parsedResponse?.compliance_level || "";
   const review_response = parsedResponse?.review_response || "";
+  const completeness_audit = parsedResponse?.completness_audit || "";
 
   const levelTextColors = {
     High: "compliance-high",
@@ -45,7 +51,7 @@ const SummaryReport = ({
     <div className="summary-report-container">
       {selectedRole === "Financial Health" ? (
         <>
-          <div className="title" style={{ textAlign: "center",marginBottom:'30px' }}>AI SUMMARY</div>
+          <div className="title" style={{ textAlign: "center", marginBottom: '30px' }}>AI SUMMARY</div>
           <div className="financial-health-markdown">
             <ReactMarkdown
               children={review_response}
@@ -57,6 +63,36 @@ const SummaryReport = ({
           <div className="compliance-level-container">
             <strong className={`${levelTextClass} compliance-level-text`}>Overall Compliance Level:</strong>
             <span className={`${levelTextClass} compliance-level-text`}>{compliance_level}</span>
+          </div>
+          <div className="financial-health-markdown">
+            <div
+              className="financial-health-header"
+              onClick={() => setIsCompletenessAuditOpen((prev) => !prev)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: '10px',
+                cursor: "pointer",
+                marginTop: "20px",
+              }}
+            >
+              <h2 style={{ margin: 0 }}>Completeness Audit</h2>
+              {isCompletnessAuditOpen ? (
+                <PiMinusCircleFill size={28} color="#6c4cdc" />
+              ) : (
+                <PiPlusCircleFill size={28} color="#6c4cdc" />
+              )}
+            </div>
+
+            {isCompletnessAuditOpen && (
+              <div className="financial-health-content">
+                <ReactMarkdown
+                  children={completeness_audit}
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                />
+              </div>
+            )}
           </div>
         </>
       ) : selectedRole === "Quarterly Financial Reporting" ? (
@@ -127,7 +163,7 @@ const SummaryReport = ({
             </div>
           )}
         </>
-      ) : selectedRole === "Care Plan Document" ? (
+      ) : selectedRole === "Client Profitability & Service" ? (
         <>
           <div
             style={{
@@ -135,6 +171,7 @@ const SummaryReport = ({
               display: "flex",
               justifyContent: "flex-start",
               marginBottom: "24px",
+              gap: '20px'
             }}
           >
             <button
@@ -203,6 +240,15 @@ const SummaryReport = ({
             <div style={{ textAlign: "center", marginTop: "2rem" }}>
               No Care Plan report data available.
             </div>
+          )}
+          {showCarePlanDownloadButton === true && (
+            <button
+              className="download-reportsss-btnsss"
+              onClick={handleDownloadCarePlanData}
+            >
+              Download
+              <img src={icon2} alt="download" style={{ width: "12px", height: "12px" }} />
+            </button>
           )}
         </>
       ) : selectedRole === "Incident Report" ? (
@@ -427,8 +473,9 @@ const SummaryReport = ({
         <div style={{ textAlign: "center", marginTop: "2rem" }}>
           No report format available for this role.
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 };
 
