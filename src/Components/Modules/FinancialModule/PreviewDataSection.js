@@ -148,240 +148,227 @@ const PreviewDataSection = ({ apiExcelUrls, tabTitles, financialReport }) => {
 
     const getColumnWidth = (colIndex) => columnWidths[colIndex] || 120;
     const getRowHeight = (rowIndex) => rowHeights[rowIndex] || 40;
-const handleDownloadBoth = async () => {
-  try {
-    // Step 1️⃣: Download Excel file
-    if (apiExcelUrls && apiExcelUrls.length > 0) {
-      const link = document.createElement("a");
-      link.href = apiExcelUrls[0];
-      link.download = "Combined_API_Report.xlsx";
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    }
+    const handleDownloadBoth = async () => {
+        try {
+            // Step 1️⃣: Download Excel file
+            if (apiExcelUrls && apiExcelUrls.length > 0) {
+                const link = document.createElement("a");
+                link.href = apiExcelUrls[0];
+                link.download = "Combined_API_Report.xlsx";
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+            }
 
-    // Step 2️⃣: Generate DOCX
-    if (!financialReport) {
-      alert("No summary report available to download.");
-      return;
-    }
+            // Step 2️⃣: Generate DOCX
+            if (!financialReport) {
+                alert("No summary report available to download.");
+                return;
+            }
 
-    const parsed =
-      typeof financialReport === "string"
-        ? JSON.parse(financialReport)
-        : financialReport;
+            const parsed =
+                typeof financialReport === "string"
+                    ? JSON.parse(financialReport)
+                    : financialReport;
 
-    const { review_response, completness_audit, compliance_level } = parsed;
+            // ✅ Handle both old & new field names safely
+            const {
+                review_response,
+                compliance_level,
+                completeness_audit = parsed.completness_audit, // fallback for old key
+            } = parsed;
 
-    // 🧽 Markdown cleanup helper
-    const sanitize = (t = "") =>
-      String(t)
-        .replaceAll("\\n", "\n")
-        .replace(/[*#`_>]/g, "") // remove markdown symbols
-        .replace(/\|/g, "|") // keep pipes for tables
-        .replace(/\n{2,}/g, "\n")
-        .replace(/[\x00-\x09\x0B-\x1F\x7F-\x9F]/g, "")
-        .trim();
+            // 🧽 Markdown cleanup helper
+            const sanitize = (t = "") =>
+                String(t)
+                    .replaceAll("\\n", "\n")
+                    .replace(/[*#`_>]/g, "") // remove markdown symbols
+                    .replace(/\|/g, "|") // keep pipes for tables
+                    .replace(/\n{2,}/g, "\n")
+                    .replace(/[\x00-\x09\x0B-\x1F\x7F-\x9F]/g, "")
+                    .trim();
 
-    // 🧠 Extract text + table sections from mixed Markdown
-    const extractSections = (text) => {
-      const lines = text.split("\n");
-      const sections = [];
-      let buffer = [];
-      let isTable = false;
+            // 🧠 Extract text + table sections from mixed Markdown
+            const extractSections = (text) => {
+                const lines = text.split("\n");
+                const sections = [];
+                let buffer = [];
+                let isTable = false;
 
-      for (let line of lines) {
-        const isTableLine = /\|.*\|/.test(line);
-        if (isTableLine) {
-          isTable = true;
-          buffer.push(line);
-        } else {
-          if (isTable && buffer.length > 0) {
-            sections.push({ type: "table", content: buffer.join("\n") });
-            buffer = [];
-          }
-          isTable = false;
-          if (line.trim()) sections.push({ type: "text", content: line });
-        }
-      }
-      if (buffer.length > 0)
-        sections.push({ type: "table", content: buffer.join("\n") });
-      return sections;
-    };
+                for (let line of lines) {
+                    const isTableLine = /\|.*\|/.test(line);
+                    if (isTableLine) {
+                        isTable = true;
+                        buffer.push(line);
+                    } else {
+                        if (isTable && buffer.length > 0) {
+                            sections.push({ type: "table", content: buffer.join("\n") });
+                            buffer = [];
+                        }
+                        isTable = false;
+                        if (line.trim()) sections.push({ type: "text", content: line });
+                    }
+                }
 
-    // 🧱 Create formatted table for Word
-    const createTable = (markdown) => {
-      const rows = markdown
-        .split("\n")
-        .filter((r) => r.includes("|"))
-        .map((line) =>
-          line
-            .split("|")
-            .filter((c) => c.trim() !== "")
-            .map((c) => sanitize(c.trim()))
-        );
+                if (buffer.length > 0)
+                    sections.push({ type: "table", content: buffer.join("\n") });
 
-      return new Table({
-        width: { size: 100, type: WidthType.PERCENTAGE },
-        borders: {
-          top: { style: BorderStyle.SINGLE, size: 1, color: "999999" },
-          bottom: { style: BorderStyle.SINGLE, size: 1, color: "999999" },
-          left: { style: BorderStyle.SINGLE, size: 1, color: "999999" },
-          right: { style: BorderStyle.SINGLE, size: 1, color: "999999" },
-          insideH: { style: BorderStyle.SINGLE, size: 1, color: "cccccc" },
-          insideV: { style: BorderStyle.SINGLE, size: 1, color: "cccccc" },
-        },
-        rows: rows.map(
-          (cells, i) =>
-            new TableRow({
-              children: cells.map(
-                (cell) =>
-                  new TableCell({
-                    shading: i === 0 ? { type: "solid", color: "E9E6FF" } : {},
+                return sections;
+            };
+
+            // 🧱 Create formatted table for Word
+            const createTable = (markdown) => {
+                const rows = markdown
+                    .split("\n")
+                    .filter((r) => r.includes("|"))
+                    .map((line) =>
+                        line
+                            .split("|")
+                            .filter((c) => c.trim() !== "")
+                            .map((c) => sanitize(c.trim()))
+                    );
+
+                return new Table({
+                    width: { size: 100, type: WidthType.PERCENTAGE },
+                    borders: {
+                        top: { style: BorderStyle.SINGLE, size: 1, color: "999999" },
+                        bottom: { style: BorderStyle.SINGLE, size: 1, color: "999999" },
+                        left: { style: BorderStyle.SINGLE, size: 1, color: "999999" },
+                        right: { style: BorderStyle.SINGLE, size: 1, color: "999999" },
+                        insideH: { style: BorderStyle.SINGLE, size: 1, color: "cccccc" },
+                        insideV: { style: BorderStyle.SINGLE, size: 1, color: "cccccc" },
+                    },
+                    rows: rows.map(
+                        (cells, i) =>
+                            new TableRow({
+                                children: cells.map(
+                                    (cell) =>
+                                        new TableCell({
+                                            shading: i === 0 ? { type: "solid", color: "E9E6FF" } : {},
+                                            children: [
+                                                new Paragraph({
+                                                    children: [
+                                                        new TextRun({
+                                                            text: cell,
+                                                            bold: i === 0,
+                                                            size: 22,
+                                                        }),
+                                                    ],
+                                                    alignment: AlignmentType.CENTER,
+                                                }),
+                                            ],
+                                        })
+                                ),
+                            })
+                    ),
+                });
+            };
+
+            // 🧩 Build DOCX content
+            const docElements = [
+                new Paragraph({
                     children: [
-                      new Paragraph({
-                        children: [
-                          new TextRun({
-                            text: cell,
-                            bold: i === 0,
-                            size: 22,
-                          }),
-                        ],
-                        alignment: AlignmentType.CENTER,
-                      }),
+                        new TextRun({
+                            text: "Financial Summary Report",
+                            bold: true,
+                            size: 36,
+                            color: "4B3FFF",
+                        }),
                     ],
-                  })
-              ),
-            })
-        ),
-      });
+                    alignment: AlignmentType.CENTER,
+                    spacing: { after: 200 },
+                }),
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: `Generated on: ${new Date().toLocaleString()}`,
+                            italics: true,
+                            size: 22,
+                            color: "6B7280",
+                        }),
+                    ],
+                    alignment: AlignmentType.CENTER,
+                    spacing: { after: 400 },
+                }),
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: `Overall Compliance Level: ${compliance_level || "N/A"}`,
+                            bold: true,
+                            color:
+                                compliance_level === "High"
+                                    ? "008000"
+                                    : compliance_level === "Moderate"
+                                        ? "E6A700"
+                                        : compliance_level === "Low"
+                                            ? "D32F2F"
+                                            : "000000",
+                            size: 26,
+                        }),
+                    ],
+                    spacing: { after: 400 },
+                }),
+                new Paragraph({
+                    children: [
+                        new TextRun({
+                            text: "AI Review Summary:",
+                            bold: true,
+                            size: 26,
+                        }),
+                    ],
+                    spacing: { after: 200 },
+                }),
+            ];
+
+            // 🧠 Parse both text + table sections cleanly
+            const reviewSections = extractSections(sanitize(review_response));
+            reviewSections.forEach((section) => {
+                if (section.type === "text") {
+                    docElements.push(
+                        new Paragraph({
+                            children: [new TextRun({ text: section.content, size: 24 })],
+                            spacing: { after: 150 },
+                        })
+                    );
+                } else if (section.type === "table") {
+                    docElements.push(createTable(section.content));
+                    docElements.push(new Paragraph({ text: "", spacing: { after: 200 } }));
+                }
+            });
+
+            // 🧾 Completeness Audit
+            docElements.push(
+                new Paragraph({
+                    children: [new TextRun({ text: "Completeness Audit", bold: true, size: 26 })],
+                    spacing: { after: 200 },
+                })
+            );
+
+            const auditSections = extractSections(sanitize(completeness_audit));
+            auditSections.forEach((section) => {
+                if (section.type === "table") {
+                    docElements.push(createTable(section.content));
+                    docElements.push(new Paragraph({ text: "", spacing: { after: 200 } }));
+                }
+            });
+
+            // Footer
+            docElements.push(
+                new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    children: [new TextRun({ text: "", italics: true, color: "888888", size: 20 })],
+                })
+            );
+
+            const doc = new Document({ sections: [{ properties: {}, children: docElements }] });
+            const blob = await Packer.toBlob(doc);
+            saveAs(blob, "Financial_Summary_Report.docx");
+        } catch (err) {
+            console.error("Error generating report:", err);
+            alert("Error generating DOCX. Check console for details.");
+        }
     };
 
-    // 🧩 Build DOCX content
-    const docElements = [
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: "Financial Summary Report",
-            bold: true,
-            size: 36,
-            color: "4B3FFF",
-          }),
-        ],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 200 },
-      }),
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: `Generated on: ${new Date().toLocaleString()}`,
-            italics: true,
-            size: 22,
-            color: "6B7280",
-          }),
-        ],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 400 },
-      }),
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: `Overall Compliance Level: ${compliance_level || "N/A"}`,
-            bold: true,
-            color:
-              compliance_level === "High"
-                ? "008000"
-                : compliance_level === "Moderate"
-                ? "E6A700"
-                : compliance_level === "Low"
-                ? "D32F2F"
-                : "000000",
-            size: 26,
-          }),
-        ],
-        spacing: { after: 400 },
-      }),
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: "AI Review Summary:",
-            bold: true,
-            size: 26,
-          }),
-        ],
-        spacing: { after: 200 },
-      }),
-    ];
-
-    // 🧠 Parse both text + table sections cleanly
-    const reviewSections = extractSections(sanitize(review_response));
-    reviewSections.forEach((section) => {
-      if (section.type === "text") {
-        docElements.push(
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: section.content,
-                size: 24,
-              }),
-            ],
-            spacing: { after: 150 },
-          })
-        );
-      } else if (section.type === "table") {
-        docElements.push(createTable(section.content));
-        docElements.push(new Paragraph({ text: "", spacing: { after: 200 } }));
-      }
-    });
-
-    // 🧾 Completeness Audit
-    docElements.push(
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: "Completeness Audit",
-            bold: true,
-            size: 26,
-          }),
-        ],
-        spacing: { after: 200 },
-      })
-    );
-
-    const auditSections = extractSections(sanitize(completness_audit));
-    auditSections.forEach((section) => {
-      if (section.type === "table") {
-        docElements.push(createTable(section.content));
-        docElements.push(new Paragraph({ text: "", spacing: { after: 200 } }));
-      }
-    });
-
-    // Footer
-    docElements.push(
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        children: [
-          new TextRun({
-            text: "",
-            italics: true,
-            color: "888888",
-            size: 20,
-          }),
-        ],
-      })
-    );
-
-    const doc = new Document({
-      sections: [{ properties: {}, children: docElements }],
-    });
-
-    const blob = await Packer.toBlob(doc);
-    saveAs(blob, "Financial_Summary_Report.docx");
-  } catch (err) {
-    console.error("Error generating report:", err);
-    alert("Error generating DOCX. Check console for details.");
-  }
-};
     return (
         <div style={{ margin: "20px 0", backgroundColor: "#fff", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>
             {!isCollapsed && (
