@@ -10,7 +10,7 @@
     width: 25%;
     border-right: 1px solid #AAAAAA;
     padding-right: 14px;
-    background: #fafafa;
+    /* background: #fafafa; */
     padding-top: 20px;
 }
 
@@ -48,15 +48,72 @@
 
 .module-item {
     padding: 10px;
-    background: #eee;
+    background: #FFFFFF;
     border-radius: 8px;
+    border: 1px solid #6C4CDC;
     margin-bottom: 10px;
     cursor: pointer;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
+.module-actions {
+    position: relative;
+}
+
+.three-dots {
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: #6c4cdc;
+}
+
+.actions-dropdown {
+    position: absolute;
+    right: 0;
+    top: 24px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    min-width: 120px;
+    z-index: 10;
+}
+
+.actions-dropdown p {
+    margin: 0;
+    padding: 10px 14px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #333;
+}
+
+.actions-dropdown p:hover {
+    background: #f3f3f3;
+}
+
+.module-actions:hover .actions-dropdown {
+    display: flex;
+}
+
+.editable-title[contenteditable="true"] {
+    border: 1px dashed #6c4cdc;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #f9f9ff;
+}
+
+
+
+
 .module-item.active {
-    background: #dcd6f7;
-    border: 2px solid #6c5ce7;
+    background: #E8E4FF;
+    border: 1px solid #6C4CDC;
 }
 
 /* Middle Panel */
@@ -77,28 +134,26 @@
     align-items: center;
     gap: 10px;
     padding: 12px;
-    border: 1px solid #ccc;
+    border: 1px solid #6C4CDC;
     border-radius: 10px;
     cursor: pointer;
     background: white;
 }
 
 .lesson-item.active {
-    border: 2px solid #6c5ce7;
-    background: #f5f3ff;
+    background: #E8E4FF;
+    border: 1px solid #6C4CDC;
 }
 
 .lesson-icon {
     font-size: 18px;
 }
 
-.add-lesson-card {
-    border: 2px dashed #aaa;
-    padding: 12px;
-    border-radius: 10px;
-    text-align: center;
-    cursor: pointer;
-    color: #6c5ce7;
+.lesson-icon-img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    margin-right: 8px;
 }
 
 /* Right Panel */
@@ -130,16 +185,16 @@
 
 .type-toggle {
     display: flex;
-    gap: 10px;
+    gap: 0px;
 }
 
-.type-toggle button {
+/* .type-toggle button {
     padding: 8px 14px;
     border: 1px solid #bbb;
     background: white;
     border-radius: 6px;
     cursor: pointer;
-}
+} */
 
 .type-toggle button.active {
     background: #6c5ce7;
@@ -152,19 +207,31 @@
 }
 
 .file-name {
-    margin-top: 5px;
-    font-size: 13px;
-    color: #555;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    color: #1C1C1C;
+    background: #FFFFFF;
+    width: 100%;
 }
 
 .save-btn {
-    background: #6c5ce7;
+    background: #6C4CDC;
     color: white;
     border: none;
-    padding: 10px 18px;
-    border-radius: 8px;
+    padding: 10px 24px;
+    border-radius: 30px;
+    /* fully rounded pill shape */
     cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-block;
+    text-align: center;
+    margin-left: 20px;
+    margin-top: 39px;
+
 }
+
 
 .empty-message {
     color: #B7B7B7;
@@ -173,4 +240,214 @@
     font-family: 'Inter';
     margin-bottom: 20px;
     text-align: left;
+}
+
+.type-toggle button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.type-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+
+.upload-box {
+    border: 2px dashed #9b59b6;
+    padding: 20px;
+    text-align: center;
+    border-radius: 8px;
+    background: #fafafa;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 200px;
+    width: 100%;
+}
+
+.upload-btn {
+    margin-top: 30px;
+    /* space below the dashed box */
+    width: 100%;
+    background: #7e3af2;
+    color: #fff;
+    padding: 12px 0;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    margin-left: 5px;
+}
+
+
+
+.upload-placeholder {
+    color: #555;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    /* Add this */
+}
+
+.upload-icon {
+    width: 30px;
+    margin-bottom: 10px;
+}
+
+.video-preview video {
+    max-height: 200px;
+}
+
+.doc-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 30px;
+    width: 100%;
+    /* Add this to match upload-placeholder */
+}
+
+.doc-preview .doc-icon {
+    width: 40px;
+}
+
+.video-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.hidden-file-input {
+    display: none;
+}
+
+.custom-upload-video-btn {
+    display: inline-block;
+    background: var(--button-primaryOutline-default, #FFFFFF);
+    width: 126px;
+    height: 38px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: 0.36px solid var(--New-Hex-Code-Curki, #6C4CDC);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 12px;
+    /* margin-left: 36px; */
+    transition: background 0.2s ease-in-out;
+}
+
+.custom-upload-doc-btn {
+    display: inline-block;
+    background: var(--button-primaryOutline-default, #FFFFFF);
+    width: 157px;
+    height: 38px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    border-radius: 6px;
+    border: 0.36px solid var(--New-Hex-Code-Curki, #6C4CDC);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 12px;
+    /* margin-left: 26px; */
+    transition: background 0.2s ease-in-out;
+}
+
+.custom-upload-video-btn:hover {
+    background: var(--New-Hex-Code-Curki, #6C4CDC);
+    color: #FFFFFF;
+}
+
+.custom-upload-doc-btn:hover {
+    background: var(--New-Hex-Code-Curki, #6C4CDC);
+    color: #FFFFFF;
+}
+
+.video-dash-line-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: 2px;
+}
+
+.doc-dash-line-section {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Change from gap positioning */
+    gap: 10px;
+    width: 100%; /* Ensure full width */
+}
+
+.video-or-line {
+    width: 80px;
+    height: 1px;
+    background: #E7E7E7;
+    margin-top: 13px
+}
+
+.video-dash-line-section p {
+    margin-top: 13px;
+    font-size: 10px;
+}
+
+.doc-dash-line-section p {
+    margin-top: 13px;
+    font-size: 10px;
+}
+
+.doc-or-line {
+    width: 80px;
+    height: 1px;
+    background: #E7E7E7;
+    margin-top: 13px;
+}
+
+.add-lesson-card {
+    border: 2px dashed #aaa;
+    padding: 16px;
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    color: #6c5ce7;
+    display: flex;
+    /* flex-direction: column; */
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.add-lesson-icon {
+    width: 22px;
+    /* adjust size */
+    height: 22px;
+    object-fit: contain;
+}
+
+.add-lesson-text {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.add-lesson-card p {
+    margin-right: auto;
+    /* margin: 0; */
+    font-size: 14px;
+    font-weight: 400;
+    color: #6C4CDC;
+    text-align: center;
 }
