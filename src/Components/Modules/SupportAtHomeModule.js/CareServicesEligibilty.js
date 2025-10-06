@@ -11,6 +11,8 @@ import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
 import { IoMdInformationCircleOutline } from "react-icons/io";
 import TooltipPlaceholder from '../../../Images/TooltipPlaceholder.png';
+import { Document, Packer, Paragraph, HeadingLevel, TextRun } from "docx";
+import { saveAs } from "file-saver";
 const CareServicesEligibility = (props) => {
     const [carePlanreportFiles, setCarePlanReportFiles] = useState([]);
     const [isAnalysingCareReportLoading, setIsAnalysingCareReportLoading] = useState(false);
@@ -52,6 +54,7 @@ const CareServicesEligibility = (props) => {
             const wb = XLSX.read(buffer, { type: "array" });
             const firstSheet = wb.Sheets[wb.SheetNames[0]];
             const sheetData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            const allResponsedatass=[];
 
             const headers = sheetData[0];
             const dataRows = sheetData.slice(1); // skip header row
@@ -68,7 +71,10 @@ const CareServicesEligibility = (props) => {
                         "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/header-modules/care-plan-analysis/analyze",
                         { input_row: rowDict }
                     );
-
+                    if (response?.data) {
+                        allResponsedatass.push(response?.data);
+                    }
+                    console.log('reponse',response);
                     if (response.status === 200) {
                         const result = response.data;
                         setAnalysedCareReportdata(prev => [...(prev || []), result]);
@@ -90,6 +96,9 @@ const CareServicesEligibility = (props) => {
                     }
                 }
             }
+            console.log(allResponsedatass);
+            setCareDatatoDownload(allResponsedatass);
+            setShowCarePlanDownloadButton(true);
         } catch (error) {
             console.error("Unexpected Error:", error);
             alert("Something went wrong while analyzing the report.");
@@ -97,6 +106,97 @@ const CareServicesEligibility = (props) => {
             setIsAnalysingCareReportLoading(false);
         }
     };
+    console.log(careDataToDownload);
+
+    const handleDownloadCarePlanData = () => {
+        if (!careDataToDownload || careDataToDownload.length === 0) return;
+      
+        // Prepare sections for all clients
+        const sections = careDataToDownload.map((clientObj) => {
+          const sectionChildren = [
+            new Paragraph({
+              text: `Client: ${clientObj.client}`,
+              heading: HeadingLevel.HEADING1,
+            }),
+          ];
+      
+          // Loop through each property except 'client'
+          Object.keys(clientObj).forEach((key) => {
+            if (key === "client") return;
+      
+            const content = clientObj[key];
+            const lines = content.split("\n");
+      
+            lines.forEach((line) => {
+              if (!line.trim()) return; // skip empty lines
+      
+              // Heading
+              if (line.startsWith("###")) {
+                const headingText = line.replace(/^###\s*/, "");
+                sectionChildren.push(
+                  new Paragraph({
+                    text: headingText,
+                    heading: HeadingLevel.HEADING2,
+                  })
+                );
+                return;
+              }
+      
+              // Bullet point
+              if (line.trim().startsWith("- ")) {
+                const bulletText = line.trim().slice(2).trim();
+      
+                // Split for bold (**bold**)
+                const parts = bulletText.split(/(\*\*.*?\*\*)/g);
+                const textRuns = parts.map((part) => {
+                  if (part.startsWith("**") && part.endsWith("**")) {
+                    return new TextRun({ text: part.slice(2, -2), bold: true });
+                  }
+                  return new TextRun({ text: part });
+                });
+      
+                sectionChildren.push(
+                  new Paragraph({
+                    children: textRuns,
+                    bullet: { level: 0 },
+                  })
+                );
+                return;
+              }
+      
+              // Regular line
+              const parts = line.split(/(\*\*.*?\*\*)/g);
+              const textRuns = parts.map((part) => {
+                if (part.startsWith("**") && part.endsWith("**")) {
+                  return new TextRun({ text: part.slice(2, -2), bold: true });
+                }
+                return new TextRun({ text: part });
+              });
+      
+              sectionChildren.push(new Paragraph({ children: textRuns }));
+            });
+      
+            // Add empty paragraph between sections
+            sectionChildren.push(new Paragraph({ text: "" }));
+          });
+      
+          return { children: sectionChildren };
+        });
+      
+        // Create document with all sections
+        const doc = new Document({
+          creator: "CareApp",
+          title: "Care Plan Reports",
+          description: "Exported care plan data",
+          sections: sections,
+        });
+      
+        // Generate and download DOCX
+        Packer.toBlob(doc).then((blob) => {
+          saveAs(blob, "CarePlanReports.docx");
+        });
+      };
+
     useEffect(() => {
         if (analysedCareReportdata.length !== 0) {
             const timer = setTimeout(() => {
@@ -113,6 +213,8 @@ const CareServicesEligibility = (props) => {
         setIsAnalysedCareReportProgress(0);
         setAnalysedCareReportdata([]);
         setIsConsentChecked(false);
+        setShowCarePlanDownloadButton(false);
+        setCareDatatoDownload([]);
     };
 
     return (
@@ -382,7 +484,7 @@ const CareServicesEligibility = (props) => {
             ) : (
                 <div className="reports-box" style={{ height: 'auto', marginTop: '30px', padding: '10px' }}>
                     <div style={{ backgroundColor: '#FFFFFF', padding: '10px 30px', borderRadius: '10px' }}>
-                        <SummaryReport summaryText={analysedCareReportdata} selectedRole={props.selectedRole} resetCareServicesEligibilityState={resetCareServicesEligibilityState} />
+                        <SummaryReport summaryText={analysedCareReportdata} selectedRole={props.selectedRole} resetCareServicesEligibilityState={resetCareServicesEligibilityState} showCarePlanDownloadButton={showCarePlanDownloadButton} handleDownloadCarePlanData={handleDownloadCarePlanData}/>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', fontSize: '13px', color: 'grey' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
                                 <input type="checkbox" id="aiConsent" checked={isConsentChecked} readOnly style={{ width: '16px', height: '16px', marginRight: '8px', accentColor: 'green', cursor: 'pointer' }} />
