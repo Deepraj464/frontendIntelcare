@@ -116,7 +116,7 @@ const CareServicesEligibility = (props) => {
           const sectionChildren = [
             new Paragraph({
               text: `Client: ${clientObj.client}`,
-              heading: HeadingLevel.HEADING1,
+              heading: HeadingLevel.HEADING_1,
             }),
           ];
       
