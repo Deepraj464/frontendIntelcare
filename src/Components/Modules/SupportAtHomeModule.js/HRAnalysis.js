@@ -43,8 +43,26 @@ const HRAnalysis = (props) => {
                 </div>
             </div>
 
+            <div className="info-table">
+                <div className="table-headerss">
+                    <span>If You Upload This...</span>
+                    <span>Our AI Will Instantly...</span>
+                </div>
+                <div className="table-rowss">
+                    <div>Candidates Resumes (PDF/ZIP file).</div>
+                    <ul>
+                        <li>Screens top candidates based on role suitability.</li>
+                        <li>Sends tailored screening questions instantly.</li>
+                        <li>Verifies all compliance documents automatically.</li>
+                        <li>Onboards staff with preloaded training videos.</li>
+                        <li>Continuously monitors and flags expiring or missing documents.</li>
+                        <li>Ensures your workforce stays compliant, trained, and job-ready at all times.</li>
+                    </ul>
+                </div>
+            </div>
+
             <div>
-                {role === "Admin" ? <HRAdminView role={role} selectedRole={props.selectedRole}/> : <HRStaffView role={role}/>}
+                {role === "Admin" ? <HRAdminView role={role} selectedRole={props.selectedRole} /> : <HRStaffView role={role} />}
             </div>
         </div>
     );

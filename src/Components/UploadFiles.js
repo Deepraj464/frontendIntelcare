@@ -49,15 +49,16 @@ const UploadFiles = ({ files, setFiles, title, subtitle, removeFile, fileformat,
                     <div className="spinner"></div>
                 </div>
             )}
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px', marginBottom: '30px' }}>
-                <div className="uploader-title" style={{ marginBottom: '0px' }}>{title}</div>
-                {(title === 'SIRS Analysis' || title === 'Custom Reporting' || title === 'Care Plan Document' || title === 'Incident Report' || title === 'Incident Auditing') && (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px', }}>
+                {(title !== 'Client Profitability & Service' && title !== 'Participant Events & Incident Management' && title !== 'Incident Auditing') && (
+                    <div className="uploader-title" style={{ marginBottom: '0px' }}>{title}</div>
+                )}
+
+                {(title === 'SIRS Analysis' || title === 'Custom Reporting' || title === 'Incident Report') && (
                     <Tippy
                         content={
                             <div style={{ width: '450px', height: 'auto', padding: '4px', fontSize: '15px', fontWeight: '600' }}>
-                                {title !== 'Incident Auditing' && (
-                                    <img src={title === 'Custom Reporting' ? customPlaceHolder : TooltipPlaceholder} alt="tooltip" style={{ width: '100%' }} />
-                                )}
+                                <img src={title === 'Custom Reporting' ? customPlaceHolder : TooltipPlaceholder} alt="tooltip" style={{ width: '100%' }} />
                                 {content}
                             </div>
                         }

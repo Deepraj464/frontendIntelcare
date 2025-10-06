@@ -167,8 +167,8 @@ const HomePage = () => {
                   <SirsAnalysis selectedRole="SIRS Analysis" handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} />
                 </div>
 
-                <div style={{ display: selectedRole === "Client Event & Incident Management" ? "block" : "none" }}>
-                  <Client_Event_Reporting selectedRole='Client Event & Incident Management'/>
+                <div style={{ display: selectedRole === "Participant Events & Incident Management" ? "block" : "none" }}>
+                  <Client_Event_Reporting selectedRole='Participant Events & Incident Management'/>
                 </div>
                 <div style={{ display: selectedRole === "Incident Auditing" ? "block" : "none" }}>
                   <IncidentAuditing selectedRole='Incident Auditing'/>
@@ -194,8 +194,8 @@ const HomePage = () => {
                   <HRAnalysis handleClick={handleClick} selectedRole = "Smart Onboarding (Staff)" setShowFeedbackPopup={setShowFeedbackPopup} />
                 </div>
 
-                <div style={{ display: selectedRole === "Care Plan Document" ? "block" : "none" }}>
-                  <CareServicesEligibility selectedRole="Care Plan Document" handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} />
+                <div style={{ display: selectedRole === "Client Profitability & Service" ? "block" : "none" }}>
+                  <CareServicesEligibility selectedRole="Client Profitability & Service" handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} />
                 </div>
 
                 <div style={{ display: selectedRole === "Incident Report" ? "block" : "none" }}>

@@ -1,17 +1,30 @@
-import React,{useState,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import axios from "axios";
 import UploadFiles from "../../UploadFiles";
 import star from '../../../Images/star.png';
 import '../../../Styles/UploaderPage.css';
 import SummaryReport from "../../SummaryReportViewer";
-import '../../../Styles/UploaderPage.css'
+import '../../../Styles/UploaderPage.css';
+import Toggle from "react-toggle";
+import Tippy from '@tippyjs/react';
+import 'tippy.js/dist/tippy.css';
+import { IoMdInformationCircleOutline } from "react-icons/io";
+import TooltipPlaceholder from '../../../Images/TooltipPlaceholder.png';
 const CareServicesEligibility = (props) => {
-    const [carePlanreportFiles, setCarePlanReportFiles] = useState([]); 
-    const [isAnalysingCareReportLoading, setIsAnalysingCareReportLoading] = useState(false); 
-    const [isAnalysedCareReportProgress, setIsAnalysedCareReportProgress] = useState(0); 
-    const [analysedCareReportdata, setAnalysedCareReportdata] = useState([]); 
+    const [carePlanreportFiles, setCarePlanReportFiles] = useState([]);
+    const [isAnalysingCareReportLoading, setIsAnalysingCareReportLoading] = useState(false);
+    const [isAnalysedCareReportProgress, setIsAnalysedCareReportProgress] = useState(0);
+    const [analysedCareReportdata, setAnalysedCareReportdata] = useState([]);
     const [isConsentChecked, setIsConsentChecked] = useState(false);
+    const [selectedActor, setSelectedActor] = useState("NDIS");
+    const [syncEnabled, setSyncEnabled] = useState(false);
+    const [startDay, setStartDay] = useState("");
+    const [startMonth, setStartMonth] = useState("");
+    const [endDay, setEndDay] = useState("");
+    const [endMonth, setEndMonth] = useState("");
+    const [showCarePlanDownloadButton,setShowCarePlanDownloadButton]=useState(false);
+    const [careDataToDownload,setCareDatatoDownload]=useState([]);
 
     const handleButtonClick = () => {
         setIsConsentChecked(true);
@@ -85,11 +98,11 @@ const CareServicesEligibility = (props) => {
         }
     };
     useEffect(() => {
-        if (analysedCareReportdata.length!==0) {
+        if (analysedCareReportdata.length !== 0) {
             const timer = setTimeout(() => {
                 props.setShowFeedbackPopup(true);
             }, 60000); // 1 minute
-    
+
             return () => clearTimeout(timer); // Clear on unmount or change
         }
     }, [analysedCareReportdata]);
@@ -104,10 +117,237 @@ const CareServicesEligibility = (props) => {
 
     return (
         <>
-            {analysedCareReportdata.length===0 ? (
+            {analysedCareReportdata.length === 0 ? (
                 <>
-                    <div className="selectedModule">{props.selectedRole}</div>
-                    <div className="selectedModuleDescription">Upload your data and<br></br>get instant insights into spending, funding, and what needs attention</div>
+                    <div className="financial-header">
+                        <div className="role-selector">
+                            <div
+                                style={{
+                                    fontSize: "14px",
+                                    fontWeight: "500",
+                                    fontFamily: "Inter",
+                                }}
+                            >
+                                Who are you?
+                            </div>
+                            <div className="role-toggle-container">
+                                <div
+                                    onClick={() => setSelectedActor("NDIS")}
+                                    style={{
+                                        backgroundColor:
+                                            selectedActor === "NDIS" ? "#6C4CDC" : "#FFFFFF",
+                                        color: selectedActor === "NDIS" ? "white" : "#6C4CDC",
+                                        borderTopLeftRadius: "4px",
+                                        borderBottomLeftRadius: "4px",
+                                        cursor: "pointer",
+                                        padding: "6px 12px",
+                                        fontSize: "14px",
+                                        fontFamily: "Inter",
+                                        fontWeight: "500",
+                                    }}
+                                    className="role-toggle"
+                                >
+                                    NDIS
+                                </div>
+                                <div
+                                    onClick={() => setSelectedActor("aged-care")}
+                                    style={{
+                                        backgroundColor:
+                                            selectedActor === "aged-care" ? "#6C4CDC" : "#FFFFFF",
+                                        color: selectedActor === "aged-care" ? "white" : "#6C4CDC",
+                                        borderTopRightRadius: "4px",
+                                        borderBottomRightRadius: "4px",
+                                        cursor: "pointer",
+                                        padding: "6px 12px",
+                                        fontSize: "14px",
+                                        fontFamily: "Inter",
+                                        fontWeight: "500",
+                                    }}
+                                    className="role-toggle"
+                                >
+                                    Aged Care
+                                </div>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'center' }}>
+                            <h1 className="titless">CLIENT PROFITABILITY & SERVICE</h1>
+                            <Tippy
+                                content={
+                                    <div style={{ width: '450px', height: 'auto', padding: '4px', fontSize: '15px', fontWeight: '600' }}>
+                                        <img src={TooltipPlaceholder} alt="tooltip" style={{ width: '100%' }} />
+                                        Each individual row of the Excel/CSV sheet should represent  a single clients information
+                                    </div>
+                                }
+                                trigger="mouseenter focus click"
+                                interactive={true}
+                                placement="bottom"
+                                theme="custom"
+                            >
+                                <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                                    <IoMdInformationCircleOutline size={22} color="#5B36E1" />
+                                </div>
+                            </Tippy>
+                        </div>
+                        <div className="sync-toggle">
+                            <div
+                                style={{
+                                    fontSize: "14px",
+                                    fontWeight: "500",
+                                    fontFamily: "Inter",
+                                }}
+                            >
+                                Sync With Your System
+                            </div>
+                            <Toggle
+                                checked={syncEnabled}
+                                onChange={() => setSyncEnabled(!syncEnabled)}
+                                className="custom-toggle"
+                                icons={false} // ✅ No icons
+                            />
+                        </div>
+                    </div>
+                    {/* Info Table */}
+                    <div className="info-table">
+                        <div className="table-headerss">
+                            <span>If You Upload This...</span>
+                            <span>Our AI Will Instantly...</span>
+                        </div>
+                        <div className="table-rowss">
+                            <div>Finance System - Client Revenue & Cost Allocation Report</div>
+                            <ul>
+                                <li>Client Margin Forecasts – Predict low-profit clients ahead of time.</li>
+                                <li>
+                                    Claim Leakage Alerts – Detect missed or under-billed services.
+                                </li>
+                            </ul>
+                        </div>
+                        <div className="table-rowss">
+                            <div>Care Management System - Client Funding Utilisation & Service Delivery Report</div>
+                            <ul>
+                                <li>Roster Optimisation – Recommend cost-efficient shift allocations.</li>
+                                <li>Funding Utilisation – Track and lift package use to 95%+.</li>
+                            </ul>
+                        </div>
+                        <div className="table-rowss">
+                            <div>Rostering System - Roster vs Actual Labour Cost Report</div>
+                            <ul>
+                                <li>Workforce Productivity – Identify high and low performers by billed hours.</li>
+                                <li>
+                                    Overtime Risk Warnings – Flag and prevent high-cost shifts.
+                                </li>
+                            </ul>
+                        </div>
+                        <div className="table-rowss">
+                            <div>HR System - Timesheet Accuracy & Workforce Utilisation Report</div>
+                            <ul>
+                                <li>Service Line Profitability – Show which service types drive margin.</li>
+                                <li>Client Mix Optimisation – Recommend the most profitable client ratios.</li>
+                            </ul>
+                        </div>
+                        <div className="table-rowss">
+                            <div>Claims/Billing System - Claim Leakage & Rejection Summary Report</div>
+                            <ul>
+                                <li>Cost Variance Analysis – Expose clients with abnormal cost patterns.</li>
+                                <li>
+                                    Cashflow Forecasting – Predict liquidity impact from claims/wages.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    {/* Date DropDown */}
+                    <div className="date-section">
+                        {/* Report Start Date */}
+                        <div className="date-picker">
+                            <label
+                                style={{
+                                    fontSize: "14px",
+                                    fontWeight: "500",
+                                    fontFamily: "Inter",
+                                }}
+                            >
+                                Report Start Date
+                            </label>
+                            <div className="date-inputs">
+                                <select
+                                    value={startDay}
+                                    onChange={(e) => setStartDay(e.target.value)}
+                                >
+                                    <option value="">DD</option>
+                                    {Array.from({ length: 31 }, (_, i) => {
+                                        const day = (i + 1).toString().padStart(2, "0");
+                                        return (
+                                            <option key={day} value={day}>
+                                                {day}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                                <select
+                                    value={startMonth}
+                                    onChange={(e) => setStartMonth(e.target.value)}
+                                >
+                                    <option value="">MM</option>
+                                    {Array.from({ length: 12 }, (_, i) => {
+                                        const monthValue = (i + 1).toString().padStart(2, "0"); // 01, 02, 03
+                                        const monthName = new Date(0, i).toLocaleString("en-US", {
+                                            month: "short",
+                                        }); // Jan, Feb
+                                        return (
+                                            <option key={monthValue} value={monthValue}>
+                                                {monthName}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Report End Date */}
+                        <div className="date-picker">
+                            <label
+                                style={{
+                                    fontSize: "14px",
+                                    fontWeight: "500",
+                                    fontFamily: "Inter",
+                                }}
+                            >
+                                Report End Date
+                            </label>
+                            <div className="date-inputs">
+                                <select
+                                    value={endDay}
+                                    onChange={(e) => setEndDay(e.target.value)}
+                                >
+                                    <option value="">DD</option>
+                                    {Array.from({ length: 31 }, (_, i) => {
+                                        const day = (i + 1).toString().padStart(2, "0");
+                                        return (
+                                            <option key={day} value={day}>
+                                                {day}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                                <select
+                                    value={endMonth}
+                                    onChange={(e) => setEndMonth(e.target.value)}
+                                >
+                                    <option value="">MM</option>
+                                    {Array.from({ length: 12 }, (_, i) => {
+                                        const monthValue = (i + 1).toString().padStart(2, "0"); // 01, 02, 03
+                                        const monthName = new Date(0, i).toLocaleString("en-US", {
+                                            month: "short",
+                                        }); // Jan, Feb
+                                        return (
+                                            <option key={monthValue} value={monthValue}>
+                                                {monthName}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                     <div
                         className="uploader-grid"
                         style={{ display: 'flex', justifyContent: 'center' }}
@@ -122,7 +362,6 @@ const CareServicesEligibility = (props) => {
                                 removeFile={(index) => {
                                     setCarePlanReportFiles(prev => prev.filter((_, i) => i !== index));
                                 }}
-                                content='Each individual row of the Excel/CSV sheet should represent  a single clients information'
                                 multiple={false}
                                 isProcessing={isAnalysingCareReportLoading}
                             />
@@ -132,7 +371,7 @@ const CareServicesEligibility = (props) => {
                     <button
                         className="analyse-btn"
                         disabled={isAnalysingCareReportLoading}
-                        style={{ backgroundColor: '#000', marginTop: '20px' }}
+                        style={{ backgroundColor: '#000' }}
                         onClick={handleAnalyseReports}
                     >
                         {isAnalysingCareReportLoading
@@ -143,7 +382,7 @@ const CareServicesEligibility = (props) => {
             ) : (
                 <div className="reports-box" style={{ height: 'auto', marginTop: '30px', padding: '10px' }}>
                     <div style={{ backgroundColor: '#FFFFFF', padding: '10px 30px', borderRadius: '10px' }}>
-                        <SummaryReport summaryText={analysedCareReportdata} selectedRole={props.selectedRole}  resetCareServicesEligibilityState={resetCareServicesEligibilityState}/>
+                        <SummaryReport summaryText={analysedCareReportdata} selectedRole={props.selectedRole} resetCareServicesEligibilityState={resetCareServicesEligibilityState} />
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px', fontSize: '13px', color: 'grey' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
                                 <input type="checkbox" id="aiConsent" checked={isConsentChecked} readOnly style={{ width: '16px', height: '16px', marginRight: '8px', accentColor: 'green', cursor: 'pointer' }} />

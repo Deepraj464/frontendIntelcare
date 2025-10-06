@@ -8,6 +8,8 @@ import QuickBooks from "../../../Images/IntuitQuickBooks.png";
 import Myp from "../../../Images/MypTech.png";
 import MyOB from "../../../Images/MyOb.png";
 import CareVision from '../../../Images/CareVision.png';
+import GoogledriveIcon from '../../../Images/GoogleDriveIcon.png';
+import SharePointIcon from '../../../Images/SharePointIcon.png';
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -28,6 +30,11 @@ const SoftwareConnect = (props) => {
   const [selectedSoftware, setSelectedSoftware] = useState(softwareList[0].name);
   const [isLoading, setIsLoading] = useState(false);
   const [integrations, setIntegrations] = useState([]);
+
+  const [googleDriveURL, setGoogleDriveURL] = useState("");
+  const [sharePointURL, setSharePointURL] = useState("");
+  const [googleConnected, setGoogleConnected] = useState(false);
+  const [shareConnected, setShareConnected] = useState(false);
 
   // ✅ Fetch already connected softwares + creds 
   useEffect(() => {
@@ -232,6 +239,38 @@ const SoftwareConnect = (props) => {
             {isConnected ? "Disconnect" : "Register"}
           </button>
         )}
+      </div>
+      <div className="integration-row">
+        <img src={GoogledriveIcon} alt="Google Drive" className="integration-icon" />
+        <input
+          type="text"
+          value={googleDriveURL}
+          onChange={(e) => setGoogleDriveURL(e.target.value)}
+          placeholder="Enter Google Drive URL"
+          className="integration-input"
+        />
+        <button
+          className={`connect-url-btn ${googleConnected ? "disconnect-btn" : ""}`}
+        >
+          Connect
+        </button>
+      </div>
+
+      {/* ✅ SharePoint Row */}
+      <div className="integration-row">
+        <img src={SharePointIcon} alt="SharePoint" className="integration-icon" />
+        <input
+          type="text"
+          value={sharePointURL}
+          onChange={(e) => setSharePointURL(e.target.value)}
+          placeholder="Enter SharePoint URL"
+          className="integration-input"
+        />
+        <button
+          className={`connect-url-btn ${shareConnected ? "disconnect-btn" : ""}`}
+        >
+          Connect
+        </button>
       </div>
     </div>
   );

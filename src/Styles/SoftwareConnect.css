@@ -119,8 +119,9 @@
 }
 
 .connect-input {
-    border: 1.5px solid #6C4CDC;
-    border-radius: 10px;
+    /* border: 1.5px solid #6C4CDC; */
+    border: 1px solid #ccc;
+    border-radius: 8px;
 
 }
 
@@ -181,3 +182,38 @@
         transform: rotate(360deg);
     }
 }
+
+.integration-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 130px;
+  }
+  
+  .integration-icon {
+    width: 35px;
+    height: 35px;
+    object-fit: contain;
+  }
+  
+  .integration-input {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  
+  .connect-url-btn {
+    padding: 8px 18px;
+    background-color: #6C4CDC;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  
+  .connect-url-btn.disconnect-btn {
+    background-color: #dc3545;
+  }
+  

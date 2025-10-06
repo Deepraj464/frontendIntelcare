@@ -3,6 +3,7 @@ import axios from "axios";
 import "../../../Styles/ClientEvent.css";
 import UploadFiles from "../../UploadFiles";
 import star from '../../../Images/star.png';
+import Toggle from "react-toggle";
 
 const BASE_URL =
   "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io";
@@ -16,6 +17,11 @@ const Client_Event_Reporting = (props) => {
   const [question, setQuestion] = useState("");
   const [loadingAskAI, setLoadingAskAI] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [syncEnabled, setSyncEnabled] = useState(false);
+  const [startDay, setStartDay] = useState("");
+  const [startMonth, setStartMonth] = useState("");
+  const [endDay, setEndDay] = useState("");
+  const [endMonth, setEndMonth] = useState("");
 
   const handleFileChange = (e) => {
     const filesArray = Array.from(e.target.files);
@@ -31,24 +37,24 @@ const Client_Event_Reporting = (props) => {
       alert("Please select at least one file");
       return;
     }
-  
+
     setLoading(true);
     setStage3Data(null);
     setAskAIResult(null);
     setUploadProgress(0);
-  
+
     let fakeProgressInterval;
-  
+
     try {
       const formData = new FormData();
       selectedFiles.forEach((file) => formData.append("files", file));
-  
+
       const params = {
         include_text: 0,
         run_stage3: 1,
         concurrency: 4,
       };
-  
+
       // 🔹 Start fake gradual progress immediately
       fakeProgressInterval = setInterval(() => {
         setUploadProgress((prev) => {
@@ -56,7 +62,7 @@ const Client_Event_Reporting = (props) => {
           return prev;
         });
       }, 300); // adjust speed here
-  
+
       const processRes = await axios.post(
         `${BASE_URL}/clients-events/report`,
         formData,
@@ -66,25 +72,25 @@ const Client_Event_Reporting = (props) => {
           timeout: 900000,
         }
       );
-  
+
       if (processRes.data?.stage3) {
         const s3 = processRes.data.stage3;
-  
+
         const eventsArray = Array.isArray(s3)
           ? s3
           : Object.keys(s3)
-              .sort((a, b) => {
-                const numA = parseInt(a.replace(/\D/g, ""), 10);
-                const numB = parseInt(b.replace(/\D/g, ""), 10);
-                return numA - numB;
-              })
-              .map((key) => s3[key]);
-  
+            .sort((a, b) => {
+              const numA = parseInt(a.replace(/\D/g, ""), 10);
+              const numB = parseInt(b.replace(/\D/g, ""), 10);
+              return numA - numB;
+            })
+            .map((key) => s3[key]);
+
         setStage3Data(eventsArray);
       } else {
         alert("Stage 3 data not found in response");
       }
-  
+
       // ✅ Jump to 100% once backend responds
       setUploadProgress(100);
     } catch (err) {
@@ -93,14 +99,14 @@ const Client_Event_Reporting = (props) => {
     } finally {
       setLoading(false);
       if (fakeProgressInterval) clearInterval(fakeProgressInterval);
-  
+
       // reset after a short delay
       setTimeout(() => setUploadProgress(0), 1000);
     }
   };
-  
-  
-  
+
+
+
 
   // const handleAskAI = async () => {
   //   if (!stage3Data) {
@@ -159,27 +165,190 @@ const Client_Event_Reporting = (props) => {
   return (
     <div className="upload-page">
       {/* Toggle */}
-      <div className="report-toggle">
-        <button
-          className={reportMode === "one-time" ? "active" : ""}
-          onClick={() => setReportMode("one-time")}
-        >
-          One Time
-        </button>
-        <button
-          className={reportMode === "monthly" ? "active" : ""}
-          onClick={() => setReportMode("monthly")}
-        >
-          Monthly Report
-        </button>
-      </div>
+      <div className="financial-header">
+        <div className="role-toggle-container">
+          <div
+            style={{
+              backgroundColor:
+              reportMode === "one-time" ? "#6C4CDC" : "#FFFFFF",
+              color: reportMode === "one-time" ? "white" : "#6C4CDC",
+              borderTopLeftRadius: "4px",
+              borderBottomLeftRadius: "4px",
+              cursor: "pointer",
+              padding: "6px 12px",
+              fontSize: "14px",
+              fontFamily: "Inter",
+              fontWeight: "500",
+            }}
+            className="role-toggle"
+            onClick={() => setReportMode("one-time")}
+          >
+            One Time
+          </div>
+          <div
+            onClick={() => setReportMode("history")}
+            style={{
+              backgroundColor:
+              reportMode === "history" ? "#6C4CDC" : "#FFFFFF",
+              color:  reportMode === "history" ? "white" : "#6C4CDC",
+              borderTopRightRadius: "4px",
+              borderBottomRightRadius: "4px",
+              cursor: "pointer",
+              padding: "6px 12px",
+              fontSize: "14px",
+              fontFamily: "Inter",
+              fontWeight: "500",
+            }}
+            className="role-toggle"
+          >
+            History
+          </div>
+        </div>
 
+        <h1 className="titless">PARTICIPANT EVENTS & INCIDENT MANAGEMENT</h1>
+        <div className="sync-toggle">
+          <div
+            style={{
+              fontSize: "14px",
+              fontWeight: "500",
+              fontFamily: "Inter",
+            }}
+          >
+            Sync With Your System
+          </div>
+          <Toggle
+            checked={syncEnabled}
+            onChange={() => setSyncEnabled(!syncEnabled)}
+            className="custom-toggle"
+            icons={false} // ✅ No icons
+          />
+        </div>
+      </div>
+      <div className="info-table">
+        <div className="table-headerss">
+          <span>If You Upload This...</span>
+          <span>Our AI Will Instantly...</span>
+        </div>
+        <div className="table-rowss">
+          <div>Care Management System - Shift Notes Report</div>
+          <ul>
+            <li>Detects unreported incidents under NDIS rules</li>
+            <li>Identifies high-risk participants needing follow-up.</li>
+          </ul>
+        </div>
+        <div className="table-rowss">
+          <div>Care Management System - Progress Notes Report</div>
+          <ul>
+            <li>Links repeated issues to specific staff or time slots.</li>
+            <li>Predicts potential restrictive practice or escalation risks.</li>
+          </ul>
+        </div>
+        <div className="table-rowss">
+          <div>Rostering System - Shift Logs / Daily Support Notes Report</div>
+          <ul>
+            <li>Ensures incident and reportable event compliance.</li>
+            <li>Tracks quality-of-support indicators from shift notes and progress notes.</li>
+          </ul>
+        </div>
+      </div>
+      {/* Date DropDown */}
+      <div className="date-section">
+        {/* Report Start Date */}
+        <div className="date-picker">
+          <label
+            style={{
+              fontSize: "14px",
+              fontWeight: "500",
+              fontFamily: "Inter",
+            }}
+          >
+            Report Start Date
+          </label>
+          <div className="date-inputs">
+            <select
+              value={startDay}
+              onChange={(e) => setStartDay(e.target.value)}
+            >
+              <option value="">DD</option>
+              {Array.from({ length: 31 }, (_, i) => {
+                const day = (i + 1).toString().padStart(2, "0");
+                return (
+                  <option key={day} value={day}>
+                    {day}
+                  </option>
+                );
+              })}
+            </select>
+            <select
+              value={startMonth}
+              onChange={(e) => setStartMonth(e.target.value)}
+            >
+              <option value="">MM</option>
+              {Array.from({ length: 12 }, (_, i) => {
+                const monthValue = (i + 1).toString().padStart(2, "0"); // 01, 02, 03
+                const monthName = new Date(0, i).toLocaleString("en-US", {
+                  month: "short",
+                }); // Jan, Feb
+                return (
+                  <option key={monthValue} value={monthValue}>
+                    {monthName}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        </div>
+
+        {/* Report End Date */}
+        <div className="date-picker">
+          <label
+            style={{
+              fontSize: "14px",
+              fontWeight: "500",
+              fontFamily: "Inter",
+            }}
+          >
+            Report End Date
+          </label>
+          <div className="date-inputs">
+            <select
+              value={endDay}
+              onChange={(e) => setEndDay(e.target.value)}
+            >
+              <option value="">DD</option>
+              {Array.from({ length: 31 }, (_, i) => {
+                const day = (i + 1).toString().padStart(2, "0");
+                return (
+                  <option key={day} value={day}>
+                    {day}
+                  </option>
+                );
+              })}
+            </select>
+            <select
+              value={endMonth}
+              onChange={(e) => setEndMonth(e.target.value)}
+            >
+              <option value="">MM</option>
+              {Array.from({ length: 12 }, (_, i) => {
+                const monthValue = (i + 1).toString().padStart(2, "0"); // 01, 02, 03
+                const monthName = new Date(0, i).toLocaleString("en-US", {
+                  month: "short",
+                }); // Jan, Feb
+                return (
+                  <option key={monthValue} value={monthValue}>
+                    {monthName}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        </div>
+      </div>
       {/* One Time Mode */}
       {reportMode === "one-time" && (
         <>
           <>
-            <div className="selectedModule">{props.selectedRole}</div>
-            <div className="selectedModuleDescription">Upload your data and<br></br>get instant insights into spending, funding, and what needs attention</div>
             <div
               className="uploader-grid"
               style={{ display: 'flex', justifyContent: 'center' }}
@@ -259,9 +428,9 @@ const Client_Event_Reporting = (props) => {
       )}
 
       {/* Monthly Report Mode */}
-      {reportMode === "monthly" && (
+      {reportMode === "history" && (
         <>
-          <h1 className="page-title">Monthly Reports</h1>
+          <h1 className="page-title">History</h1>
           <table className="report-table">
             <thead>
               <tr>

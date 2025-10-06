@@ -7,6 +7,10 @@ import rehypeRaw from "rehype-raw";
 import rehypeHighlight from "rehype-highlight";
 import star from '../../../Images/star.png';
 import axios from "axios";
+import Toggle from "react-toggle";
+import Tippy from '@tippyjs/react';
+import 'tippy.js/dist/tippy.css';
+import { IoMdInformationCircleOutline } from "react-icons/io";
 
 const IncidentAuditing = (props) => {
     const [incidentAuditingFiles, setIncidentAuditingFiles] = useState([]);
@@ -14,6 +18,11 @@ const IncidentAuditing = (props) => {
     const [incidentAuditingProgress, setIncidentAuditingProgress] = useState(0);
     const [responseData, setResponseData] = useState(null);
     const [activeTab, setActiveTab] = useState("incident"); // default tab
+    const [syncEnabled, setSyncEnabled] = useState(false);
+    const [startDay, setStartDay] = useState("");
+    const [startMonth, setStartMonth] = useState("");
+    const [endDay, setEndDay] = useState("");
+    const [endMonth, setEndMonth] = useState("");
 
 
     const isButtonDisabled = incidentAuditingFiles.length === 0;
@@ -67,12 +76,171 @@ const IncidentAuditing = (props) => {
         <>
             {!responseData && (
                 <>
-                    {/* File uploader */}
-                    <div className="selectedModule">{props.selectedRole}</div>
-                    <div className="selectedModuleDescription">
-                        Compliance dashboard mapped to NDIS Practice Standards/Incident Rules,
-                        <br />showing overdue items, upcoming deadlines, and audit readiness.
+                    <div className="financial-header">
+                        <div></div>
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'center',marginLeft:'100px'}}>
+                            <h1 className="titless">INCIDENT AUDITING</h1>
+                            <Tippy
+                                content={
+                                    <div style={{ width: '450px', height: 'auto', padding: '4px', fontSize: '15px', fontWeight: '600' }}>
+                                        Incident report is mandatory.
+                                    </div>
+                                }
+                                trigger="mouseenter focus click"
+                                interactive={true}
+                                placement="top"
+                                theme="custom"
+                            >
+                                <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                                    <IoMdInformationCircleOutline size={22} color="#5B36E1" />
+                                </div>
+                            </Tippy>
+                        </div>
+                        <div className="sync-toggle">
+                            <div
+                                style={{
+                                    fontSize: "14px",
+                                    fontWeight: "500",
+                                    fontFamily: "Inter",
+                                }}
+                            >
+                                Sync With Your System
+                            </div>
+                            <Toggle
+                                checked={syncEnabled}
+                                onChange={() => setSyncEnabled(!syncEnabled)}
+                                className="custom-toggle"
+                                icons={false} // ✅ No icons
+                            />
+                        </div>
                     </div>
+                    {/* Info Table */}
+                    <div className="info-table">
+                        <div className="table-headerss">
+                            <span>If You Upload This...</span>
+                            <span>Our AI Will Instantly...</span>
+                        </div>
+                        <div className="table-rowss">
+                            <div>Care Management System - Incident Report</div>
+                            <ul>
+                                <li>Collates evidence to support higher funding requests.</li>
+                                <li>
+                                Uncover CAPA (Corrective and Preventive Actions) insights per client.
+                                </li>
+                            </ul>
+                        </div>
+                        <div className="table-rowss">
+                            <div>Behaviour Support System - Behaviour Support Report</div>
+                            <ul>
+                                <li>Auto-generates NDIS evidence summaries and reports.</li>
+                                <li>Links incidents to unmet care or supervision needs.</li>
+                            </ul>
+                        </div>
+                        <div className="table-rowss">
+                            <div>Care Management System - Shift Notes Report</div>
+                            <ul>
+                                <li>Flags behavioural or mood changes in participants.</li>
+                                <li>
+                                Receive a concise, person-centred support analysis report.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    {/* Date DropDown */}
+                    <div className="date-section">
+                        {/* Report Start Date */}
+                        <div className="date-picker">
+                            <label
+                                style={{
+                                    fontSize: "14px",
+                                    fontWeight: "500",
+                                    fontFamily: "Inter",
+                                }}
+                            >
+                                Report Start Date
+                            </label>
+                            <div className="date-inputs">
+                                <select
+                                    value={startDay}
+                                    onChange={(e) => setStartDay(e.target.value)}
+                                >
+                                    <option value="">DD</option>
+                                    {Array.from({ length: 31 }, (_, i) => {
+                                        const day = (i + 1).toString().padStart(2, "0");
+                                        return (
+                                            <option key={day} value={day}>
+                                                {day}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                                <select
+                                    value={startMonth}
+                                    onChange={(e) => setStartMonth(e.target.value)}
+                                >
+                                    <option value="">MM</option>
+                                    {Array.from({ length: 12 }, (_, i) => {
+                                        const monthValue = (i + 1).toString().padStart(2, "0"); // 01, 02, 03
+                                        const monthName = new Date(0, i).toLocaleString("en-US", {
+                                            month: "short",
+                                        }); // Jan, Feb
+                                        return (
+                                            <option key={monthValue} value={monthValue}>
+                                                {monthName}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Report End Date */}
+                        <div className="date-picker">
+                            <label
+                                style={{
+                                    fontSize: "14px",
+                                    fontWeight: "500",
+                                    fontFamily: "Inter",
+                                }}
+                            >
+                                Report End Date
+                            </label>
+                            <div className="date-inputs">
+                                <select
+                                    value={endDay}
+                                    onChange={(e) => setEndDay(e.target.value)}
+                                >
+                                    <option value="">DD</option>
+                                    {Array.from({ length: 31 }, (_, i) => {
+                                        const day = (i + 1).toString().padStart(2, "0");
+                                        return (
+                                            <option key={day} value={day}>
+                                                {day}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                                <select
+                                    value={endMonth}
+                                    onChange={(e) => setEndMonth(e.target.value)}
+                                >
+                                    <option value="">MM</option>
+                                    {Array.from({ length: 12 }, (_, i) => {
+                                        const monthValue = (i + 1).toString().padStart(2, "0"); // 01, 02, 03
+                                        const monthName = new Date(0, i).toLocaleString("en-US", {
+                                            month: "short",
+                                        }); // Jan, Feb
+                                        return (
+                                            <option key={monthValue} value={monthValue}>
+                                                {monthName}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    {/* File uploader */}
                     <div className="uploader-grid" style={{ display: 'flex', justifyContent: 'center' }}>
                         <div style={{ width: '50%' }}>
                             <UploadFiles
@@ -84,7 +252,6 @@ const IncidentAuditing = (props) => {
                                 removeFile={(index) => {
                                     setIncidentAuditingFiles(prev => prev.filter((_, i) => i !== index));
                                 }}
-                                content="Incident report is mandatory."
                                 multiple
                                 isProcessing={isIncidentAuditingProcessing}
                             />
@@ -144,7 +311,7 @@ const IncidentAuditing = (props) => {
                                     ? Object.entries(responseData.incident_report)
                                         .filter(([key, value]) => typeof value === "string")
                                         .map(([key, value]) => (
-                                            <div key={key} style={{ marginBottom: "20px", background: "#ded8ff", padding: "14px 30px", borderRadius: "5px", textAlign: "left",}}>
+                                            <div key={key} style={{ marginBottom: "20px", background: "#ded8ff", padding: "14px 30px", borderRadius: "5px", textAlign: "left", }}>
                                                 <ReactMarkdown
                                                     children={value.replace(/```(?:\w+)?\n?/, "").replace(/```$/, "")}
                                                     remarkPlugins={[remarkGfm]}
@@ -157,7 +324,7 @@ const IncidentAuditing = (props) => {
                         )}
 
                         {activeTab === "bsp" && (
-                            <div style={{ background: "#f8f8f8", padding: "10px 30px", borderRadius: "5px",  textAlign: 'left' }}>
+                            <div style={{ background: "#f8f8f8", padding: "10px 30px", borderRadius: "5px", textAlign: 'left' }}>
                                 <ReactMarkdown
                                     children={responseData.bsp_analysis_markdown || "No BSP Analysis available"}
                                     remarkPlugins={[remarkGfm]}
@@ -176,9 +343,9 @@ const IncidentAuditing = (props) => {
                                                 marginBottom: "20px",
                                                 background: "#ded8ff",
                                                 padding: "10px 30px",
-                                                textAlign:'left',
-                                                borderRadius: "5px", 
-                
+                                                textAlign: 'left',
+                                                borderRadius: "5px",
+
                                             }}
                                         >
                                             <ReactMarkdown

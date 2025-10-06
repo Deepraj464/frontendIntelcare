@@ -29,7 +29,7 @@ const SmartRostering = () => {
                 setRosteringMetrics(response.data);
             } catch (error) {
                 console.error("Error fetching rostering data:", error);
-            } 
+            }
         };
 
         fetchRosteringData();
@@ -52,7 +52,7 @@ const SmartRostering = () => {
     };
     useEffect(() => {
         if (screen === 1) {
-            setQuery("");      
+            setQuery("");
             setSelectedFile([]);
         }
     }, [screen]);
@@ -94,7 +94,25 @@ const SmartRostering = () => {
         <>
             {screen === 1 && (
                 <div className="rostering-dashboard">
-                    <h2 className="rostering-date">{formattedDate}</h2>
+                <h2 className="rostering-date">{formattedDate}</h2>
+                    <div className="info-table"  style={{marginBottom:'40px'}}>
+                        <div className="table-headerss">
+                            <span>If You Upload This...</span>
+                            <span>Our AI Will Instantly...</span>
+                        </div>
+                        <div className="table-rowss">
+                            <div>Fortnightly Roster Schedule.</div>
+                            <ul>
+                                <li>Ensures 100% shift coverage with no missed or unfilled shifts.</li>
+                                <li>Sends automatic SMS invites to fill shifts instantly.</li>
+                                <li>Analyses overtime patterns and past shift history.</li>
+                                <li>Matches client care needs with the best-suited staff.</li>
+                                <li>Factors in hourly rates, distance, and availability.</li>
+                                <li>Recommends the top 5 most cost-efficient staff for each shift.</li>
+                                <li>Keeps rosters profitable, compliant, and fully staffed in minutes.</li>
+                            </ul>
+                        </div>
+                    </div>
 
                     <div className="rostering-stats-row">
                         <div className="rostering-stat-card">
