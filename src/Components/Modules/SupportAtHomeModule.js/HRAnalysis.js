@@ -4,7 +4,7 @@ import HRStaffView from "./HRStaffView";
 
 const HRAnalysis = (props) => {
     const [role, setRole] = useState("Admin");
-
+    console.log('HRAnalysis props',props);
     return (
         <div style={{ padding: "20px" }}>
             <div style={{ display: 'flex', justifyContent: 'end' }}>
@@ -68,7 +68,7 @@ const HRAnalysis = (props) => {
             </div>
 
             <div>
-                {role === "Admin" ? <HRAdminView role={role} selectedRole={props.selectedRole} /> : <HRStaffView role={role} />}
+                {role === "Admin" ? <HRAdminView role={role} selectedRole={props.selectedRole} user={props?.user}/> : <HRStaffView role={role} user={props?.user}/>}
             </div>
         </div>
     );

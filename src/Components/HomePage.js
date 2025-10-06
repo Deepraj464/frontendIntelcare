@@ -191,7 +191,7 @@ const HomePage = () => {
                 </div>
 
                 <div style={{ display: selectedRole === "Smart Onboarding (Staff)" ? "block" : "none" }}>
-                  <HRAnalysis handleClick={handleClick} selectedRole = "Smart Onboarding (Staff)" setShowFeedbackPopup={setShowFeedbackPopup} />
+                  <HRAnalysis handleClick={handleClick} selectedRole = "Smart Onboarding (Staff)" setShowFeedbackPopup={setShowFeedbackPopup} user={user}/>
                 </div>
 
                 <div style={{ display: selectedRole === "Client Profitability & Service" ? "block" : "none" }}>

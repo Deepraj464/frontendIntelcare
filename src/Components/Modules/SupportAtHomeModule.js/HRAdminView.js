@@ -11,14 +11,15 @@ const HRAdminView = ({
   handleClick,
   setShowFeedbackPopup,
   role,
-  selectedRole
+  selectedRole,
+  user
 }) => {
   const [selectedFile, setSelectedFile] = useState([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeTab, setActiveTab] = useState("Resume Screening");
   const [showResults, setShowResults] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState(new Set());
-
+  console.log("user in HRAdminView",user);
   const handleAnalyze = async () => {
     if (!selectedFile) {
       alert("Please select a file first!");
@@ -296,7 +297,7 @@ const HRAdminView = ({
         {activeTab === "Staff Compliance Check" && <StaffComplianceDashboard />}
         </div>
       <div className="content-areasss">
-        {activeTab === "Staff Onboarding" && <AdminCourseCreation />}
+        {activeTab === "Staff Onboarding" && <AdminCourseCreation user={user}/>}
         {activeTab === "Document Verfication" && <AdminDocumentVerification />}
       </div>
     </div>
