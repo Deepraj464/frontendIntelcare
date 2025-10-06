@@ -31,12 +31,16 @@ const SummaryReport = ({
     summaryText && typeof summaryText === "string"
       ? JSON.parse(summaryText)
       : summaryText;
-  console.log(parsedResponse);
+  console.log("parsedResponse",parsedResponse);
   const [isCompletnessAuditOpen, setIsCompletenessAuditOpen] = useState(false);
 
   const compliance_level = parsedResponse?.compliance_level || "";
   const review_response = parsedResponse?.review_response || "";
-  const completeness_audit = parsedResponse?.completness_audit || "";
+  const completeness_audit =
+    parsedResponse?.completeness_audit ||
+    parsedResponse?.completness_audit ||
+    "";
+
 
   const levelTextColors = {
     High: "compliance-high",

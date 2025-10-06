@@ -238,8 +238,8 @@ const FinancialHealth = (props) => {
         return;
       }
 
-      const userEmail = props.user.email.trim().toLowerCase();
-      // const userEmail = "kris@curki.ai"
+      // const userEmail = props.user.email.trim().toLowerCase();
+      const userEmail = "kris@curki.ai"
       // console.log("Using email:", userEmail);
 
       // Append required fields
@@ -264,25 +264,6 @@ const FinancialHealth = (props) => {
       const reportEndpoint = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/report-middleware"
       let analysisData = null;
 
-      if (userEmail === "kris@curki.ai" && type === "api") {
-        // Call immediately
-        const analysisRes = await axios.post(
-          reportEndpoint,
-          formData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-            maxContentLength: Infinity,
-            maxBodyLength: Infinity,
-          }
-        );
-        console.log("Fast analysisRes", analysisRes);
-        analysisData = analysisRes.data;
-
-        if (!analysisData) throw new Error("Empty response from analysis API");
-
-        // Artificial delay: wait 45s before continuing
-        await new Promise((resolve) => setTimeout(resolve, 45000));
-      } else {
         // Normal flow
         const analysisRes = await axios.post(
           reportEndpoint,
@@ -297,48 +278,21 @@ const FinancialHealth = (props) => {
         analysisData = analysisRes.data;
 
         if (!analysisData) throw new Error("Empty response from analysis API");
-      }
 
       // --- Step 2: Build Visualization Payload ---
       let vizPayload;
 
-      if (userEmail === "kris@curki.ai") {
-        if (type === "api") {
-          // Kris + API = requires parsed wrapping
-          vizPayload = {
-            reportResponse: {
-              parsed: {
-                type,
-                provider: selectedActor,
-                final: analysisData?.final || analysisData?.parsed?.final || {},
-                figures: analysisData?.figures || analysisData?.parsed?.figures || [],
-              },
-            },
-            from_date: fromDate,
-            to_date: toDate,
-          };
-        } else {
-          // Kris + Upload/Hybrid = use response directly
-          vizPayload = {
-            reportResponse: analysisData,
-            from_date: fromDate,
-            to_date: toDate,
-          };
-        }
-      } else {
         // Non-Kris = normal behavior
         vizPayload = {
           reportResponse: analysisData,
           from_date: fromDate,
           to_date: toDate,
         };
-      }
 
 
       // --- Step 3: Call Visualization API ---
       let vizData = null;
       console.log("vizload", vizPayload)
-      if (userEmail !== "kris@curki.ai" || (userEmail === "kris@curki.ai" && type === "upload")) {
         const vizRes = await axios.post(
           "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/vizualize-reports",
           vizPayload,
@@ -346,7 +300,6 @@ const FinancialHealth = (props) => {
         );
         console.log("vizRes", vizRes)
         vizData = vizRes.data;
-      }
 
       // --- Step 4: Normalize Figures ---
       const normalizeFigures = (source) => {
@@ -446,7 +399,7 @@ const FinancialHealth = (props) => {
         setApiExcelUrls([]); // clear for non-API types
       }
       console.log("apiExcelUrls in handle analyse", apiExcelUrls)
-      const figures = normalizeFigures(userEmail === "kris@curki.ai" && type !== "upload" ? analysisData : vizData);
+      const figures = normalizeFigures(vizData);
 
       // --- Step 5: Save state ---
       setFinancialReport(analysisData.final);
@@ -584,7 +537,7 @@ const FinancialHealth = (props) => {
               <span>Our AI Will Instantly...</span>
             </div>
             <div className="table-rowss">
-              <div>Finance System - Profit & Loss Statement</div>
+              <div>Client Funding Statements (NDIS/HCP)</div>
               <ul>
                 <li>Find unspent funds expiring soon.</li>
                 <li>
@@ -593,14 +546,14 @@ const FinancialHealth = (props) => {
               </ul>
             </div>
             <div className="table-rowss">
-              <div>Care Management System - Client Funding & Service Utilisation Report</div>
+              <div>Timesheets & Roster Exports</div>
               <ul>
                 <li>Pinpoint overtime hotspots and their cost</li>
                 <li>Show wage cost vs revenue for every client and service.</li>
               </ul>
             </div>
             <div className="table-rowss">
-              <div>Rostering System - Timesheets & Roster Export Report</div>
+              <div>Aged Receivables Report</div>
               <ul>
                 <li>Triage overdue NDIS & client invoices.</li>
                 <li>
@@ -609,14 +562,14 @@ const FinancialHealth = (props) => {
               </ul>
             </div>
             <div className="table-rowss">
-              <div>Accounts/Claims System - Aged Receivables & Claims Report</div>
+              <div>Profit & Loss Statement</div>
               <ul>
                 <li>Analyse your true service line profitability.</li>
                 <li>Flag rising costs that are eroding your margin.</li>
               </ul>
             </div>
             <div className="table-rowss">
-              <div>Service Delivery System - Service Delivery Log Report</div>
+              <div>Service Delivery Logs</div>
               <ul>
                 <li>Find unspent funds expiring soon.</li>
                 <li>
@@ -872,6 +825,7 @@ const FinancialHealth = (props) => {
                 <PreviewDataSection
                   apiExcelUrls={apiExcelUrls}
                   titles={titleArray} // pass titles as a prop
+                  financialReport={financialReport}
                 />
               )}
               <div
