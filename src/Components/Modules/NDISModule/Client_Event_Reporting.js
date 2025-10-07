@@ -64,7 +64,7 @@ const Client_Event_Reporting = (props) => {
       }, 300); // adjust speed here
 
       const processRes = await axios.post(
-        `${BASE_URL}/clients-events/report`,
+        `${BASE_URL}/ndis/clients-events/report`,
         formData,
         {
           params,
