@@ -264,89 +264,121 @@ const FinancialHealth = (props) => {
       const reportEndpoint = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/report-middleware"
       let analysisData = null;
 
-        // Normal flow
-        const analysisRes = await axios.post(
-          reportEndpoint,
-          formData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-            maxContentLength: Infinity,
-            maxBodyLength: Infinity,
-          }
-        );
-        console.log("analysisRes", analysisRes);
-        analysisData = analysisRes.data;
+      // Normal flow
+      const analysisRes = await axios.post(
+        reportEndpoint,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+        }
+      );
+      console.log("analysisRes", analysisRes);
+      analysisData = analysisRes.data;
 
-        if (!analysisData) throw new Error("Empty response from analysis API");
+      if (!analysisData) throw new Error("Empty response from analysis API");
 
       // --- Step 2: Build Visualization Payload ---
       let vizPayload;
 
-        // Non-Kris = normal behavior
-        vizPayload = {
-          reportResponse: analysisData,
-          from_date: fromDate,
-          to_date: toDate,
-        };
+      // Non-Kris = normal behavior
+      vizPayload = {
+        reportResponse: analysisData,
+        from_date: fromDate,
+        to_date: toDate,
+      };
 
 
       // --- Step 3: Call Visualization API ---
       let vizData = null;
       console.log("vizload", vizPayload)
-        const vizRes = await axios.post(
-          "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/vizualize-reports",
-          vizPayload,
-          { headers: { "Content-Type": "application/json" } }
-        );
-        console.log("vizRes", vizRes)
-        vizData = vizRes.data;
+      const vizRes = await axios.post(
+        "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/vizualize-reports",
+        vizPayload,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      console.log("vizRes", vizRes)
+      vizData = vizRes.data;
 
       // --- Step 4: Normalize Figures ---
       const normalizeFigures = (source) => {
-        console.log("source", source)
-        // Case: Kris or image-based figures
-        if (Array.isArray(source?.figures)) {
-          return source.figures.map((fig, i) => {
-            if (fig.data_base64) {
-              return {
-                type: "image",
-                image: `data:${fig.mime || "image/png"};base64,${fig.data_base64}`,
-                metricName: fig.key || `Figure ${i + 1}`,
-              };
-            }
-            if (fig.figure) {
-              return {
-                type: "json",
-                figure: fig.figure,
-                metricName: fig.key || `Figure ${i + 1}`,
-              };
-            }
-            return null;
-          }).filter(Boolean);
-        }
+        console.log("source", source);
 
-        // Case: Non-Kris viz JSON charts
+        const results = [];
+
+        // 🧩 1️⃣ Case: Normal Plotly JSON charts
         if (Array.isArray(source?.data?.figures)) {
-          return source.data.figures.map((fig, i) => ({
+          const charts = source.data.figures.map((fig, i) => ({
             type: "json",
             figure: fig.figure,
             metricName: fig.key || `Figure ${i + 1}`,
           }));
+          results.push(...charts);
         }
 
-        // Case: attachments (PNG images)
+        // 🧩 2️⃣ Case: Image attachments
         if (Array.isArray(source?.data?.attachments)) {
-          return source.data.attachments.map((att, i) => ({
+          const images = source.data.attachments.map((att, i) => ({
             type: "image",
             image: `data:image/png;base64,${att.file_base64}`,
             metricName: att.filename
               ? att.filename.replace(/\.[^/.]+$/, "")
               : `Attachment ${i + 1}`,
           }));
+          results.push(...images);
         }
 
-        return [];
+        // 🧩 3️⃣ Case: Unavailable metrics (✅ top level)
+        if (Array.isArray(source?.unavailable_metrics)) {
+          console.log("✅ Found top-level unavailable_metrics", source.unavailable_metrics);
+          const seen = new Set();
+          const uniqueMetrics = [];
+
+          for (const [metricName, reason] of source.unavailable_metrics) {
+            if (!metricName) continue;
+            if (!seen.has(metricName)) {
+              seen.add(metricName);
+              uniqueMetrics.push({ metricName, reason });
+            }
+          }
+
+          const blanks = uniqueMetrics.map(({ metricName, reason }, i) => ({
+            type: "blank",
+            metricName: metricName || `Unavailable Metric ${i + 1}`,
+            reason: reason || "No data available",
+          }));
+
+          results.push(...blanks);
+        }
+
+        // 🧩 4️⃣ Case: Unavailable metrics nested inside data
+        if (Array.isArray(source?.data?.unavailable_metrics)) {
+          console.log("✅ Found nested unavailable_metrics", source.data.unavailable_metrics);
+          const seen = new Set();
+          const uniqueMetrics = [];
+
+          for (const [metricName, reason] of source.data.unavailable_metrics) {
+            if (!metricName) continue;
+            if (!seen.has(metricName)) {
+              seen.add(metricName);
+              uniqueMetrics.push({ metricName, reason });
+            }
+          }
+
+          const blanks = uniqueMetrics.map(({ metricName, reason }, i) => ({
+            type: "blank",
+            metricName: metricName || `Unavailable Metric ${i + 1}`,
+            reason: reason || "No data available",
+          }));
+
+          results.push(...blanks);
+        }
+
+        console.log("✅ normalizeFigures results:", results);
+        return results;
       };
+
       console.log("vizPayload?.reportResponse?.excel_exports", vizPayload?.reportResponse?.excel_exports)
       if (type === "api") {
         if (vizPayload?.reportResponse?.excel_exports) {
@@ -795,6 +827,58 @@ const FinancialHealth = (props) => {
                       {item.metricName || `Attachment ${index + 1}`}
                     </h4> */}
                   </div>
+                ) : item.type === "blank" ? (
+                  // ✅ Case 3: Unavailable Metric (Blank Graph)
+                  <Plot
+                    data={[
+                      {
+                        x: [],
+                        y: [],
+                        type: "scatter",
+                        mode: "lines+markers",
+                        marker: { color: "#ccc" },
+                      },
+                    ]}
+                    layout={{
+                      title: {
+                        text: item.metricName?.replace(/_/g, " ").toUpperCase(),
+                        font: { size: 16, color: "#555" },
+                      },
+                      paper_bgcolor: "white",
+                      plot_bgcolor: "white",
+                      xaxis: {
+                        title: "",
+                        showgrid: true,
+                        zeroline: false,
+                        showticklabels: false,
+                      },
+                      yaxis: {
+                        title: "",
+                        showgrid: true,
+                        zeroline: false,
+                        showticklabels: false,
+                      },
+                      height: 400,
+                      margin: { t: 60, l: 40, r: 40, b: 40 },
+                      annotations: [
+                        {
+                          text: item.reason || "No data available",
+                          xref: "paper",
+                          yref: "paper",
+                          x: 0.5,
+                          y: 0.5,
+                          showarrow: false,
+                          font: { color: "#999", size: 13 },
+                        },
+                      ],
+                    }}
+                    config={{
+                      responsive: true,
+                      displayModeBar: false,
+                      displaylogo: false,
+                    }}
+                    style={{ width: "100%", height: "400px" }}
+                  />
                 ) : null}
               </div>
             ))}
