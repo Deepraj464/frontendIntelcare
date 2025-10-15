@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../../../Styles/SoftwareConnect.css";
+import axios from "axios";
 import AlayaCare from "../../../Images/Alayacare.png";
 import Xero from "../../../Images/Xero.png";
 import EmployementHero from "../../../Images/EmploymentHero.png";
@@ -7,18 +8,20 @@ import VisualCare from "../../../Images/VisualCare.png";
 import QuickBooks from "../../../Images/IntuitQuickBooks.png";
 import Myp from "../../../Images/MypTech.png";
 import MyOB from "../../../Images/MyOb.png";
-import CareVision from '../../../Images/CareVision.png';
-import GoogledriveIcon from '../../../Images/GoogleDriveIcon.png';
-import SharePointIcon from '../../../Images/SharePointIcon.png';
+import CareVision from "../../../Images/CareVision.png";
+import GoogledriveIcon from "../../../Images/GoogleDriveIcon.png";
+import SharePointIcon from "../../../Images/SharePointIcon.png";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const SoftwareConnect = (props) => {
+  const XERO_URL = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net"; // ✅ your ngrok for testing
+
   const softwareList = [
     { name: "AlayaCare", logo: AlayaCare },
     { name: "VisualCare", logo: VisualCare },
     { name: "MYP Technologies", logo: Myp },
-    { name: 'CareVision', logo: CareVision },
+    { name: "CareVision", logo: CareVision },
     { name: "Xero", logo: Xero },
     { name: "QuickBooks", logo: QuickBooks },
     { name: "MYOB", logo: MyOB },
@@ -30,44 +33,28 @@ const SoftwareConnect = (props) => {
   const [selectedSoftware, setSelectedSoftware] = useState(softwareList[0].name);
   const [isLoading, setIsLoading] = useState(false);
   const [integrations, setIntegrations] = useState([]);
-
   const [googleDriveURL, setGoogleDriveURL] = useState("");
   const [sharePointURL, setSharePointURL] = useState("");
   const [googleConnected, setGoogleConnected] = useState(false);
   const [shareConnected, setShareConnected] = useState(false);
 
-  // ✅ Fetch already connected softwares + creds 
+  // ✅ 1️⃣ Fetch already connected softwares + creds
   useEffect(() => {
     const fetchConnected = async () => {
       if (!props.user?.email) return;
 
       try {
-        console.log("Making GET request for user:", props.user.email);
-
-        // Use the correct endpoint from your router: /getSoftwares
-        const response = await fetch(
-          `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/getSoftwares?userEmail=${encodeURIComponent(props.user.email)}`,
+        const response = await axios.get(
+          `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/getSoftwares`,
           {
-            method: "GET",
-            headers: {
-              "Accept": "application/json"
-            }
+            params: { userEmail: props.user.email },
           }
         );
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Error response:", errorText);
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log("Success response:", data);
-
+        const data = response.data;
         const integrations = data.integrations || data || [];
         setIntegrations(integrations);
 
-        // ✅ if first software is already connected, preload its creds
         const current = integrations.find((i) => i.software === selectedSoftware);
         if (current) {
           setClientId(current.client_id || "");
@@ -78,27 +65,22 @@ const SoftwareConnect = (props) => {
         }
       } catch (err) {
         console.error("Error fetching connected softwares:", err.message);
-        setIntegrations([]);
       }
     };
 
     fetchConnected();
   }, [props.user.email, selectedSoftware]);
 
-  // ✅ When user clicks on another software card, preload creds if available
+  // ✅ 2️⃣ Handle software selection
   const handleSelectSoftware = (software) => {
     setSelectedSoftware(software);
-
     const current = integrations.find((i) => i.software === software);
-    if (current) {
-      setClientId(current.client_id || "");
-      setSecretId(current.secret_id || "");
-    } else {
-      setClientId("");
-      setSecretId("");
-    }
+    setClientId(current?.client_id || "");
+    setSecretId(current?.secret_id || "");
   };
 
+  // ✅ 3️⃣ Handle register/deregister
+  console.log(selectedSoftware)
   const handleRegister = async () => {
     if (!selectedSoftware) {
       toast.warn("⚠️ Please select a software");
@@ -114,59 +96,105 @@ const SoftwareConnect = (props) => {
 
     try {
       const isConnected = integrations.some((i) => i.software === selectedSoftware);
-      const payload = {
-        software: selectedSoftware,
-        userEmail: props.user.email,
-        client_id: clientId,
-        secret_id: secretId,
-        status: isConnected ? "deregister" : "register",
-      };
+      console.log("selected software", selectedSoftware);
 
-      const response = await fetch(
-        "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/integrationCredsCheck",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload)
+      // 🟦 CASE 1: Xero integration (handled via your ngrok backend)
+      if (selectedSoftware === "Xero") {
+        const payload = {
+          client_id: clientId,
+          secret_id: secretId,
+          userEmail: props.user.email,
+          status: isConnected ? "deregister" : "register",
+        };
+
+        console.log("payload in selected software Xero", payload);
+
+        const response = await axios.post(`${XERO_URL}/xero/connect`, payload);
+        const data = response.data;
+
+        if (isConnected) {
+          // 🔴 Deregister Xero
+          setIntegrations((prev) => prev.filter((i) => i.software !== "Xero"));
+          setClientId("");
+          setSecretId("");
+          toast.success("Xero disconnected successfully!");
+        } else {
+          // 🟢 Register Xero and redirect to OAuth
+          toast.info("Redirecting to Xero for authorization...");
+          window.location.href = data.redirectUrl;
         }
-      );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        setIsLoading(false);
+        return; // ✅ Exit early to avoid hitting non-Xero API
       }
 
-      const data = await response.json();
+      // 🟩 CASE 2: Any software other than Xero
+      if (selectedSoftware !== "Xero") {
+        const payload = {
+          software: selectedSoftware,
+          userEmail: props.user.email,
+          client_id: clientId,
+          secret_id: secretId,
+          status: isConnected ? "deregister" : "register",
+        };
 
-      if (isConnected) {
-        // remove from state
-        setIntegrations((prev) => prev.filter((i) => i.software !== selectedSoftware));
-        setClientId("");
-        setSecretId("");
-        toast.success(`${selectedSoftware} disconnected successfully!`);
-      } else {
-        // add to state
-        setIntegrations((prev) => [
-          ...prev,
-          { software: selectedSoftware, client_id: clientId, secret_id: secretId },
-        ]);
-        toast.success(`${selectedSoftware} connected successfully!`);
+        console.log("selected software in non Xero", payload);
+
+        const response = await axios.post(
+          "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/integrationCredsCheck",
+          payload
+        );
+
+        const data = response.data;
+
+        if (isConnected) {
+          // 🔴 Deregister
+          setIntegrations((prev) => prev.filter((i) => i.software !== selectedSoftware));
+          setClientId("");
+          setSecretId("");
+          toast.success(`${selectedSoftware} disconnected successfully!`);
+        } else {
+          // 🟢 Register
+          setIntegrations((prev) => [
+            ...prev,
+            { software: selectedSoftware, client_id: clientId, secret_id: secretId },
+          ]);
+          toast.success(`${selectedSoftware} connected successfully!`);
+        }
       }
     } catch (err) {
-      console.error("❌ Error in handleRegister:", err.message);
-      toast.error(
-        err.message ||
-        `Failed to ${integrations.some((i) => i.software === selectedSoftware)
-          ? "disconnect"
-          : "connect"
-        } ${selectedSoftware}`
-      );
+      console.error("❌ Error in handleRegister:", err.response?.data || err.message);
+      toast.error(err.response?.data?.error || err.message);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // ✅ 4️⃣ Auto-refresh Xero token every 30 mins
+  useEffect(() => {
+    const isXeroConnected = integrations.some((i) => i.software === "Xero");
+    if (!props.user?.email || !isXeroConnected) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const response = await axios.get(`${XERO_URL}/xero/refreshToken`, {
+          params: { userEmail: props.user.email },
+        });
+
+        console.log("data in refresh token", response.data);
+
+        if (response.status === 200) {
+          console.log("♻️ Xero token refreshed:", response.data);
+        } else {
+          console.warn("⚠️ Failed to refresh Xero token:", response.data.error);
+        }
+      } catch (err) {
+        console.error("❌ Error refreshing Xero token:", err.message);
+      }
+    }, 1800*1000); // every 30 mins
+
+    return () => clearInterval(interval);
+  }, [props.user?.email, integrations]);
 
   const isConnected = integrations.some((i) => i.software === selectedSoftware);
 
@@ -185,16 +213,17 @@ const SoftwareConnect = (props) => {
             <img
               src={software.logo}
               alt={software.name}
-              className={`software-logo ${software.name === "EmploymentHero"
-                ? "employment-hero-logo"
-                : software.name === "QuickBooks"
+              className={`software-logo ${
+                software.name === "EmploymentHero"
+                  ? "employment-hero-logo"
+                  : software.name === "QuickBooks"
                   ? "quickbooks-logo"
                   : software.name === "Xero"
-                    ? "xero-logo"
-                    : software.name === "MYOB"
-                      ? "myob-logo"
-                      : ""
-                }`}
+                  ? "xero-logo"
+                  : software.name === "MYOB"
+                  ? "myob-logo"
+                  : ""
+              }`}
             />
             {integrations.some((i) => i.software === software.name) && (
               <div className="connected-badge">Connected</div>
@@ -203,7 +232,7 @@ const SoftwareConnect = (props) => {
         ))}
       </div>
 
-      {/* Input Fields and Button (No Form Wrapper) */}
+      {/* Input Fields + Button */}
       <div className="software-form">
         <div className="forms-group">
           <label className="connect-label">Client ID</label>
@@ -240,6 +269,8 @@ const SoftwareConnect = (props) => {
           </button>
         )}
       </div>
+
+      {/* Google Drive + SharePoint rows */}
       <div className="integration-row">
         <img src={GoogledriveIcon} alt="Google Drive" className="integration-icon" />
         <input
@@ -249,14 +280,11 @@ const SoftwareConnect = (props) => {
           placeholder="Enter Google Drive URL"
           className="integration-input"
         />
-        <button
-          className={`connect-url-btn ${googleConnected ? "disconnect-btn" : ""}`}
-        >
+        <button className={`connect-url-btn ${googleConnected ? "disconnect-btn" : ""}`}>
           Connect
         </button>
       </div>
 
-      {/* ✅ SharePoint Row */}
       <div className="integration-row">
         <img src={SharePointIcon} alt="SharePoint" className="integration-icon" />
         <input
@@ -266,9 +294,7 @@ const SoftwareConnect = (props) => {
           placeholder="Enter SharePoint URL"
           className="integration-input"
         />
-        <button
-          className={`connect-url-btn ${shareConnected ? "disconnect-btn" : ""}`}
-        >
+        <button className={`connect-url-btn ${shareConnected ? "disconnect-btn" : ""}`}>
           Connect
         </button>
       </div>
