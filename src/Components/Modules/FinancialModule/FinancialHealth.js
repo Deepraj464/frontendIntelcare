@@ -238,8 +238,8 @@ const FinancialHealth = (props) => {
         return;
       }
 
-      // const userEmail = props.user.email.trim().toLowerCase();
-      const userEmail = "kris@curki.ai"
+      const userEmail = props.user.email.trim().toLowerCase();
+      // const userEmail = "kris@curki.ai"
       // console.log("Using email:", userEmail);
 
       // Append required fields
