@@ -147,177 +147,160 @@ export default function TlcCustomerReporting(props) {
     { label: "Full Time", value: "Full Time" },
     { label: "Part Time", value: "Part Time" },
   ];
-  // -------------------- AUTOMATIC UPLOAD HANDLER --------------------
-  const uploadAllFiles = async () => {
-    try {
-      setUploading(true);
-      const { fileNames } = activeTabData;
 
-      // Get actual <input> elements by tab + type
-      const inputs = ["payroll", "people", "employee"].map((type) =>
-        document.querySelector(`input[data-type="${type}"][data-tab="${activeTab}"]`)
-      );
+const handleFileChange = (e, type) => {
+  const files = Array.from(e.target.files);
+  if (files.length === 0) return;
 
-      // Validate that all are filled
-      if (inputs.some((input) => !input || !input.files.length)) {
-        alert("⚠️ Please upload all three required files before analysis.");
-        setUploading(false);
-        return;
-      }
+  // ✅ Basic validation — allow .csv, .xls, .xlsx
+  const validFiles = files.filter((file) => {
+    const name = file.name.toLowerCase();
+    if (type === "payroll" && name.includes("pay journal")) return true;
+    if (type === "people" && name.includes("people - team members")) return true;
+    if (type === "employee" && name.includes("employeeupdate")) return true;
+    return false;
+  });
 
-      // ✅ Prepare FormData
-      const formData = new FormData();
-      inputs.forEach((input) => {
-        Array.from(input.files).forEach((file) => {
-          formData.append("files", file);
-        });
-      });
+  if (validFiles.length === 0) {
+    alert(
+      `❌ Invalid files for ${type.toUpperCase()}.\n\nPlease upload:\n- Payroll: file(s) containing "Pay Journal"\n- People: file(s) containing "People - Team Members"\n- Employee Update: file(s) containing "EmployeeUpdate"`
+    );
+    e.target.value = "";
+    return;
+  }
 
-      console.log("📦 Sending all 3 files types to upload API...");
-
-      // ✅ Call the upload endpoint
-      const res = await fetch(
-        "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/upload-latest",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      const data = await res.json();
-      console.log("📤 Upload API response:", data);
-
-      if (!res.ok) {
-        throw new Error(data.error || "Upload failed");
-      }
-
-      alert("✅ All files uploaded successfully!");
-    } catch (err) {
-      console.error("❌ Error uploading files:", err);
-      alert("Something went wrong while uploading files.");
-    }
-    finally {
-      setUploading(false);
-    }
-  };
-
-  const handleFileChange = async (e, type) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
-
-    // ✅ Filter valid files based on naming rules
-    const validFiles = files.filter((file) => {
-      const name = file.name.toLowerCase();
-      if (type === "payroll" && name.includes("pay journal")) return true;
-      if (type === "people" && name.includes("people - team members")) return true;
-      if (type === "employee" && name.includes("employeeupdate")) return true;
-      return false;
-    });
-
-    if (validFiles.length === 0) {
-      alert(
-        `❌ Invalid files for ${type.toUpperCase()}.\n\nPlease upload:\n- Payroll: file(s) containing "Pay Journal"\n- People: file(s) containing "People - Team Members"\n- Employee Update: file(s) containing "EmployeeUpdate"`
-      );
-      e.target.value = "";
-      return;
-    }
-
-    // ✅ Update this tab’s file list
-    updateTab({
-      fileNames: {
-        ...activeTabData.fileNames,
-        [type]: validFiles.map((f) => f.name),
-      },
-    });
-
-    console.log(`✅ Valid ${type} files uploaded:`, validFiles.map((f) => f.name));
-
-    // ✅ Auto-upload when all types are uploaded
-    const { payroll, people, employee } = {
+  // ✅ Update this tab’s file list
+  updateTab({
+    fileNames: {
       ...activeTabData.fileNames,
       [type]: validFiles.map((f) => f.name),
-    };
+    },
+  });
 
-    if (payroll.length && people.length && employee.length) {
-      console.log("🚀 All required files uploaded — starting automatic upload...");
-      await uploadAllFiles();
-    }
-  };
+  console.log(`✅ Selected ${type} files:`, validFiles.map((f) => f.name));
+};
 
 
 
-  // -------------------- ANALYSE HANDLER --------------------
-  const handleAnalyse = async () => {
-    if (!activeTabData) return;
 
-    const {
-      startDate,
-      endDate,
-      selectedState,
-      selectedDepartment,
-      selectedRole,
-      selectedEmploymentType,
-      fileNames,
-    } = activeTabData;
+const handleAnalyse = async () => {
+  if (!activeTabData) return;
 
-    // ✅ Basic checks
-    if (!startDate || !endDate) {
-      alert("Please select a date range first!");
-      return;
-    }
+  const {
+    startDate,
+    endDate,
+    selectedState,
+    selectedDepartment,
+    selectedRole,
+    selectedEmploymentType,
+  } = activeTabData;
 
-    // ✅ Ensure all 3 required files were uploaded
-    if (
-      !fileNames.payroll.length ||
-      !fileNames.people.length ||
-      !fileNames.employee.length
-    ) {
-      alert("⚠️ Please upload all three required files before analyzing!");
-      return;
-    }
+  // ✅ Basic check for date range
+  if (!startDate || !endDate) {
+    alert("Please select a date range first!");
+    return;
+  }
 
-    try {
-      setLoading(true);
-      updateTab({ stage: "loading", error: null });
-      console.log("🚀 Starting analysis process for tab:", activeTab);
+  try {
+    setLoading(true);
+    updateTab({ stage: "loading", error: null });
+    console.log("🚀 Starting analysis process for tab:", activeTab);
 
-      // ✅ Build query parameters
-      const query = new URLSearchParams({
-        start: startDate.toISOString().split("T")[0],
-        end: endDate.toISOString().split("T")[0],
-      });
+    // -------------------------
+    // STEP 1️⃣: Upload files if any
+    // -------------------------
+    const inputs = ["payroll", "people", "employee"].map((type) =>
+      document.querySelector(
+        `input[data-type="${type}"][data-tab="${activeTab}"]`
+      )
+    );
 
-      if (selectedState.length)
-        query.append("state", selectedState.map((s) => s.value).join(","));
-      if (selectedDepartment.length)
-        query.append("department", selectedDepartment.map((d) => d.value).join(","));
-      if (selectedEmploymentType.length)
-        query.append("employmentType", selectedEmploymentType.map((e) => e.value).join(","));
-      if (selectedRole.length)
-        query.append("role", selectedRole.map((r) => r.value).join(","));
+    // ✅ Check if any file is present
+    const hasFilesToUpload = inputs.some(
+      (input) => input && input.files && input.files.length > 0
+    );
 
-      const url = `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/filter?${query.toString()}`;
-      console.log("🌐 Calling analyze API:", url);
+    if (hasFilesToUpload) {
+      try {
+        setUploading(true);
+        console.log("📦 Uploading files before analysis...");
 
-      // ✅ Call the analysis endpoint
-      const analyzeRes = await fetch(url);
-      const analyzeData = await analyzeRes.json();
-      console.log("📊 Analyze API response:", analyzeData);
+        const formData = new FormData();
+        inputs.forEach((input) => {
+          if (input && input.files.length > 0) {
+            Array.from(input.files).forEach((file) => {
+              formData.append("files", file);
+            });
+          }
+        });
 
-      if (!analyzeRes.ok || !analyzeData.analysisResult) {
-        throw new Error(analyzeData.error || "Analysis failed. No valid response received.");
+        const uploadRes = await fetch(
+          "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/upload-latest",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        const uploadData = await uploadRes.json();
+        console.log("📤 Upload API response:", uploadData);
+
+        if (!uploadRes.ok) {
+          throw new Error(uploadData.error || "File upload failed.");
+        }
+
+        console.log("✅ Files uploaded successfully before analysis.");
+      } catch (uploadErr) {
+        console.error("❌ Upload failed:", uploadErr);
+        alert("Some files failed to upload. Continuing with existing data...");
+      } finally {
+        setUploading(false);
       }
-
-      console.log("✅ Analysis data received successfully.");
-      updateTab({ analysisData: analyzeData.analysisResult, stage: "overview" });
-    } catch (err) {
-      console.error("❌ Error in handleAnalyse:", err);
-      updateTab({ error: err.message, stage: "filters" });
-      alert("Something went wrong: " + err.message);
-    } finally {
-      setLoading(false);
+    } else {
+      console.log("📂 No files selected. Proceeding with existing data...");
     }
-  };
+
+    // -------------------------
+    // STEP 2️⃣: Run analysis API
+    // -------------------------
+    const query = new URLSearchParams({
+      start: startDate.toISOString().split("T")[0],
+      end: endDate.toISOString().split("T")[0],
+    });
+
+    if (selectedState.length)
+      query.append("state", selectedState.map((s) => s.value).join(","));
+    if (selectedDepartment.length)
+      query.append("department", selectedDepartment.map((d) => d.value).join(","));
+    if (selectedEmploymentType.length)
+      query.append("employmentType", selectedEmploymentType.map((e) => e.value).join(","));
+    if (selectedRole.length)
+      query.append("role", selectedRole.map((r) => r.value).join(","));
+
+    const url = `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/filter?${query.toString()}`;
+    console.log("🌐 Calling analyze API:", url);
+
+    const analyzeRes = await fetch(url);
+    const analyzeData = await analyzeRes.json();
+    console.log("📊 Analyze API response:", analyzeData);
+
+    if (!analyzeRes.ok || !analyzeData.analysisResult) {
+      throw new Error(analyzeData.error || "Analysis failed. No valid response received.");
+    }
+
+    console.log("✅ Analysis data received successfully.");
+    updateTab({ analysisData: analyzeData.analysisResult, stage: "overview" });
+  } catch (err) {
+    console.error("❌ Error in handleAnalyse:", err);
+    updateTab({ error: err.message, stage: "filters" });
+    alert("Something went wrong: " + err.message);
+  } finally {
+    setLoading(false);
+    setUploading(false);
+  }
+};
+
+
 
 
   // -------------------- SAVE HANDLER --------------------
