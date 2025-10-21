@@ -173,7 +173,7 @@ export default function TlcCustomerReporting(props) {
         });
       });
 
-      console.log("📦 Sending all 3 files to upload API...");
+      console.log("📦 Sending all 3 files types to upload API...");
 
       // ✅ Call the upload endpoint
       const res = await fetch(
@@ -201,43 +201,41 @@ export default function TlcCustomerReporting(props) {
     }
   };
 
-  // -------------------- FILE HANDLER --------------------
   const handleFileChange = async (e, type) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
-    const file = files[0]; // only one file needed for each section
-    const fileName = file.name;
+    // ✅ Filter valid files based on naming rules
+    const validFiles = files.filter((file) => {
+      const name = file.name.toLowerCase();
+      if (type === "payroll" && name.includes("pay journal")) return true;
+      if (type === "people" && name.includes("people - team members")) return true;
+      if (type === "employee" && name.includes("employeeupdate")) return true;
+      return false;
+    });
 
-    // ✅ Validate based on section
-    const validationRules = {
-      payroll: fileName.includes("Pay Journal"),
-      people: fileName.includes("People - Team Members"),
-      employee: fileName.includes("EmployeeUpdate"),
-    };
-
-    if (!validationRules[type]) {
+    if (validFiles.length === 0) {
       alert(
-        `❌ Invalid file selected for ${type.toUpperCase()}.\n\nPlease upload:\n- Payroll: file containing "Pay Journal"\n- People: file containing "People - Team Members"\n- Employee Update: file containing "EmployeeUpdate"`
+        `❌ Invalid files for ${type.toUpperCase()}.\n\nPlease upload:\n- Payroll: file(s) containing "Pay Journal"\n- People: file(s) containing "People - Team Members"\n- Employee Update: file(s) containing "EmployeeUpdate"`
       );
-      e.target.value = ""; // reset invalid file
+      e.target.value = "";
       return;
     }
 
-    // ✅ Update state for this tab
+    // ✅ Update this tab’s file list
     updateTab({
       fileNames: {
         ...activeTabData.fileNames,
-        [type]: [fileName],
+        [type]: validFiles.map((f) => f.name),
       },
     });
 
-    console.log(`✅ Valid ${type} file uploaded:`, fileName);
+    console.log(`✅ Valid ${type} files uploaded:`, validFiles.map((f) => f.name));
 
-    // ✅ Check if all three required files are uploaded
+    // ✅ Auto-upload when all types are uploaded
     const { payroll, people, employee } = {
       ...activeTabData.fileNames,
-      [type]: [fileName], // include the new one
+      [type]: validFiles.map((f) => f.name),
     };
 
     if (payroll.length && people.length && employee.length) {
@@ -245,6 +243,7 @@ export default function TlcCustomerReporting(props) {
       await uploadAllFiles();
     }
   };
+
 
 
   // -------------------- ANALYSE HANDLER --------------------
@@ -440,7 +439,7 @@ export default function TlcCustomerReporting(props) {
   };
 
   const formatDateRange = () => {
-    if (!activeTabData || !activeTabData.startDate || !activeTabData.endDate) return "Select Date Range";
+    if (!activeTabData || !activeTabData.startDate || !activeTabData.endDate) return "Selected Date Range";
     return `${activeTabData.startDate.toLocaleDateString()} - ${activeTabData.endDate.toLocaleDateString()}`;
   };
 
@@ -478,16 +477,20 @@ export default function TlcCustomerReporting(props) {
             cursor: "pointer",
           }}
         >
-          <span
-            style={{
-              color: selected.length === 0 ? "#999" : "#000",
-            }}
-          >
+          <span style={{ color: selected.length === 0 ? "#ccc" : "#000", fontFamily: 'Inter' }}>
             {selected.length === 0
               ? placeholder
               : selected.length === 1
                 ? selected[0].label
-                : `${selected[0].label} +${selected.length - 1}`}
+                : (
+                  <>
+                    {selected[0].label}{" "}
+                    <span style={{ color: "#EA7323", fontSize: "12px", fontFamily: 'Inter' }}>
+                      +{selected.length - 1}
+                    </span>
+                  </>
+                )
+            }
           </span>
           <FiChevronDown
             style={{
@@ -798,38 +801,43 @@ export default function TlcCustomerReporting(props) {
 
   return (
     <div className="page-containersss">
-      {renderTabBar()}
-
-      <header className="header">
+      <div className="headerss">
         <div className="left-headerss">
           <img src={TLCLogo} alt="Logo" className="tlclogo" />
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <div className="date-text">{formatDateRange()}</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <div className="date-text">{formatDateRange()}</div>
+              {renderTabBar()}
+            </div>
+            <button
+              className="save-btnss"
+              onClick={handleSaveToDatabase}
+              disabled={saving}
+            >
+              {saving ? "Processing..." : "Save to Database"}
+            </button>
           </div>
         </div>
-        <button
-          className="save-btn"
-          onClick={handleSaveToDatabase}
-          disabled={saving}
-        >
-          {saving ? "Processing..." : "Save to Database"}
-        </button>
-      </header>
+
+      </div>
 
       <section className="filters-card">
         <div className="filters-header">Filters</div>
         <div className="filters-grid">
-          <DatePicker
-            selectsRange
-            startDate={activeTabData.startDate}
-            endDate={activeTabData.endDate}
-            onChange={(dates) => {
-              const [start, end] = dates;
-              updateTab({ startDate: start, endDate: end });
-            }}
-            placeholderText="Select Date Range"
-            className="filter-input"
-          />
+          <div>
+            <DatePicker
+              selectsRange
+              startDate={activeTabData.startDate}
+              endDate={activeTabData.endDate}
+              onChange={(dates) => {
+                const [start, end] = dates;
+                updateTab({ startDate: start, endDate: end });
+              }}
+              placeholderText="Select Date Range"
+              className="filter-input"
+              dateFormat="dd/MM/yy"
+            />
+          </div>
 
           <MultiSelectCustom
             options={optionsState}
@@ -865,7 +873,7 @@ export default function TlcCustomerReporting(props) {
           { key: "employee", label: "Employee Update Data" },
         ].map((item) => (
           <div key={item.key}>
-            <div style={{ textAlign: "left", fontSize: "12px", fontFamily: "Inter" }}>
+            <div style={{ textAlign: "left", fontSize: "12px", fontFamily: "Inter", fontWeight: '500' }}>
               Upload {item.label}
             </div>
             <div className="upload-boxes">
@@ -873,11 +881,12 @@ export default function TlcCustomerReporting(props) {
                 <input
                   type="file"
                   multiple
-                  accept=".xlsx, .xls"
+                  accept=".xlsx, .xls, .csv"
                   data-type={item.key}
                   data-tab={activeTab}
                   onChange={(e) => handleFileChange(e, item.key)}
                 />
+
 
                 <div className="upload-content">
                   <div className="uploadss-iconss">
@@ -901,7 +910,7 @@ export default function TlcCustomerReporting(props) {
                     )}
                   </p>
 
-                  <small>.XLSX, .XLS</small>
+                  <small>.XLSX, .XLS, .CSV</small>
                 </div>
               </label>
             </div>

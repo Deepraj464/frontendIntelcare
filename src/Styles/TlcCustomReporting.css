@@ -33,6 +33,7 @@ body {
   font-weight: 500;
   font-family: "Inter";
   margin-right: 10px;
+  color: #8F8F8F;
 }
 
 .new-tab-btn {
@@ -44,8 +45,8 @@ body {
   box-shadow: 0px 2px 1px 0px #0000000a;
 }
 
-.save-btn {
-  background: #e7743d;
+.save-btnss {
+  background: #EA7323;
   color: white;
   border: none;
   border-radius: 6px;
@@ -130,12 +131,14 @@ body {
 
 .upload-boxes input {
   display: none;
+  cursor: pointer;
 }
 
 .upload-content {
   color: #444;
   font-size: 14px;
   font-family: "Inter";
+  cursor: pointer;
 }
 
 .uploadss-iconss {
@@ -146,7 +149,7 @@ body {
 }
 
 .upload-content span {
-  color: #e7743d;
+  color: #EA7323;
 }
 
 /* ---------------- SEARCH ---------------- */
@@ -156,7 +159,7 @@ body {
 }
 
 .search-btn {
-  background: #e7743d;
+  background: #EA7323;
   color: white;
   border: none;
   padding: 12px 40px;
@@ -438,7 +441,7 @@ body {
 
 .back-btn:hover,
 .next-btn:hover {
-  background: #e7743d;
+  background: #EA7323;
 }
 body {
   background: #fffdfc;
@@ -487,7 +490,7 @@ body {
 }
 
 .save-btn {
-  background: #e7743d;
+  background: #EA7323;
   color: white;
   border: none;
   border-radius: 6px;
@@ -567,7 +570,7 @@ body {
   text-align: center;
   padding: 14px;
   cursor: pointer;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .upload-boxes input {
@@ -588,7 +591,7 @@ body {
 }
 
 .upload-content span {
-  color: #e7743d;
+  color: #EA7323;
 }
 
 /* ---------------- SEARCH ---------------- */
@@ -598,7 +601,7 @@ body {
 }
 
 .search-btn {
-  background: #e7743d;
+  background: #EA7323;
   color: white;
   border: none;
   padding: 12px 40px;
@@ -880,7 +883,7 @@ body {
 
 .back-btn:hover,
 .next-btn:hover {
-  background: #e7743d;
+  background: #EA7323;
 }
 
 /* ---------------- RESPONSIVE ---------------- */
