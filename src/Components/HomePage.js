@@ -31,6 +31,7 @@ import SoftwareConnect from "./Modules/ConnectModule/SoftwareConnect";
 import RosteringDashboard from "./Modules/RosteringModule/SmartRostering";
 import HRAnalysis from "./Modules/SupportAtHomeModule.js/HRAnalysis";
 import IncidentAuditing from "./Modules/NDISModule/IncidentAuditing";
+import TlcCustomerReporting from "./Modules/FinancialModule/TlcCustomReporting";
 
 const HomePage = () => {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -187,7 +188,10 @@ const HomePage = () => {
                 </div>
 
                 <div style={{ display: selectedRole === "Custom Reporting" ? "block" : "none" }}>
-                  <CustomReporting selectedRole="Custom Reporting" handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} />
+                  {/* <CustomReporting selectedRole="Custom Reporting" handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} /> */}
+                  <div style={{display:'flex'}}>
+                  <TlcCustomerReporting user={user}/>
+                  </div>
                 </div>
 
                 <div style={{ display: selectedRole === "Smart Onboarding (Staff)" ? "block" : "none" }}>
