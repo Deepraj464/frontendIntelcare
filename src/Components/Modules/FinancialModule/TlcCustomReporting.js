@@ -1036,6 +1036,7 @@ export default function TlcCustomerReporting(props) {
             )}
 
             <div className="nav-buttons">
+              {/* Back button for Page 2 and 3 */}
               {activeTabData.currentPage > 1 && (
                 <button
                   className="back-btn"
@@ -1045,16 +1046,39 @@ export default function TlcCustomerReporting(props) {
                 </button>
               )}
 
-              {activeTabData.analysisData.pages?.[`page ${activeTabData.currentPage + 1}`] && (
+              {/* Conditional Next Buttons */}
+              {activeTabData.currentPage === 1 && (
                 <button
                   className="next-btn"
-                  onClick={() => updateTab({ currentPage: activeTabData.currentPage + 1 })}
-                  style={{ marginLeft: "auto" }}
+                  onClick={() => updateTab({ currentPage: 2 })}
+                  style={{
+                    marginLeft: "auto",
+                    background: "#f97316",
+                    color: "#fff",
+                    fontWeight: 600,
+                  }}
                 >
-                  Next →
+                  View Detailed Breakdown →
+                </button>
+              )}
+
+              {activeTabData.currentPage === 2 && (
+                <button
+                  className="next-btn"
+                  onClick={() => updateTab({ currentPage: 3 })}
+                  style={{
+                    marginLeft: "auto",
+                    background: "#f97316",
+                    color: "#fff",
+                    fontWeight: 600,
+                  }}
+                >
+                  View Leave Summary →
                 </button>
               )}
             </div>
+
+
           </section>
         )}
 
