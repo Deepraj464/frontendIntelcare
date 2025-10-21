@@ -7,19 +7,73 @@ import UploadTlcIcon from "../../../Images/UploadTlcIcon.png";
 import { FiChevronDown } from "react-icons/fi";
 
 export default function TlcCustomerReporting(props) {
-  console.log("props", props)
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [selectedState, setSelectedState] = useState([]);
-  const [selectedDepartment, setSelectedDepartment] = useState([]);
-  const [selectedRole, setSelectedRole] = useState([]);
-  const [selectedEmploymentType, setSelectedEmploymentType] = useState([]);
-  const [fileNames, setFileNames] = useState({
-    payroll: [],
-    people: [],
-    employee: [],
-  });
+  console.log("props", props);
+  const [uploading, setUploading] = useState(false);
 
+  // -------------------- MULTI TAB SUPPORT --------------------
+  const [tabs, setTabs] = useState([
+    {
+      id: 1,
+      name: "Tab 1",
+      startDate: null,
+      endDate: null,
+      selectedState: [],
+      selectedDepartment: [],
+      selectedRole: [],
+      selectedEmploymentType: [],
+      fileNames: { payroll: [], people: [], employee: [] },
+      stage: "filters",
+      analysisData: null,
+      error: null,
+      currentPage: 1,
+    },
+  ]);
+  const [activeTab, setActiveTab] = useState(1);
+  const activeTabData = tabs.find((t) => t.id === activeTab);
+
+  const updateTab = (updates) => {
+    setTabs((prev) =>
+      prev.map((t) => (t.id === activeTab ? { ...t, ...updates } : t))
+    );
+  };
+
+  const handleNewTab = () => {
+    const newId = tabs.length ? Math.max(...tabs.map((t) => t.id)) + 1 : 1;
+    const newTab = {
+      id: newId,
+      name: `Tab ${newId}`,
+      startDate: null,
+      endDate: null,
+      selectedState: [],
+      selectedDepartment: [],
+      selectedRole: [],
+      selectedEmploymentType: [],
+      fileNames: { payroll: [], people: [], employee: [] },
+      stage: "filters",
+      analysisData: null,
+      error: null,
+      currentPage: 1,
+    };
+    console.log("Creating new tab:", newTab);
+    setTabs((prev) => [...prev, newTab]);
+    setActiveTab(newId);
+  };
+
+  const handleCloseTab = (id) => {
+    console.log("Closing tab:", id);
+    const remainingTabs = tabs.filter((t) => t.id !== id);
+    setTabs(remainingTabs);
+    if (id === activeTab && remainingTabs.length > 0) {
+      setActiveTab(remainingTabs[0].id);
+    }
+  };
+  // ------------------------------------------------------------
+
+  // -------------------- BASE STATES --------------------
+  const [historyList, setHistoryList] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const optionsState = [
     { label: "New South Wales", value: "New South Wales" },
@@ -93,81 +147,142 @@ export default function TlcCustomerReporting(props) {
     { label: "Full Time", value: "Full Time" },
     { label: "Part Time", value: "Part Time" },
   ];
-  const [loading, setLoading] = useState(false);
-  const [stage, setStage] = useState("filters"); // filters | loading | overview | breakdown
+  // -------------------- AUTOMATIC UPLOAD HANDLER --------------------
+  const uploadAllFiles = async () => {
+    try {
+      setUploading(true);
+      const { fileNames } = activeTabData;
 
-  // API response data
-  const [analysisData, setAnalysisData] = useState(null);
+      // Get actual <input> elements by tab + type
+      const inputs = ["payroll", "people", "employee"].map((type) =>
+        document.querySelector(`input[data-type="${type}"][data-tab="${activeTab}"]`)
+      );
 
-  // track if there’s an error
-  const [error, setError] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [historyList, setHistoryList] = useState([]);
-  const [loadingHistory, setLoadingHistory] = useState(false);
-  const [saving, setSaving] = useState(false);
+      // Validate that all are filled
+      if (inputs.some((input) => !input || !input.files.length)) {
+        alert("⚠️ Please upload all three required files before analysis.");
+        setUploading(false);
+        return;
+      }
 
-  const handleFileChange = (e, type) => {
-    const files = Array.from(e.target.files); // 👈 convert FileList to Array
-    if (files.length > 0) {
-      setFileNames((prev) => ({
-        ...prev,
-        [type]: files.map((f) => f.name),
-      }));
+      // ✅ Prepare FormData
+      const formData = new FormData();
+      inputs.forEach((input) => {
+        Array.from(input.files).forEach((file) => {
+          formData.append("files", file);
+        });
+      });
+
+      console.log("📦 Sending all 3 files to upload API...");
+
+      // ✅ Call the upload endpoint
+      const res = await fetch(
+        "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/upload-latest",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await res.json();
+      console.log("📤 Upload API response:", data);
+
+      if (!res.ok) {
+        throw new Error(data.error || "Upload failed");
+      }
+
+      alert("✅ All files uploaded successfully!");
+    } catch (err) {
+      console.error("❌ Error uploading files:", err);
+      alert("Something went wrong while uploading files.");
+    }
+    finally {
+      setUploading(false);
+    }
+  };
+
+  // -------------------- FILE HANDLER --------------------
+  const handleFileChange = async (e, type) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    const file = files[0]; // only one file needed for each section
+    const fileName = file.name;
+
+    // ✅ Validate based on section
+    const validationRules = {
+      payroll: fileName.includes("Pay Journal"),
+      people: fileName.includes("People - Team Members"),
+      employee: fileName.includes("EmployeeUpdate"),
+    };
+
+    if (!validationRules[type]) {
+      alert(
+        `❌ Invalid file selected for ${type.toUpperCase()}.\n\nPlease upload:\n- Payroll: file containing "Pay Journal"\n- People: file containing "People - Team Members"\n- Employee Update: file containing "EmployeeUpdate"`
+      );
+      e.target.value = ""; // reset invalid file
+      return;
+    }
+
+    // ✅ Update state for this tab
+    updateTab({
+      fileNames: {
+        ...activeTabData.fileNames,
+        [type]: [fileName],
+      },
+    });
+
+    console.log(`✅ Valid ${type} file uploaded:`, fileName);
+
+    // ✅ Check if all three required files are uploaded
+    const { payroll, people, employee } = {
+      ...activeTabData.fileNames,
+      [type]: [fileName], // include the new one
+    };
+
+    if (payroll.length && people.length && employee.length) {
+      console.log("🚀 All required files uploaded — starting automatic upload...");
+      await uploadAllFiles();
     }
   };
 
 
-  // const handleAnalyse = () => {
-  //   alert("Analysing with applied filters...");
-  // };
-
+  // -------------------- ANALYSE HANDLER --------------------
   const handleAnalyse = async () => {
+    if (!activeTabData) return;
+
+    const {
+      startDate,
+      endDate,
+      selectedState,
+      selectedDepartment,
+      selectedRole,
+      selectedEmploymentType,
+      fileNames,
+    } = activeTabData;
+
+    // ✅ Basic checks
     if (!startDate || !endDate) {
       alert("Please select a date range first!");
       return;
     }
 
+    // ✅ Ensure all 3 required files were uploaded
+    if (
+      !fileNames.payroll.length ||
+      !fileNames.people.length ||
+      !fileNames.employee.length
+    ) {
+      alert("⚠️ Please upload all three required files before analyzing!");
+      return;
+    }
+
     try {
       setLoading(true);
-      setError(null);
-      setStage("loading");
-      console.log("🚀 Starting analysis process...");
+      updateTab({ stage: "loading", error: null });
+      console.log("🚀 Starting analysis process for tab:", activeTab);
 
-      // Step 1: Prepare FormData for all selected files
-      const formData = new FormData();
-      Object.keys(fileNames).forEach((key) => {
-        const input = document.querySelector(`input[data-type="${key}"]`);
-        if (input && input.files.length > 0) {
-          Array.from(input.files).forEach((file) => {
-            formData.append("files", file);
-          });
-          console.log(`📦 Added ${input.files.length} ${key} file(s) to FormData`);
-        } else {
-          console.warn(`⚠️ No files found for ${key}`);
-        }
-      });
-
-      if (![...formData.keys()].length) {
-        alert("Please upload at least one file before analyzing!");
-        setLoading(false);
-        setStage("filters");
-        return;
-      }
-
-      // Step 2: Upload files
-      console.log("📤 Uploading files...");
-      const uploadRes = await fetch("https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/upload-latest", {
-        method: "POST",
-        body: formData,
-      });
-      const uploadData = await uploadRes.json();
-      console.log("uploaded data", uploadData)
-      if (!uploadRes.ok) {
-        throw new Error(uploadData.error || "File upload failed.");
-      }
-      console.log("✅ Files uploaded successfully.");
-
-      // Step 3: Build filter query params
+      // ✅ Build query parameters
       const query = new URLSearchParams({
         start: startDate.toISOString().split("T")[0],
         end: endDate.toISOString().split("T")[0],
@@ -185,70 +300,39 @@ export default function TlcCustomerReporting(props) {
       const url = `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/filter?${query.toString()}`;
       console.log("🌐 Calling analyze API:", url);
 
-      // Step 4: Fetch analyze data
+      // ✅ Call the analysis endpoint
       const analyzeRes = await fetch(url);
       const analyzeData = await analyzeRes.json();
-      console.log("analyze data", analyzeData)
+      console.log("📊 Analyze API response:", analyzeData);
+
       if (!analyzeRes.ok || !analyzeData.analysisResult) {
-        throw new Error("Analysis failed. No valid response received.");
+        throw new Error(analyzeData.error || "Analysis failed. No valid response received.");
       }
 
       console.log("✅ Analysis data received successfully.");
-      setAnalysisData(analyzeData.analysisResult);
-      setStage("overview");
+      updateTab({ analysisData: analyzeData.analysisResult, stage: "overview" });
     } catch (err) {
       console.error("❌ Error in handleAnalyse:", err);
-      setError(err.message);
-      setStage("filters");
+      updateTab({ error: err.message, stage: "filters" });
       alert("Something went wrong: " + err.message);
     } finally {
       setLoading(false);
     }
   };
-  // ✅ Fetch user history when component loads
-  useEffect(() => {
-    const fetchHistory = async () => {
-      const email = props.user?.email?.trim().toLowerCase();
-      if (!email) return;
-      try {
-        setLoadingHistory(true);
-        const res = await fetch(`https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/history?email=${email}`);
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Failed to fetch history");
-        setHistoryList(data.data);
-      } catch (err) {
-        console.error("❌ Error fetching history:", err);
-      } finally {
-        setLoadingHistory(false);
-      }
-    };
 
 
-    fetchHistory();
-  }, [props.user]);
-  const handleHistoryClick = async (item) => {
-    try {
-      console.log("📥 Fetching full analysis for:", item.id);
-
-      const res = await fetch(
-        `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/getById/${item.id}`
-      );
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error || "Failed to fetch analysis");
-
-      console.log("✅ Loaded analysis data:", data.data);
-      setAnalysisData(data.data.analysisResult);
-      setStage("overview");
-      setCurrentPage(1);
-    } catch (err) {
-      console.error("❌ Error loading analysis:", err);
-      alert("Failed to load analysis: " + err.message);
-    }
-  };
-
-
+  // -------------------- SAVE HANDLER --------------------
   const handleSaveToDatabase = async () => {
+    if (!activeTabData) return;
+
+    // ✅ If loaded from history, block saving again
+    if (activeTabData.isFromHistory) {
+      alert("⚠️ This analysis is already saved in the database.");
+      return;
+    }
+
+    const { analysisData, startDate, endDate, selectedState, selectedDepartment, selectedRole, selectedEmploymentType } = activeTabData;
+
     if (!analysisData) {
       alert("No analysis data found. Please run an analysis first.");
       return;
@@ -262,9 +346,8 @@ export default function TlcCustomerReporting(props) {
 
     setSaving(true);
     try {
-      console.log("📤 Saving analysis data to database...");
+      console.log("📤 Saving analysis data to database for tab:", activeTab);
 
-      // 🟢 Attach filters inside analysisData itself
       const enrichedAnalysis = {
         ...analysisData,
         filters: {
@@ -283,14 +366,13 @@ export default function TlcCustomerReporting(props) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            analysisData: enrichedAnalysis, // ✅ merged version
+            analysisData: enrichedAnalysis,
             email,
           }),
         }
       );
 
       const result = await response.json();
-
       if (!response.ok) {
         console.error("❌ Failed to save:", result.error);
         alert(`Error: ${result.error || "Failed to save data."}`);
@@ -299,6 +381,8 @@ export default function TlcCustomerReporting(props) {
 
       console.log("✅ Save response:", result);
       alert("✅ Analysis data saved successfully!");
+      // ✅ Optional: Mark as saved to prevent double-save
+      updateTab({ isFromHistory: true });
     } catch (err) {
       console.error("❌ Error saving data:", err);
       alert("Something went wrong while saving data.");
@@ -308,12 +392,56 @@ export default function TlcCustomerReporting(props) {
   };
 
 
+  // -------------------- HISTORY FETCH --------------------
+  useEffect(() => {
+    const fetchHistory = async () => {
+      const email = props.user?.email?.trim().toLowerCase();
+      if (!email) return;
+      try {
+        setLoadingHistory(true);
+        const res = await fetch(`https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/history?email=${email}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to fetch history");
+        setHistoryList(data.data);
+      } catch (err) {
+        console.error("❌ Error fetching history:", err);
+      } finally {
+        setLoadingHistory(false);
+      }
+    };
 
+    fetchHistory();
+  }, [props.user]);
 
+  // -------------------- HISTORY CLICK --------------------
+  const handleHistoryClick = async (item) => {
+    try {
+      console.log("📥 Fetching full analysis for:", item.id);
+
+      const res = await fetch(
+        `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/getById/${item.id}`
+      );
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "Failed to fetch analysis");
+
+      console.log("✅ Loaded analysis data:", data.data);
+      updateTab({
+        analysisData: data.data.analysisResult,
+        stage: "overview",
+        currentPage: 1,
+        isFromHistory: true, // ✅ mark as loaded from history
+      });
+
+    } catch (err) {
+      console.error("❌ Error loading analysis:", err);
+      alert("Failed to load analysis: " + err.message);
+    }
+  };
 
   const formatDateRange = () => {
-    if (!startDate || !endDate) return "Select Date Range";
-    return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+    if (!activeTabData || !activeTabData.startDate || !activeTabData.endDate) return "Select Date Range";
+    return `${activeTabData.startDate.toLocaleDateString()} - ${activeTabData.endDate.toLocaleDateString()}`;
   };
 
   // ------------------- CUSTOM MULTISELECT -------------------
@@ -340,7 +468,6 @@ export default function TlcCustomerReporting(props) {
 
     return (
       <div className="custom-multiselect" ref={ref}>
-        {/* Input Box */}
         <div
           className="custom-input"
           onClick={() => setOpen(!open)}
@@ -353,7 +480,7 @@ export default function TlcCustomerReporting(props) {
         >
           <span
             style={{
-              color: selected.length === 0 ? "#999" : "#000", // Placeholder gray, selected black
+              color: selected.length === 0 ? "#999" : "#000",
             }}
           >
             {selected.length === 0
@@ -370,7 +497,6 @@ export default function TlcCustomerReporting(props) {
           />
         </div>
 
-        {/* Dropdown Options */}
         {open && (
           <div className="options-dropdown">
             {options.map((option) => {
@@ -397,8 +523,6 @@ export default function TlcCustomerReporting(props) {
     );
   };
 
-
-
   const PlotlyChart = React.memo(({ chartHTML, id }) => {
     const containerRef = useRef(null);
     const renderedRef = useRef(false);
@@ -408,10 +532,9 @@ export default function TlcCustomerReporting(props) {
       const container = containerRef.current;
       if (!container || !chartHTML || renderedRef.current) return;
 
-      // Create a safe inner wrapper
       const innerWrapper = document.createElement("div");
       innerWrapper.className = "chart-inner";
-      container.replaceChildren(innerWrapper); // safe reset
+      container.replaceChildren(innerWrapper);
 
       const renderChart = async () => {
         const virtualDOM = document.createElement("div");
@@ -420,10 +543,8 @@ export default function TlcCustomerReporting(props) {
         const scripts = Array.from(virtualDOM.querySelectorAll("script"));
         scripts.forEach((s) => s.remove());
 
-        // Inject static content inside the inner wrapper only
         innerWrapper.innerHTML = virtualDOM.innerHTML;
 
-        // Execute inline & external scripts safely
         for (const script of scripts) {
           await new Promise((resolve) => {
             const newScript = document.createElement("script");
@@ -450,29 +571,39 @@ export default function TlcCustomerReporting(props) {
         requestAnimationFrame(() => {
           const plots = innerWrapper.querySelectorAll(".plotly-graph-div");
           plots.forEach((div) => {
-            const isTable = div.classList.contains("plotly-table");
-
-            // ✅ Differentiate charts vs tables
-            div.style.scale = isTable ? "1" : "0.55";
-            div.style.transformOrigin = "top center";
-            div.style.transition = "scale 0.4s ease, opacity 0.6s ease";
-            div.style.opacity = "1";
-            div.style.width = "100%";
-            div.style.height = isTable ? "480px" : "260px"; // 🟢 tables taller
-            div.style.marginTop = isTable ? "40px" : "0"; // 🟢 spacing above tables
-
-            // ✅ Add top margin *inside* actual chart (not the box)
-            if (!isTable) {
-              div.querySelectorAll("svg, canvas").forEach((el) => {
-                el.style.marginTop = "250px"; // 🟢 add space inside actual chart area
-              });
+            const isTable =
+              id.startsWith("table-") ||
+              id.includes("leave") ||
+              chartHTML.toLowerCase().includes("employee leave") ||
+              chartHTML.includes("<table");
+            console.log("Detected table for", id, "→", isTable);
+            if (isTable) {
+              div.style.scale = "1.2";
+              div.style.width = "95%";
+              div.style.height = "600px";
+              div.style.margin = "40px auto";
+              div.style.transformOrigin = "top center";
+              div.style.transition = "all 0.4s ease";
+              div.style.fontSize = "14px";
+            } else {
+              div.style.scale = "0.55";
+              div.style.width = "100%";
+              div.style.height = "260px";
+              div.style.marginTop = "0";
+              div.style.transformOrigin = "top center";
+              div.style.transition = "scale 0.4s ease, opacity 0.6s ease";
             }
 
+            div.style.opacity = "1";
             div.parentElement.style.overflow = "hidden";
+
+            if (!isTable) {
+              div.querySelectorAll("svg, canvas").forEach((el) => {
+                el.style.marginTop = "250px";
+              });
+            }
           });
         });
-
-
 
         renderedRef.current = true;
       };
@@ -493,7 +624,6 @@ export default function TlcCustomerReporting(props) {
 
       return () => {
         observer.disconnect();
-        // ✅ Clear only inner wrapper safely (no removeChild conflicts)
         if (container.contains(innerWrapper)) {
           container.replaceChildren();
         }
@@ -541,22 +671,140 @@ export default function TlcCustomerReporting(props) {
     );
   });
 
+  const TableRenderer = React.memo(({ id, rawHTML }) => {
+    if (!rawHTML) return null;
 
+    const titleMatch =
+      rawHTML.match(/<h\d[^>]*>(.*?)<\/h\d>/i) ||
+      rawHTML.match(/<div[^>]*>([^<]*Employee[^<]*)<\/div>/i) ||
+      rawHTML.match(/<span[^>]*>([^<]*Employee[^<]*)<\/span>/i);
 
-  // ------------------- END CUSTOM MULTISELECT -------------------
+    const tableTitle = titleMatch ? titleMatch[1].trim() : null;
+
+    const cleanHTML = titleMatch
+      ? rawHTML.replace(titleMatch[0], "")
+      : rawHTML;
+
+    return (
+      <div
+        className="table-section"
+        style={{
+          width: "100%",
+          margin: "50px auto 60px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        {tableTitle && (
+          <h3
+            className="table-title"
+            style={{
+              marginBottom: "12px",
+              marginTop: "0px",
+              fontSize: "20px",
+              color: "#1f2d3d",
+              fontWeight: 700,
+              fontFamily: "Inter, sans-serif",
+              letterSpacing: "0.3px",
+              textAlign: "center",
+              width: "100%",
+            }}
+          >
+            {tableTitle}
+          </h3>
+        )}
+
+        <div
+          className="table-box"
+          style={{
+            gridColumn: "1 / -1",
+            width: "95%",
+            background: "#fff",
+            borderRadius: "12px",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
+            padding: "25px 20px",
+            overflowX: "auto",
+            overflowY: "auto",
+            maxHeight: "700px",
+          }}
+        >
+          <PlotlyChart id={id} chartHTML={cleanHTML} />
+        </div>
+      </div>
+    );
+  });
+
+  // -------------------- TAB BAR --------------------
+  const renderTabBar = () => (
+    <div className="tab-bar" style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "16px", paddingTop: "16px" }}>
+      {tabs.map((tab) => (
+        <div
+          key={tab.id}
+          onClick={() => setActiveTab(tab.id)}
+          style={{
+            padding: "8px 16px",
+            borderRadius: "8px",
+            background: tab.id === activeTab ? "#1f2d3d" : "#f3f4f6",
+            color: tab.id === activeTab ? "#fff" : "#000",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            fontSize: "14px",
+            fontWeight: tab.id === activeTab ? 600 : 400,
+            transition: "all 0.2s ease",
+          }}
+        >
+          {tab.name}
+          {tabs.length > 1 && (
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCloseTab(tab.id);
+              }}
+              style={{
+                marginLeft: "4px",
+                color: tab.id === activeTab ? "#ccc" : "#999",
+                cursor: "pointer",
+                fontWeight: "bold",
+                fontSize: "18px",
+              }}
+            >
+              ×
+            </span>
+          )}
+        </div>
+      ))}
+      <button
+        onClick={handleNewTab}
+        style={{
+          background: "#e5e7eb",
+          borderRadius: "8px",
+          padding: "8px 14px",
+          border: "none",
+          cursor: "pointer",
+          fontWeight: 600,
+          fontSize: "14px",
+          transition: "all 0.2s ease",
+        }}
+      >
+        + New Tab
+      </button>
+    </div>
+  );
+
+  if (!activeTabData) return null;
 
   return (
     <div className="page-containersss">
+      {renderTabBar()}
 
-      {/* Header */}
       <header className="header">
-
-
         <div className="left-headerss">
           <img src={TLCLogo} alt="Logo" className="tlclogo" />
           <div style={{ display: "flex", alignItems: "center" }}>
             <div className="date-text">{formatDateRange()}</div>
-            <button className="new-tab-btn">New Tab +</button>
           </div>
         </div>
         <button
@@ -566,56 +814,50 @@ export default function TlcCustomerReporting(props) {
         >
           {saving ? "Processing..." : "Save to Database"}
         </button>
-
       </header>
 
-      {/* Filters */}
       <section className="filters-card">
         <div className="filters-header">Filters</div>
         <div className="filters-grid">
-          {/* Date Range Picker */}
           <DatePicker
             selectsRange
-            startDate={startDate}
-            endDate={endDate}
+            startDate={activeTabData.startDate}
+            endDate={activeTabData.endDate}
             onChange={(dates) => {
               const [start, end] = dates;
-              setStartDate(start);
-              setEndDate(end);
+              updateTab({ startDate: start, endDate: end });
             }}
             placeholderText="Select Date Range"
             className="filter-input"
           />
 
-          {/* Custom Multi-select dropdowns */}
           <MultiSelectCustom
             options={optionsState}
-            selected={selectedState}
-            setSelected={setSelectedState}
+            selected={activeTabData.selectedState}
+            setSelected={(v) => updateTab({ selectedState: v })}
             placeholder="Select State"
           />
           <MultiSelectCustom
             options={optionsDepartment}
-            selected={selectedDepartment}
-            setSelected={setSelectedDepartment}
+            selected={activeTabData.selectedDepartment}
+            setSelected={(v) => updateTab({ selectedDepartment: v })}
             placeholder="Select Department"
           />
           <MultiSelectCustom
             options={optionsRole}
-            selected={selectedRole}
-            setSelected={setSelectedRole}
+            selected={activeTabData.selectedRole}
+            setSelected={(v) => updateTab({ selectedRole: v })}
             placeholder="Select Role"
           />
           <MultiSelectCustom
             options={optionsType}
-            selected={selectedEmploymentType}
-            setSelected={setSelectedEmploymentType}
+            selected={activeTabData.selectedEmploymentType}
+            setSelected={(v) => updateTab({ selectedEmploymentType: v })}
             placeholder="Employment Type"
           />
         </div>
       </section>
 
-      {/* Upload Sections */}
       <section className="uploads-containers">
         {[
           { key: "payroll", label: "Payroll Data" },
@@ -630,9 +872,10 @@ export default function TlcCustomerReporting(props) {
               <label>
                 <input
                   type="file"
-                  multiple  // 👈 allows multiple file selection
+                  multiple
                   accept=".xlsx, .xls"
-                  data-type={item.key} // 👈 useful for upload identification
+                  data-type={item.key}
+                  data-tab={activeTab}
                   onChange={(e) => handleFileChange(e, item.key)}
                 />
 
@@ -645,11 +888,11 @@ export default function TlcCustomerReporting(props) {
                     />
                   </div>
                   <p>
-                    {fileNames[item.key].length > 0 ? (
+                    {activeTabData.fileNames[item.key].length > 0 ? (
                       <strong>
-                        {fileNames[item.key].length === 1
-                          ? fileNames[item.key][0] // show full name if only one
-                          : `${fileNames[item.key][0]}, ...`} {/* show first + ... */}
+                        {activeTabData.fileNames[item.key].length === 1
+                          ? activeTabData.fileNames[item.key][0]
+                          : `${activeTabData.fileNames[item.key][0]}, ...`}
                       </strong>
                     ) : (
                       <>
@@ -658,7 +901,6 @@ export default function TlcCustomerReporting(props) {
                     )}
                   </p>
 
-
                   <small>.XLSX, .XLS</small>
                 </div>
               </label>
@@ -666,16 +908,24 @@ export default function TlcCustomerReporting(props) {
           </div>
         ))}
       </section>
-      {stage === "loading" && (
+      {uploading && (
+        <div className="uploading-overlay">
+          <div className="uploading-modal">
+            <div className="upload-spinner"></div>
+            <p>Uploading files, please wait...</p>
+          </div>
+        </div>
+      )}
+
+      {activeTabData.stage === "loading" && (
         <div className="loading-overlay">
           <div className="loader"></div>
           <p>Processing your data, please wait...</p>
         </div>
       )}
-      {/* Analyse Button */}
+
       <div className="search-section">
-        {/* Payroll Overview Dashboard */}
-        {stage === "overview" && analysisData && (
+        {activeTabData.stage === "overview" && activeTabData.analysisData && (
           <section className="dashboard">
             <h2 className="section-title">
               {(() => {
@@ -684,18 +934,16 @@ export default function TlcCustomerReporting(props) {
                   2: "Detailed Breakdown",
                   3: "Leave & Absences",
                 };
-                return titles[currentPage] || `Page ${currentPage}`;
+                return titles[activeTabData.currentPage] || `Page ${activeTabData.currentPage}`;
               })()}
             </h2>
 
-
-            {analysisData && (
+            {activeTabData.analysisData && (
               <div className="summary-cards">
                 {(() => {
-                  const pageKey = `page ${currentPage}`;
-                  const pageScorecard = analysisData.pages?.[pageKey]?.scorecard || {};
+                  const pageKey = `page ${activeTabData.currentPage}`;
+                  const pageScorecard = activeTabData.analysisData.pages?.[pageKey]?.scorecard || {};
 
-                  // ✅ Allowed keys differ slightly per page (optional)
                   const allowedKeysByPage = {
                     1: [
                       "Average Cost per Hour ($/hr)",
@@ -717,9 +965,8 @@ export default function TlcCustomerReporting(props) {
                     ],
                   };
 
-                  const allowedKeys = allowedKeysByPage[currentPage] || [];
+                  const allowedKeys = allowedKeysByPage[activeTabData.currentPage] || [];
 
-                  // ✅ Render only values that exist in that page’s scorecard
                   return Object.entries(pageScorecard)
                     .filter(([label]) => allowedKeys.length === 0 || allowedKeys.includes(label))
                     .map(([label, value], index) => (
@@ -727,7 +974,7 @@ export default function TlcCustomerReporting(props) {
                         <p>{label}</p>
                         <h3>
                           {typeof value === "number"
-                            ? `$${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+                            ? `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
                             : value}
                         </h3>
                       </div>
@@ -736,110 +983,89 @@ export default function TlcCustomerReporting(props) {
               </div>
             )}
 
-
-
-
-
-
-            {/* === CHARTS === */}
             <div className="charts-grid">
-              {(analysisData.pages?.[`page ${currentPage}`]?.figures || []).map(
-                (chartHTML, index) => (
+              {(activeTabData.analysisData.pages?.[`page ${activeTabData.currentPage}`]?.figures || [])
+                .filter(
+                  (chartHTML) =>
+                    !chartHTML.toLowerCase().includes("<table") &&
+                    !chartHTML.toLowerCase().includes("employee leave")
+                )
+                .map((chartHTML, index) => (
                   <PlotlyChart
-                    key={`${currentPage}-${index}`}
-                    id={`chart-${currentPage}-${index}`}
+                    key={`${activeTabData.currentPage}-${index}`}
+                    id={`chart-${activeTabData.currentPage}-${index}`}
                     chartHTML={chartHTML}
                   />
-                )
-              )}
+                ))}
             </div>
 
-            {currentPage === 1 && (
+            {activeTabData.currentPage === 3 && (() => {
+              const tableFigure = (activeTabData.analysisData.pages?.["page 3"]?.figures || []).find(
+                (html) =>
+                  html.toLowerCase().includes("<table") ||
+                  html.toLowerCase().includes("employee leave")
+              );
+              if (!tableFigure) return null;
+
+              return (
+                <TableRenderer
+                  id={`leave-table-${activeTabData.currentPage}`}
+                  rawHTML={tableFigure}
+                />
+              );
+            })()}
+
+            {activeTabData.currentPage === 1 && (
               (() => {
                 const tableHTML =
-                  analysisData.table ||
-                  analysisData.pages?.["page 1"]?.table ||
+                  activeTabData.analysisData.table ||
+                  activeTabData.analysisData.pages?.["page 1"]?.table ||
                   "";
 
                 if (!tableHTML) return null;
 
                 return (
                   <div className="table-box">
-                    <PlotlyChart
-                      id={`table-${currentPage}`}
-                      chartHTML={tableHTML}
+                    <TableRenderer
+                      id={`table-${activeTabData.currentPage}`}
+                      rawHTML={tableHTML}
                     />
                   </div>
                 );
               })()
             )}
 
-
-
-            {/* === PAGINATION === */}
-            {/* === PAGINATION (Hide buttons when not needed) === */}
             <div className="nav-buttons">
-              {currentPage > 1 && (
+              {activeTabData.currentPage > 1 && (
                 <button
                   className="back-btn"
-                  onClick={() => setCurrentPage((prev) => prev - 1)}
+                  onClick={() => updateTab({ currentPage: 1 })}
                 >
-                  ← Previous
+                  ← Back to Payroll Overview
                 </button>
               )}
 
-              {analysisData.pages?.[`page ${currentPage + 1}`] && (
+              {activeTabData.analysisData.pages?.[`page ${activeTabData.currentPage + 1}`] && (
                 <button
                   className="next-btn"
-                  onClick={() => setCurrentPage((prev) => prev + 1)}
+                  onClick={() => updateTab({ currentPage: activeTabData.currentPage + 1 })}
+                  style={{ marginLeft: "auto" }}
                 >
                   Next →
                 </button>
               )}
             </div>
-
           </section>
         )}
 
-
-        {stage === "breakdown" && analysisData && (
-          <section className="dashboard">
-            <h2 className="section-title">Detailed Breakdown</h2>
-
-            <div className="charts-grid">
-              {(analysisData.pages?.[`page ${currentPage}`]?.figures || []).map(
-                (chartHTML, index) => (
-                  <PlotlyChart
-                    key={`${currentPage}-${index}`}
-                    id={`chart-${currentPage}-${index}`}
-                    chartHTML={chartHTML}
-                  />
-                )
-              )}
-            </div>
-
-
-
-            <div className="nav-buttons">
-              <button className="back-btn" onClick={() => setStage("overview")}>
-                ← Back to Payroll Overview
-              </button>
-              <button className="next-btn" onClick={() => setStage("filters")}>
-                Back to Filters →
-              </button>
-            </div>
-          </section>
-        )}
-
-
-        {stage === "filters" && !analysisData && (
+        {activeTabData.stage === "filters" && !activeTabData.analysisData && (
           <button className="search-btn" onClick={handleAnalyse} disabled={loading}>
             {loading ? "Processing..." : "Analyse"}
           </button>
         )}
       </div>
 
-      {stage !== "loading" && (
+      {activeTabData.stage !== "loading" && (
         <section className="history-container">
           <div className="history-title">History</div>
 
@@ -924,11 +1150,8 @@ export default function TlcCustomerReporting(props) {
             })
           )}
         </section>
+
       )}
-
-
-
     </div>
   );
-
 }
