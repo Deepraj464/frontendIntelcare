@@ -190,7 +190,7 @@ const HomePage = () => {
                 <div style={{ display: selectedRole === "Custom Reporting" ? "block" : "none" }}>
                   {/* <CustomReporting selectedRole="Custom Reporting" handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} /> */}
                   <div style={{display:'flex'}}>
-                  <TlcCustomerReporting/>
+                  <TlcCustomerReporting user={user}/>
                   </div>
                 </div>
 
