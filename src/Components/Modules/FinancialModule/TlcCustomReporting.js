@@ -201,11 +201,11 @@ export default function TlcCustomerReporting(props) {
     }
   };
 
-  const handleFileChange = async (e, type) => {
+  const handleFileChange = (e, type) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
-    // ✅ Filter valid files based on naming rules
+    // ✅ Basic validation — allow .csv, .xls, .xlsx
     const validFiles = files.filter((file) => {
       const name = file.name.toLowerCase();
       if (type === "payroll" && name.includes("pay journal")) return true;
@@ -215,9 +215,7 @@ export default function TlcCustomerReporting(props) {
     });
 
     if (validFiles.length === 0) {
-      alert(
-        `❌ Invalid files for ${type.toUpperCase()}.\n\nPlease upload:\n- Payroll: file(s) containing "Pay Journal"\n- People: file(s) containing "People - Team Members"\n- Employee Update: file(s) containing "EmployeeUpdate"`
-      );
+      alert(`⚠️ Invalid file uploaded in ${type.toUpperCase()} section. Please check the file.`);
       e.target.value = "";
       return;
     }
@@ -230,23 +228,12 @@ export default function TlcCustomerReporting(props) {
       },
     });
 
-    console.log(`✅ Valid ${type} files uploaded:`, validFiles.map((f) => f.name));
-
-    // ✅ Auto-upload when all types are uploaded
-    const { payroll, people, employee } = {
-      ...activeTabData.fileNames,
-      [type]: validFiles.map((f) => f.name),
-    };
-
-    if (payroll.length && people.length && employee.length) {
-      console.log("🚀 All required files uploaded — starting automatic upload...");
-      await uploadAllFiles();
-    }
+    console.log(`✅ Selected ${type} files:`, validFiles.map((f) => f.name));
   };
 
 
 
-  // -------------------- ANALYSE HANDLER --------------------
+
   const handleAnalyse = async () => {
     if (!activeTabData) return;
 
@@ -260,19 +247,9 @@ export default function TlcCustomerReporting(props) {
       fileNames,
     } = activeTabData;
 
-    // ✅ Basic checks
+    // ✅ Basic check for date range
     if (!startDate || !endDate) {
       alert("Please select a date range first!");
-      return;
-    }
-
-    // ✅ Ensure all 3 required files were uploaded
-    if (
-      !fileNames.payroll.length ||
-      !fileNames.people.length ||
-      !fileNames.employee.length
-    ) {
-      alert("⚠️ Please upload all three required files before analyzing!");
       return;
     }
 
@@ -281,7 +258,104 @@ export default function TlcCustomerReporting(props) {
       updateTab({ stage: "loading", error: null });
       console.log("🚀 Starting analysis process for tab:", activeTab);
 
-      // ✅ Build query parameters
+      // -------------------------------
+      // STEP 1️⃣: VALIDATE FILE UPLOADS
+      // -------------------------------
+      const inputs = ["payroll", "people", "employee"].map((type) =>
+        document.querySelector(`input[data-type="${type}"][data-tab="${activeTab}"]`)
+      );
+
+      const hasAnyFile = inputs.some(
+        (input) => input && input.files && input.files.length > 0
+      );
+
+      if (hasAnyFile) {
+        console.log("🧾 Upload path selected — validating uploaded files...");
+
+        const invalidUploads = [];
+
+        // ✅ Validate each file section
+        for (const input of inputs) {
+          if (!input) continue;
+          const type = input.getAttribute("data-type");
+          const files = Array.from(input.files);
+
+          if (files.length === 0) {
+            invalidUploads.push(`❌ Missing file(s) for ${type.toUpperCase()}`);
+            continue;
+          }
+
+          const invalidFiles = files.filter((file) => {
+            const name = file.name.toLowerCase();
+            if (type === "payroll" && !name.includes("pay journal")) return true;
+            if (type === "people" && !name.includes("people - team members")) return true;
+            if (type === "employee" && !name.includes("employeeupdate")) return true;
+            return false;
+          });
+
+          if (invalidFiles.length > 0) {
+            invalidUploads.push(
+              `⚠️ Incorrect file(s) in ${type.toUpperCase()} section: ${invalidFiles
+                .map((f) => f.name)
+                .join(", ")}`
+            );
+          }
+        }
+
+        // ✅ Check if all 3 sections have files
+        const allTypesUploaded = inputs.every(
+          (input) => input && input.files && input.files.length > 0
+        );
+
+        if (invalidUploads.length > 0 || !allTypesUploaded) {
+          setLoading(false);
+          updateTab({ stage: "filters" });
+
+          let message = "⚠️ Please correct the following before analysing:\n\n";
+          if (!allTypesUploaded)
+            message += "- You must upload all three file types (Payroll, People, Employee)\n";
+          if (invalidUploads.length > 0)
+            message += "\n" + invalidUploads.join("\n");
+
+          alert(message);
+          return;
+        }
+
+        // ✅ If everything is valid, upload first
+        console.log("✅ All uploaded files are valid. Uploading before analysis...");
+        try {
+          setUploading(true);
+          const formData = new FormData();
+          inputs.forEach((input) => {
+            Array.from(input.files).forEach((file) => formData.append("files", file));
+          });
+
+          const uploadRes = await fetch(
+            "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/upload-latest",
+            { method: "POST", body: formData }
+          );
+
+          const uploadData = await uploadRes.json();
+          console.log("📤 Upload API response:", uploadData);
+
+          if (!uploadRes.ok) {
+            throw new Error(uploadData.error || "File upload failed.");
+          }
+
+          console.log("✅ Files uploaded successfully before analysis.");
+        } catch (uploadErr) {
+          console.error("❌ Upload failed:", uploadErr);
+          alert("Some files failed to upload. Continuing with existing data...");
+        } finally {
+          setUploading(false);
+        }
+      } else {
+        console.log("📂 No files selected. Proceeding with existing database data...");
+      }
+
+      // -------------------------------
+      // STEP 2️⃣: RUN ANALYSIS API
+      // -------------------------------
       const query = new URLSearchParams({
         start: startDate.toISOString().split("T")[0],
         end: endDate.toISOString().split("T")[0],
@@ -299,7 +373,6 @@ export default function TlcCustomerReporting(props) {
       const url = `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/filter?${query.toString()}`;
       console.log("🌐 Calling analyze API:", url);
 
-      // ✅ Call the analysis endpoint
       const analyzeRes = await fetch(url);
       const analyzeData = await analyzeRes.json();
       console.log("📊 Analyze API response:", analyzeData);
@@ -316,8 +389,12 @@ export default function TlcCustomerReporting(props) {
       alert("Something went wrong: " + err.message);
     } finally {
       setLoading(false);
+      setUploading(false);
     }
   };
+
+
+
 
 
   // -------------------- SAVE HANDLER --------------------
@@ -917,14 +994,14 @@ export default function TlcCustomerReporting(props) {
           </div>
         ))}
       </section>
-      {uploading && (
+      {/* {uploading && (
         <div className="uploading-overlay">
           <div className="uploading-modal">
             <div className="upload-spinner"></div>
             <p>Uploading files, please wait...</p>
           </div>
         </div>
-      )}
+      )} */}
 
       {activeTabData.stage === "loading" && (
         <div className="loading-overlay">

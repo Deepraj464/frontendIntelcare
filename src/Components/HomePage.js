@@ -53,6 +53,7 @@ const HomePage = () => {
   const [showUploadedReport, setShowUploadReport] = useState(false);
   const [loadingUser, setLoadingUser] = useState(true);
   console.log("user", user)
+  const isTlcPage = selectedRole === "Custom Reporting";
   const handleModalOpen = () => setModalVisible(true);
   const handleModalClose = () => setModalVisible(false);
 
@@ -153,7 +154,7 @@ const HomePage = () => {
               </div>
             </div>
 
-            <div className="main-content" style={{ padding: "8px 10% 40px 10%", flex: 1 }}>
+            <div className={isTlcPage ? "tlc-custom-main-content" : "main-content"}>
               {showFeedbackPopup && <FeedbackModal userEmail={user?.email} />}
 
               <>
@@ -169,10 +170,10 @@ const HomePage = () => {
                 </div>
 
                 <div style={{ display: selectedRole === "Participant Events & Incident Management" ? "block" : "none" }}>
-                  <Client_Event_Reporting selectedRole='Participant Events & Incident Management'/>
+                  <Client_Event_Reporting selectedRole='Participant Events & Incident Management' />
                 </div>
                 <div style={{ display: selectedRole === "Incident Auditing" ? "block" : "none" }}>
-                  <IncidentAuditing selectedRole='Incident Auditing'/>
+                  <IncidentAuditing selectedRole='Incident Auditing' />
                 </div>
 
                 <div style={{ display: selectedRole === "Quarterly Financial Reporting" ? "block" : "none" }}>
@@ -189,13 +190,11 @@ const HomePage = () => {
 
                 <div style={{ display: selectedRole === "Custom Reporting" ? "block" : "none" }}>
                   {/* <CustomReporting selectedRole="Custom Reporting" handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} /> */}
-                  <div style={{display:'flex'}}>
-                  <TlcCustomerReporting user={user}/>
-                  </div>
+                  <TlcCustomerReporting user={user} />
                 </div>
 
                 <div style={{ display: selectedRole === "Smart Onboarding (Staff)" ? "block" : "none" }}>
-                  <HRAnalysis handleClick={handleClick} selectedRole = "Smart Onboarding (Staff)" setShowFeedbackPopup={setShowFeedbackPopup} user={user}/>
+                  <HRAnalysis handleClick={handleClick} selectedRole="Smart Onboarding (Staff)" setShowFeedbackPopup={setShowFeedbackPopup} user={user} />
                 </div>
 
                 <div style={{ display: selectedRole === "Client Profitability & Service" ? "block" : "none" }}>
@@ -211,16 +210,18 @@ const HomePage = () => {
                 </div>
 
                 <div style={{ display: selectedRole === "Smart Rostering" ? "block" : "none" }}>
-                  <RosteringDashboard/>
+                  <RosteringDashboard />
                 </div>
               </>
 
               <Modal isVisible={isModalVisible} onClose={handleModalClose}></Modal>
 
-              <div className="ask-ai-button" onClick={() => setShowAIChat(!showAIChat)}>
-                <img src={askAiStar} alt="askAiStar" style={{ width: "22px", height: "22px" }} />
-                <div style={{ fontFamily: "Inter", fontSize: "16px", color: "white" }}>Ask AI</div>
-              </div>
+              {!isTlcPage &&
+                <div className="ask-ai-button" onClick={() => setShowAIChat(!showAIChat)}>
+                  <img src={askAiStar} alt="askAiStar" style={{ width: "22px", height: "22px" }} />
+                  <div style={{ fontFamily: "Inter", fontSize: "16px", color: "white" }}>Ask AI</div>
+                </div>
+              }
 
               {showAIChat && (
                 <div style={{ position: "fixed", bottom: "100px", right: "30px", width: "350px", height: "400px", backgroundColor: "#000", borderRadius: "10px", boxShadow: "0px 4px 12px rgba(0,0,0,0.2)", zIndex: 999, display: "flex", flexDirection: "column", justifyContent: "space-between", border: "none" }}>

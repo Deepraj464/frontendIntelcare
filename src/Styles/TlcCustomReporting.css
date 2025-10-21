@@ -6,9 +6,9 @@ body {
   overflow-x: hidden !important; /* ✅ Prevent any horizontal scroll globally */
 }
 
-.page-containersss {
+/* .page-containersss {
   padding: 40px 70px;
-}
+} */
 
 /* ---------------- HEADER ---------------- */
 .header {
@@ -22,12 +22,6 @@ body {
   flex-direction: column;
   gap: 10px;
 }
-
-.tlclogo {
-  height: 80px;
-  width: 90px;
-}
-
 .date-text {
   font-size: 14px;
   font-weight: 500;
@@ -338,6 +332,7 @@ body {
   border-top: 4px solid #f97316;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  margin-top: 14px;
 }
 
 @keyframes spin {
@@ -443,17 +438,10 @@ body {
 .next-btn:hover {
   background: #EA7323;
 }
-body {
-  background: #fffdfc;
-  font-family: "Inter", sans-serif;
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden !important; /* ✅ Prevent any horizontal scroll globally */
-}
 
-.page-containersss {
+/* .page-containersss {
   padding: 40px 70px;
-}
+} */
 
 /* ---------------- HEADER ---------------- */
 .header {
@@ -469,8 +457,8 @@ body {
 }
 
 .tlclogo {
-  height: 80px;
-  width: 90px;
+  height: 90px;
+  width: 100px;
 }
 
 .date-text {
@@ -922,4 +910,8 @@ body {
   .uploads-containers {
     grid-template-columns: 1fr;
   }
+}
+.react-datepicker-wrapper{
+  width: 100% !important;
+  height: 100% !important;
 }
