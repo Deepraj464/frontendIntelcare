@@ -440,7 +440,7 @@ export default function TlcCustomerReporting(props) {
   };
 
   const formatDateRange = () => {
-    if (!activeTabData || !activeTabData.startDate || !activeTabData.endDate) return "Select Date Range";
+    if (!activeTabData || !activeTabData.startDate || !activeTabData.endDate) return "Selected Date Range";
     return `${activeTabData.startDate.toLocaleDateString()} - ${activeTabData.endDate.toLocaleDateString()}`;
   };
 
@@ -478,16 +478,20 @@ export default function TlcCustomerReporting(props) {
             cursor: "pointer",
           }}
         >
-          <span
-            style={{
-              color: selected.length === 0 ? "#999" : "#000",
-            }}
-          >
+          <span style={{ color: selected.length === 0 ? "#ccc" : "#000",fontFamily:'Inter' }}>
             {selected.length === 0
               ? placeholder
               : selected.length === 1
                 ? selected[0].label
-                : `${selected[0].label} +${selected.length - 1}`}
+                : (
+                  <>
+                    {selected[0].label}{" "}
+                    <span style={{ color: "#EA7323", fontSize: "12px",fontFamily:'Inter' }}>
+                      +{selected.length - 1}
+                    </span>
+                  </>
+                )
+            }
           </span>
           <FiChevronDown
             style={{
@@ -798,38 +802,43 @@ export default function TlcCustomerReporting(props) {
 
   return (
     <div className="page-containersss">
-      {renderTabBar()}
-
-      <header className="header">
+      <div className="headerss">
         <div className="left-headerss">
           <img src={TLCLogo} alt="Logo" className="tlclogo" />
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <div className="date-text">{formatDateRange()}</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <div className="date-text">{formatDateRange()}</div>
+              {renderTabBar()}
+            </div>
+            <button
+              className="save-btnss"
+              onClick={handleSaveToDatabase}
+              disabled={saving}
+            >
+              {saving ? "Processing..." : "Save to Database"}
+            </button>
           </div>
         </div>
-        <button
-          className="save-btn"
-          onClick={handleSaveToDatabase}
-          disabled={saving}
-        >
-          {saving ? "Processing..." : "Save to Database"}
-        </button>
-      </header>
+
+      </div>
 
       <section className="filters-card">
         <div className="filters-header">Filters</div>
         <div className="filters-grid">
-          <DatePicker
-            selectsRange
-            startDate={activeTabData.startDate}
-            endDate={activeTabData.endDate}
-            onChange={(dates) => {
-              const [start, end] = dates;
-              updateTab({ startDate: start, endDate: end });
-            }}
-            placeholderText="Select Date Range"
-            className="filter-input"
-          />
+          <div>
+            <DatePicker
+              selectsRange
+              startDate={activeTabData.startDate}
+              endDate={activeTabData.endDate}
+              onChange={(dates) => {
+                const [start, end] = dates;
+                updateTab({ startDate: start, endDate: end });
+              }}
+              placeholderText="Select Date Range"
+              className="filter-input"
+              dateFormat="dd/MM/yy"
+            />
+          </div>
 
           <MultiSelectCustom
             options={optionsState}
@@ -865,7 +874,7 @@ export default function TlcCustomerReporting(props) {
           { key: "employee", label: "Employee Update Data" },
         ].map((item) => (
           <div key={item.key}>
-            <div style={{ textAlign: "left", fontSize: "12px", fontFamily: "Inter" }}>
+            <div style={{ textAlign: "left", fontSize: "12px", fontFamily: "Inter",fontWeight:'500' }}>
               Upload {item.label}
             </div>
             <div className="upload-boxes">
