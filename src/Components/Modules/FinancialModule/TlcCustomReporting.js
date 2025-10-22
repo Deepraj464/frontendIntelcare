@@ -229,6 +229,8 @@ export default function TlcCustomerReporting(props) {
     });
 
     console.log(`✅ Selected ${type} files:`, validFiles.map((f) => f.name));
+
+    e.target.value = "";
   };
 
 
@@ -393,9 +395,72 @@ export default function TlcCustomerReporting(props) {
     }
   };
 
+  // 🧠 Auto-run analysis logic (final stable version)
+  const lastAnalysisKeyRef = useRef("");
 
+  useEffect(() => {
+    if (!activeTabData) return;
 
+    const {
+      startDate,
+      endDate,
+      selectedState,
+      selectedDepartment,
+      selectedRole,
+      selectedEmploymentType,
+      fileNames,
+      analysisData,
+    } = activeTabData;
 
+    const hasDateRange = startDate && endDate;
+
+    const noFilesUploaded =
+      !fileNames.payroll.length &&
+      !fileNames.people.length &&
+      !fileNames.employee.length;
+
+    // ✅ Determine if auto-analysis should trigger
+    const shouldAutoAnalyse =
+      hasDateRange &&
+      !uploading &&
+      !loading &&
+      (noFilesUploaded || analysisData); // no upload or already analysed
+
+    if (!shouldAutoAnalyse) return;
+
+    // 🧩 Create a key to detect if filters changed since last analysis
+    const currentKey = JSON.stringify({
+      startDate,
+      endDate,
+      state: selectedState.map((s) => s.value).join(","),
+      department: selectedDepartment.map((d) => d.value).join(","),
+      role: selectedRole.map((r) => r.value).join(","),
+      empType: selectedEmploymentType.map((e) => e.value).join(","),
+    });
+
+    // ⚠️ If nothing changed, don't reanalyse
+    if (lastAnalysisKeyRef.current === currentKey) return;
+
+    lastAnalysisKeyRef.current = currentKey;
+
+    const timer = setTimeout(() => {
+      console.log("⚙️ Auto-analyzing triggered (date/filter change, safe)...");
+      handleAnalyse();
+    }, 1000); // debounce
+
+    return () => clearTimeout(timer);
+  }, [
+    activeTabData,
+    uploading,
+    loading,
+    activeTabData?.startDate,
+    activeTabData?.endDate,
+    activeTabData?.selectedState,
+    activeTabData?.selectedDepartment,
+    activeTabData?.selectedRole,
+    activeTabData?.selectedEmploymentType,
+    activeTabData?.analysisData,
+  ]);
 
   // -------------------- SAVE HANDLER --------------------
   const handleSaveToDatabase = async () => {
@@ -963,14 +1028,14 @@ export default function TlcCustomerReporting(props) {
                   data-type={item.key}
                   data-tab={activeTab}
                   onChange={(e) => handleFileChange(e, item.key)}
-                  style={{cursor:'pointer'}}
+                  style={{ cursor: 'pointer' }}
                 />
-                <div className="uploadss-iconss" style={{cursor:'pointer'}}>
+                <div className="uploadss-iconss" style={{ cursor: 'pointer' }}>
                   <img src={UploadTlcIcon} alt="uploadtlcIcon" style={{ height: "48px", width: "48px" }} />
                 </div>
-                <p style={{fontSize:'14px',color:'#444',fontFamily:'Inter',cursor:'pointer'}}>
+                <p style={{ fontSize: '14px', color: '#444', fontFamily: 'Inter', cursor: 'pointer' }}>
                   {activeTabData.fileNames[item.key].length === 0
-                    ? <>Click to upload <span style={{color: '#EA7323'}}>{item.label}</span><br></br><small>.XLSX, .XLS, .CSV</small></>
+                    ? <>Click to upload <span style={{ color: '#EA7323' }}>{item.label}</span><br></br><small>.XLSX, .XLS, .CSV</small></>
                     : "Uploaded files:"}
                 </p>
               </label>
@@ -1016,14 +1081,6 @@ export default function TlcCustomerReporting(props) {
         ))}
       </section>
 
-      {uploading && (
-        <div className="uploading-overlay">
-          <div className="uploading-modal">
-            <div className="upload-spinner"></div>
-            <p>Uploading files, please wait...</p>
-          </div>
-        </div>
-      )} 
 
       {activeTabData.stage === "loading" && (
         <div className="loading-overlay">
