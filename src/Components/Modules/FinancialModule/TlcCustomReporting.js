@@ -74,7 +74,10 @@ export default function TlcCustomerReporting(props) {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedHistoryId, setSelectedHistoryId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [isAllowed, setIsAllowed] = useState(null);
   const optionsState = [
     { label: "New South Wales", value: "New South Wales" },
     { label: "Queensland", value: "Queensland" },
@@ -147,59 +150,6 @@ export default function TlcCustomerReporting(props) {
     { label: "Full Time", value: "Full Time" },
     { label: "Part Time", value: "Part Time" },
   ];
-  // -------------------- AUTOMATIC UPLOAD HANDLER --------------------
-  const uploadAllFiles = async () => {
-    try {
-      setUploading(true);
-      const { fileNames } = activeTabData;
-
-      // Get actual <input> elements by tab + type
-      const inputs = ["payroll", "people", "employee"].map((type) =>
-        document.querySelector(`input[data-type="${type}"][data-tab="${activeTab}"]`)
-      );
-
-      // Validate that all are filled
-      if (inputs.some((input) => !input || !input.files.length)) {
-        alert("⚠️ Please upload all three required files before analysis.");
-        setUploading(false);
-        return;
-      }
-
-      // ✅ Prepare FormData
-      const formData = new FormData();
-      inputs.forEach((input) => {
-        Array.from(input.files).forEach((file) => {
-          formData.append("files", file);
-        });
-      });
-
-      console.log("📦 Sending all 3 files types to upload API...");
-
-      // ✅ Call the upload endpoint
-      const res = await fetch(
-        "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/upload-latest",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      const data = await res.json();
-      console.log("📤 Upload API response:", data);
-
-      if (!res.ok) {
-        throw new Error(data.error || "Upload failed");
-      }
-
-      alert("✅ All files uploaded successfully!");
-    } catch (err) {
-      console.error("❌ Error uploading files:", err);
-      alert("Something went wrong while uploading files.");
-    }
-    finally {
-      setUploading(false);
-    }
-  };
 
   const handleFileChange = (e, type) => {
     const files = Array.from(e.target.files);
@@ -461,14 +411,79 @@ export default function TlcCustomerReporting(props) {
     activeTabData?.selectedEmploymentType,
     activeTabData?.analysisData,
   ]);
+  // 🧩 Reset "isFromHistory" when user edits any filters or date
+  useEffect(() => {
+    if (!activeTabData) return;
 
+    const { isFromHistory, analysisData, startDate, endDate, selectedState, selectedDepartment, selectedRole, selectedEmploymentType } = activeTabData;
+
+    // Run only if it's a history-loaded record AND analysis exists
+    if (!isFromHistory || !analysisData) return;
+
+    const hasFiltersChanged = [
+      startDate,
+      endDate,
+      selectedState?.length,
+      selectedDepartment?.length,
+      selectedRole?.length,
+      selectedEmploymentType?.length,
+    ].some(Boolean);
+
+    // If user modifies any filter/date, allow saving again
+    if (hasFiltersChanged) {
+      updateTab({ isFromHistory: false });
+    }
+  }, [
+    activeTabData?.startDate,
+    activeTabData?.endDate,
+    activeTabData?.selectedState,
+    activeTabData?.selectedDepartment,
+    activeTabData?.selectedRole,
+    activeTabData?.selectedEmploymentType,
+  ]);
+  useEffect(() => {
+    const checkAccess = async () => {
+      try {
+        const userEmail = props?.user?.email?.trim().toLowerCase();
+        if (!userEmail) {
+          setIsAllowed(false);
+          return;
+        }
+
+        const res = await fetch(
+          "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/getAllTlcEmails"
+        );
+
+        const data = await res.json();
+        console.log("📥 Admin email list:", data);
+
+        if (!res.ok || !data.emails) {
+          console.warn("⚠️ Invalid response from getAllTlcEmails API");
+          setIsAllowed(false);
+          return;
+        }
+
+        const normalizedEmails = data.emails.map((e) => e.trim().toLowerCase());
+        console.log("normalizedEmails", normalizedEmails)
+        const hasAccess = normalizedEmails.includes(userEmail);
+
+        setIsAllowed(hasAccess);
+        console.log(`🔐 Access check for ${userEmail}:`, hasAccess);
+      } catch (err) {
+        console.error("❌ Error verifying access:", err);
+        setIsAllowed(false);
+      }
+    };
+
+    checkAccess();
+  }, [props.user]);
   // -------------------- SAVE HANDLER --------------------
   const handleSaveToDatabase = async () => {
     if (!activeTabData) return;
 
     // ✅ If loaded from history, block saving again
     if (activeTabData.isFromHistory) {
-      alert("⚠️ This analysis is already saved in the database.");
+      alert("⚠️ This analysis is already saved in the history list.");
       return;
     }
 
@@ -529,6 +544,34 @@ export default function TlcCustomerReporting(props) {
       alert("Something went wrong while saving data.");
     } finally {
       setSaving(false);
+    }
+  };
+  const handleDeleteHistory = async () => {
+    if (!selectedHistoryId) return;
+
+    try {
+      setDeleting(true);
+      const res = await fetch(
+        "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/deleteById",
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: selectedHistoryId }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete history.");
+
+      console.log("✅ Deleted successfully:", data);
+      setHistoryList((prev) => prev.filter((item) => item.id !== selectedHistoryId));
+      setShowDeleteModal(false);
+      alert("✅ Deleted successfully!");
+    } catch (err) {
+      console.error("❌ Error deleting:", err);
+      alert("Failed to delete history: " + err.message);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -941,6 +984,28 @@ export default function TlcCustomerReporting(props) {
 
   if (!activeTabData) return null;
 
+  if (!isAllowed) {
+    return (
+      <div style={{
+        textAlign: "center",
+        padding: "120px 20px",
+        fontFamily: "Inter, sans-serif",
+        color: "#1f2937"
+      }}>
+        <img
+          src={TLCLogo}
+          alt="Access Denied"
+          style={{ width: "80px", opacity: 0.8, marginBottom: "20px" }}
+        />
+        <h2 style={{ fontSize: "24px", marginBottom: "12px", color: "#EA7323" }}>
+          Access Restricted 🚫
+        </h2>
+        <p style={{ fontSize: "16px", color: "#555" }}>
+          Sorry, your account (<strong>{props?.user?.email}</strong>) is not authorized to view this page.
+        </p>
+      </div>
+    );
+  }
   return (
     <div className="page-containersss">
       <div className="headerss">
@@ -1263,83 +1328,186 @@ export default function TlcCustomerReporting(props) {
           ) : historyList.length === 0 ? (
             <p style={{ textAlign: "center", color: "#777" }}>No saved history found.</p>
           ) : (
-            historyList.map((item, index) => {
-              const createdAt = new Date(item.createdAt).toLocaleString("en-GB", {
-                day: "2-digit",
-                month: "short",
-                year: "2-digit",
-              });
+            <>
+              {historyList.map((item, index) => {
+                const createdAt = new Date(item.createdAt).toLocaleString("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "2-digit",
+                });
 
-              const filters = item.analysisResult?.filters || item?.filters || {};
-              const { state, department, role, employmentType, start, end } = filters;
+                const filters = item.analysisResult?.filters || item?.filters || {};
+                const { state, department, role, employmentType, start, end } = filters;
 
-              return (
-                <div
-                  key={item.id || index}
-                  className="history-card-modern"
-                  onClick={() => handleHistoryClick(item)}
-                >
-                  {/* Header Row */}
-                  <div className="history-top">
-                    <div className="history-date-range">
-                      <strong className="label">Date Range:</strong>{" "}
-                      <span className="value">
-                        {start
-                          ? `${new Date(start).toLocaleDateString("en-GB", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "2-digit",
-                          })}`
-                          : "N/A"}{" "}
-                        –{" "}
-                        {end
-                          ? `${new Date(end).toLocaleDateString("en-GB", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "2-digit",
-                          })}`
-                          : "N/A"}
-                      </span>
+                return (
+                  <div
+                    key={item.id || index}
+                    className="history-card-modern"
+                    style={{
+                      position: "relative",
+                      transition: "transform 0.2s ease, box-shadow 0.3s ease",
+                    }}
+                  >
+                    {/* Delete button (cross icon) */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedHistoryId(item.id);
+                        setShowDeleteModal(true);
+                      }}
+                      title="Delete analysis"
+                      style={{
+                        position: "absolute",
+                        top: "10px",
+                        right: "10px",
+                        background: "transparent",
+                        border: "none",
+                        fontSize: "20px",
+                        color: "#EA7323",
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                        transition: "transform 0.2s ease, color 0.2s ease",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.2)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1.0)")}
+                    >
+                      ×
+                    </button>
+
+                    {/* History card body */}
+                    <div onClick={() => handleHistoryClick(item)}>
+                      <div className="history-top">
+                        <div className="history-date-range">
+                          <strong className="label">Date Range:</strong>{" "}
+                          <span className="value">
+                            {start
+                              ? new Date(start).toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "2-digit",
+                              })
+                              : "N/A"}{" "}
+                            –{" "}
+                            {end
+                              ? new Date(end).toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "2-digit",
+                              })
+                              : "N/A"}
+                          </span>
+                        </div>
+                        <div className="history-open-icon">↗</div>
+                      </div>
+
+                      <div className="saved-on">
+                        <span className="saved-label">Saved On:</span>{" "}
+                        <span className="saved-value">{createdAt}</span>
+                      </div>
+
+                      <div className="history-filters">
+                        {state && (
+                          <span className="filter-item">
+                            <strong>State:</strong> {state}
+                          </span>
+                        )}
+                        {department && (
+                          <span className="filter-item">
+                            <strong>Department:</strong> {department}
+                          </span>
+                        )}
+                        {role && (
+                          <span className="filter-item">
+                            <strong>Role:</strong> {role}
+                          </span>
+                        )}
+                        {employmentType && (
+                          <span className="filter-item">
+                            <strong>Employment Type:</strong> {employmentType}
+                          </span>
+                        )}
+                      </div>
                     </div>
-
-                    <div className="history-open-icon">↗</div>
                   </div>
+                );
+              })}
 
-                  {/* Saved On */}
-                  <div className="saved-on">
-                    <span className="saved-label">Saved On:</span>{" "}
-                    <span className="saved-value">{createdAt}</span>
-                  </div>
+              {/* ✅ Delete confirmation modal (moved outside .map) */}
+              {showDeleteModal && (
+                <div
+                  style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    background: "rgba(0,0,0,0.4)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 9999,
+                    fontFamily: "Inter, sans-serif",
+                  }}
+                >
+                  <div
+                    style={{
+                      background: "#fff",
+                      borderRadius: "10px",
+                      padding: "20px 28px",
+                      boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+                      textAlign: "center",
+                      animation: "scaleIn 0.25s ease",
+                    }}
+                  >
+                    <h4
+                      style={{
+                        fontSize: "16px",
+                        fontWeight: "600",
+                        color: "#1f2937",
+                        marginBottom: "16px",
+                      }}
+                    >
+                      Are you sure?
+                    </h4>
 
-                  {/* Filters Row */}
-                  <div className="history-filters">
-                    {state && (
-                      <span className="filter-item">
-                        <strong>State:</strong> {state}
-                      </span>
-                    )}
-                    {department && (
-                      <span className="filter-item">
-                        <strong>Department:</strong> {department}
-                      </span>
-                    )}
-                    {role && (
-                      <span className="filter-item">
-                        <strong>Role:</strong> {role}
-                      </span>
-                    )}
-                    {employmentType && (
-                      <span className="filter-item">
-                        <strong>Employment Type:</strong> {employmentType}
-                      </span>
-                    )}
+                    <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
+                      <button
+                        onClick={() => setShowDeleteModal(false)}
+                        style={{
+                          background: "#E5E7EB",
+                          color: "#111",
+                          border: "none",
+                          borderRadius: "6px",
+                          padding: "6px 16px",
+                          fontWeight: 500,
+                          cursor: "pointer",
+                        }}
+                      >
+                        No
+                      </button>
+                      <button
+                        onClick={handleDeleteHistory}
+                        disabled={deleting}
+                        style={{
+                          background: "#EA7323",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: "6px",
+                          padding: "6px 16px",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          opacity: deleting ? 0.7 : 1,
+                        }}
+                      >
+                        {deleting ? "..." : "Yes"}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              );
-            })
+              )}
+            </>
           )}
         </section>
-
       )}
     </div>
   );
