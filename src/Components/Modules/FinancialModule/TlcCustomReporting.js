@@ -693,7 +693,7 @@ export default function TlcCustomerReporting(props) {
                 : (
                   <>
                     {selected[0].label}{" "}
-                    <span style={{ color: "#EA7323", fontSize: "12px", fontFamily: 'Inter' }}>
+                    <span style={{ color: "#6C4CDC", fontSize: "12px", fontFamily: 'Inter' }}>
                       +{selected.length - 1}
                     </span>
                   </>
@@ -855,7 +855,7 @@ export default function TlcCustomerReporting(props) {
           alt="Access Denied"
           style={{ width: "80px", opacity: 0.8, marginBottom: "20px" }}
         />
-        <h2 style={{ fontSize: "24px", marginBottom: "12px", color: "#EA7323" }}>
+        <h2 style={{ fontSize: "24px", marginBottom: "12px", color: "#6C4CDC" }}>
           Access Restricted 🚫
         </h2>
         <p style={{ fontSize: "16px", color: "#555" }}>
@@ -929,6 +929,9 @@ export default function TlcCustomerReporting(props) {
             placeholder="Employment Type"
           />
         </div>
+        <div style={{display:'flex',justifyContent:'center'}}>
+          <button style={{backgroundColor :'#6c4cdc',padding:'10px 30px',textAlign:'center',border:'none',borderRadius:'6px',marginTop:'20px',cursor:'pointer',color:'white',fontWeight:'500',fontSize:'14px'}}>Apply</button>
+        </div>
       </section>
 
       <section className="uploads-containers">
@@ -959,7 +962,7 @@ export default function TlcCustomerReporting(props) {
                 </div>
                 <p style={{ fontSize: '14px', color: '#444', fontFamily: 'Inter', cursor: 'pointer' }}>
                   {activeTabData.fileNames[item.key].length === 0
-                    ? <>Click to upload <span style={{ color: '#EA7323' }}>{item.label}</span><br></br><small>.XLSX, .XLS, .CSV</small></>
+                    ? <>Click to upload <span style={{ color: '#6C4CDC' }}>{item.label}</span><br></br><small>.XLSX, .XLS, .CSV</small></>
                     : "Uploaded files:"}
                 </p>
               </label>
@@ -985,7 +988,7 @@ export default function TlcCustomerReporting(props) {
                         {fileName.length > 20 ? fileName.slice(0, 30) + "..." : fileName}
                       </span>
                       <span
-                        style={{ cursor: "pointer", color: "#f97316", fontWeight: "bold" }}
+                        style={{ cursor: "pointer", color: "#6C4CDC", fontWeight: "bold" }}
                         onClick={() => {
                           // Remove file from the array
                           const updatedFiles = activeTabData.fileNames[item.key].filter((_, i) => i !== idx);
@@ -1131,7 +1134,7 @@ export default function TlcCustomerReporting(props) {
                   onClick={() => updateTab({ currentPage: 2 })}
                   style={{
                     marginLeft: "auto",
-                    background: "#f97316",
+                    background: "#6C4CDC",
                     color: "#fff",
                     fontWeight: 600,
                   }}
@@ -1146,7 +1149,7 @@ export default function TlcCustomerReporting(props) {
                   onClick={() => updateTab({ currentPage: 3 })}
                   style={{
                     marginLeft: "auto",
-                    background: "#f97316",
+                    background: "#6C4CDC",
                     color: "#fff",
                     fontWeight: 600,
                   }}
@@ -1210,7 +1213,7 @@ export default function TlcCustomerReporting(props) {
                         background: "transparent",
                         border: "none",
                         fontSize: "20px",
-                        color: "#EA7323",
+                        color: "#6C4CDC",
                         fontWeight: "bold",
                         cursor: "pointer",
                         transition: "transform 0.2s ease, color 0.2s ease",
@@ -1244,7 +1247,6 @@ export default function TlcCustomerReporting(props) {
                               : "N/A"}
                           </span>
                         </div>
-                        <div className="history-open-icon">↗</div>
                       </div>
 
                       <div className="saved-on">
@@ -1336,7 +1338,7 @@ export default function TlcCustomerReporting(props) {
                         onClick={handleDeleteHistory}
                         disabled={deleting}
                         style={{
-                          background: "#EA7323",
+                          background: "#6C4CDC",
                           color: "#fff",
                           border: "none",
                           borderRadius: "6px",
