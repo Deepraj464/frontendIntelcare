@@ -364,76 +364,7 @@ export default function TlcCustomerReporting(props) {
   const lastAnalysisKeyRef = useRef("");
   const lastManualWithFilesRef = useRef(false);
   const justRanManualAnalysisRef = useRef(false);
-  useEffect(() => {
-    if (!activeTabData) return;
-    if (justRanManualAnalysisRef.current) {
-      console.log("⏸ Skipping auto-analyze (manual analyse just completed)");
-      justRanManualAnalysisRef.current = false; // reset for next time
-      return;
-    }
-    const {
-      startDate,
-      endDate,
-      selectedState,
-      selectedDepartment,
-      selectedRole,
-      selectedEmploymentType,
-      fileNames,
-      analysisData,
-    } = activeTabData;
 
-    const hasDateRange = startDate && endDate;
-
-    const noFilesUploaded =
-      !fileNames.payroll.length &&
-      !fileNames.people.length &&
-      !fileNames.employee.length;
-
-    // ✅ Determine if auto-analysis should trigger
-    const shouldAutoAnalyse =
-      hasDateRange &&
-      !uploading &&
-      !loading &&
-      (noFilesUploaded || analysisData) &&
-      !lastManualWithFilesRef.current; // no upload or already analysed
-
-    if (!shouldAutoAnalyse) return;
-
-    // 🧩 Create a key to detect if filters changed since last analysis
-    const currentKey = JSON.stringify({
-      startDate,
-      endDate,
-      state: selectedState.map((s) => s.value).join(","),
-      department: selectedDepartment.map((d) => d.value).join(","),
-      role: selectedRole.map((r) => r.value).join(","),
-      empType: selectedEmploymentType.map((e) => e.value).join(","),
-    });
-
-    // ⚠️ If nothing changed, don't reanalyse
-    if (lastAnalysisKeyRef.current === currentKey) return;
-
-    lastAnalysisKeyRef.current = currentKey;
-
-    const timer = setTimeout(() => {
-      console.log("⚙️ Auto-analyzing triggered (date/filter change, safe)...");
-      handleAnalyse();
-    }, 1000); // debounce
-    if (noFilesUploaded) {
-      lastManualWithFilesRef.current = false;
-    }
-    return () => clearTimeout(timer);
-  }, [
-    activeTabData,
-    uploading,
-    loading,
-    activeTabData?.startDate,
-    activeTabData?.endDate,
-    activeTabData?.selectedState,
-    activeTabData?.selectedDepartment,
-    activeTabData?.selectedRole,
-    activeTabData?.selectedEmploymentType,
-    activeTabData?.analysisData,
-  ]);
   // 🧩 Reset "isFromHistory" when user edits any filters or date
   useEffect(() => {
     if (!activeTabData) return;
@@ -929,8 +860,26 @@ export default function TlcCustomerReporting(props) {
             placeholder="Employment Type"
           />
         </div>
-        <div style={{display:'flex',justifyContent:'center'}}>
-          <button style={{backgroundColor :'#6c4cdc',padding:'10px 30px',textAlign:'center',border:'none',borderRadius:'6px',marginTop:'20px',cursor:'pointer',color:'white',fontWeight:'500',fontSize:'14px'}}>Apply</button>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <button
+            onClick={handleAnalyse}
+            disabled={loading || uploading}
+            style={{
+              backgroundColor: "#6c4cdc",
+              padding: "10px 30px",
+              textAlign: "center",
+              border: "none",
+              borderRadius: "6px",
+              marginTop: "20px",
+              cursor: "pointer",
+              color: "white",
+              fontWeight: "500",
+              fontSize: "14px",
+              opacity: loading || uploading ? 0.7 : 1,
+            }}
+          >
+            {loading || uploading ? "Processing..." : "Apply Filters"}
+          </button>
         </div>
       </section>
 
