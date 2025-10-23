@@ -182,8 +182,6 @@ export default function TlcCustomerReporting(props) {
     });
 
     console.log(`✅ Selected ${type} files:`, validFiles.map((f) => f.name));
-
-    e.target.value = "";
   };
 
 
@@ -225,6 +223,7 @@ export default function TlcCustomerReporting(props) {
       );
 
       if (hasAnyFile) {
+        lastManualWithFilesRef.current = true;
         console.log("🧾 Upload path selected — validating uploaded files...");
 
         const invalidUploads = [];
@@ -305,6 +304,7 @@ export default function TlcCustomerReporting(props) {
           setUploading(false);
         }
       } else {
+        lastManualWithFilesRef.current = false;
         console.log("📂 No files selected. Proceeding with existing database data...");
       }
 
@@ -337,7 +337,9 @@ export default function TlcCustomerReporting(props) {
       }
 
       console.log("✅ Analysis data received successfully.");
+      justRanManualAnalysisRef.current = true;
       updateTab({ analysisData: analyzeData.analysisResult, stage: "overview" });
+      lastManualWithFilesRef.current = false;
     } catch (err) {
       console.error("❌ Error in handleAnalyse:", err);
       updateTab({ error: err.message, stage: "filters" });
@@ -350,10 +352,15 @@ export default function TlcCustomerReporting(props) {
 
   // 🧠 Auto-run analysis logic (final stable version)
   const lastAnalysisKeyRef = useRef("");
-
+  const lastManualWithFilesRef = useRef(false);
+  const justRanManualAnalysisRef = useRef(false);
   useEffect(() => {
     if (!activeTabData) return;
-
+    if (justRanManualAnalysisRef.current) {
+      console.log("⏸ Skipping auto-analyze (manual analyse just completed)");
+      justRanManualAnalysisRef.current = false; // reset for next time
+      return;
+    }
     const {
       startDate,
       endDate,
@@ -377,7 +384,8 @@ export default function TlcCustomerReporting(props) {
       hasDateRange &&
       !uploading &&
       !loading &&
-      (noFilesUploaded || analysisData); // no upload or already analysed
+      (noFilesUploaded || analysisData) &&
+      !lastManualWithFilesRef.current; // no upload or already analysed
 
     if (!shouldAutoAnalyse) return;
 
@@ -400,7 +408,9 @@ export default function TlcCustomerReporting(props) {
       console.log("⚙️ Auto-analyzing triggered (date/filter change, safe)...");
       handleAnalyse();
     }, 1000); // debounce
-
+    if (noFilesUploaded) {
+      lastManualWithFilesRef.current = false;
+    }
     return () => clearTimeout(timer);
   }, [
     activeTabData,
@@ -737,12 +747,12 @@ export default function TlcCustomerReporting(props) {
     const parsed = parse(htmlString, {
       replace: (domNode) => (domNode.name === "script" ? null : undefined),
     });
-  
+
     setTimeout(() => {
       try {
         const tempDiv = document.createElement("div");
         tempDiv.innerHTML = htmlString;
-  
+
         const scripts = tempDiv.getElementsByTagName("script");
         for (let script of scripts) {
           const newScript = document.createElement("script");
@@ -755,11 +765,11 @@ export default function TlcCustomerReporting(props) {
         console.warn("Script execution error:", e);
       }
     }, 0);
-  
+
     return parsed;
   };
-  
-  
+
+
 
   // -------------------- TAB BAR --------------------
   const renderTabBar = () => (
