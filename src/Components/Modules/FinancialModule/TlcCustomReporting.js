@@ -12,6 +12,8 @@ import parse, { domToReact } from "html-react-parser";
 export default function TlcCustomerReporting(props) {
   console.log("props", props);
   const [uploading, setUploading] = useState(false);
+  const [progressStage, setProgressStage] = useState("idle");
+
 
   // -------------------- MULTI TAB SUPPORT --------------------
   const [tabs, setTabs] = useState([
@@ -158,7 +160,7 @@ export default function TlcCustomerReporting(props) {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
-    // ✅ Basic validation — allow .csv, .xls, .xlsx
+    // ✅ Validate file names
     const validFiles = files.filter((file) => {
       const name = file.name.toLowerCase();
       if (type === "payroll" && name.includes("pay journal")) return true;
@@ -168,21 +170,26 @@ export default function TlcCustomerReporting(props) {
     });
 
     if (validFiles.length === 0) {
-      alert(`⚠️ Invalid file uploaded in ${type.toUpperCase()} section. Please check the file.`);
+      alert(`⚠️ Invalid file uploaded in ${type.toUpperCase()} section.`);
       e.target.value = "";
       return;
     }
 
-    // ✅ Update this tab’s file list
+    // ✅ Save both file names and actual file objects
     updateTab({
       fileNames: {
         ...activeTabData.fileNames,
         [type]: validFiles.map((f) => f.name),
       },
+      [`${type}Files`]: validFiles, // 🧠 keep File objects
     });
 
     console.log(`✅ Selected ${type} files:`, validFiles.map((f) => f.name));
+
+    // ✅ Allow reselecting same file
+    e.target.value = "";
   };
+
 
 
 
@@ -209,18 +216,18 @@ export default function TlcCustomerReporting(props) {
     try {
       setLoading(true);
       updateTab({ stage: "loading", error: null });
+      setProgressStage("uploading");
       console.log("🚀 Starting analysis process for tab:", activeTab);
 
       // -------------------------------
       // STEP 1️⃣: VALIDATE FILE UPLOADS
       // -------------------------------
-      const inputs = ["payroll", "people", "employee"].map((type) =>
-        document.querySelector(`input[data-type="${type}"][data-tab="${activeTab}"]`)
-      );
+      const inputs = ["payroll", "people", "employee"].map((type) => ({
+        type,
+        files: activeTabData[`${type}Files`] || [],
+      }));
 
-      const hasAnyFile = inputs.some(
-        (input) => input && input.files && input.files.length > 0
-      );
+      const hasAnyFile = inputs.some((set) => set.files.length > 0);
 
       if (hasAnyFile) {
         lastManualWithFilesRef.current = true;
@@ -230,11 +237,8 @@ export default function TlcCustomerReporting(props) {
 
         // ✅ Validate each file section
         for (const input of inputs) {
-          if (!input) continue;
-          const type = input.getAttribute("data-type");
-          const files = Array.from(input.files);
-
-          if (files.length === 0) {
+          const { type, files } = input;
+          if (!files.length) {
             invalidUploads.push(`❌ Missing file(s) for ${type.toUpperCase()}`);
             continue;
           }
@@ -255,6 +259,7 @@ export default function TlcCustomerReporting(props) {
             );
           }
         }
+
 
         // ✅ Check if all 3 sections have files
         const allTypesUploaded = inputs.every(
@@ -279,6 +284,7 @@ export default function TlcCustomerReporting(props) {
         console.log("✅ All uploaded files are valid. Uploading before analysis...");
         try {
           setUploading(true);
+          setProgressStage("uploading");
           const formData = new FormData();
           inputs.forEach((input) => {
             Array.from(input.files).forEach((file) => formData.append("files", file));
@@ -297,6 +303,7 @@ export default function TlcCustomerReporting(props) {
           }
 
           console.log("✅ Files uploaded successfully before analysis.");
+          setProgressStage("analysing");
         } catch (uploadErr) {
           console.error("❌ Upload failed:", uploadErr);
           alert("Some files failed to upload. Continuing with existing data...");
@@ -305,6 +312,7 @@ export default function TlcCustomerReporting(props) {
         }
       } else {
         lastManualWithFilesRef.current = false;
+        setProgressStage("analysing");
         console.log("📂 No files selected. Proceeding with existing database data...");
       }
 
@@ -331,11 +339,12 @@ export default function TlcCustomerReporting(props) {
       const analyzeRes = await fetch(url);
       const analyzeData = await analyzeRes.json();
       console.log("📊 Analyze API response:", analyzeData);
-
+      setProgressStage("preparing");
       if (!analyzeRes.ok || !analyzeData.analysisResult) {
         throw new Error(analyzeData.error || "Analysis failed. No valid response received.");
       }
-
+      setProgressStage("preparing");
+      await new Promise(resolve => setTimeout(resolve, 800));
       console.log("✅ Analysis data received successfully.");
       justRanManualAnalysisRef.current = true;
       updateTab({ analysisData: analyzeData.analysisResult, stage: "overview" });
@@ -347,6 +356,7 @@ export default function TlcCustomerReporting(props) {
     } finally {
       setLoading(false);
       setUploading(false);
+      setTimeout(() => setProgressStage("idle"), 800);
     }
   };
 
@@ -935,13 +945,14 @@ export default function TlcCustomerReporting(props) {
             <div className="upload-boxes">
               <label>
                 <input
+                  key={`${activeTab}-${item.key}-${activeTabData.fileNames[item.key].join(",")}`}
                   type="file"
                   multiple
                   accept=".xlsx, .xls, .csv"
                   data-type={item.key}
                   data-tab={activeTab}
                   onChange={(e) => handleFileChange(e, item.key)}
-                  style={{ cursor: 'pointer' }}
+                  style={{ cursor: "pointer" }}
                 />
                 <div className="uploadss-iconss" style={{ cursor: 'pointer' }}>
                   <img src={UploadTlcIcon} alt="uploadtlcIcon" style={{ height: "48px", width: "48px" }} />
@@ -996,16 +1007,21 @@ export default function TlcCustomerReporting(props) {
 
 
       {activeTabData.stage === "loading" && (
-        <div className="loading-overlay">
+        <div className="inline-loader-wrapper">
           <div className="loader"></div>
-          <p>Processing your data, please wait...</p>
+          <div className="loading-text">
+            {progressStage === "uploading" && "📤 Uploading your files..."}
+            {progressStage === "analysing" && "🔍 Analysing data..."}
+            {progressStage === "preparing" && "📊 Preparing your dashboard..."}
+          </div>
         </div>
       )}
+
 
       <div className="search-section">
         {activeTabData.stage === "overview" && activeTabData.analysisData && (
           <section className="dashboard">
-            <h2 className="section-title">
+            <h2 className="payroll-section-title">
               {(() => {
                 const titles = {
                   1: "Payroll Overview",
@@ -1019,47 +1035,36 @@ export default function TlcCustomerReporting(props) {
             {activeTabData.analysisData && (
               <div className="summary-cards">
                 {(() => {
+                  // ✅ 1️⃣ Try to use the page-specific scorecard
                   const pageKey = `page ${activeTabData.currentPage}`;
                   const pageScorecard = activeTabData.analysisData.pages?.[pageKey]?.scorecard || {};
 
-                  const allowedKeysByPage = {
-                    1: [
-                      "Average Cost per Hour ($/hr)",
-                      "Overtime Hours ($)",
-                      "Total Paid Hours ($)",
-                      "Total Payroll Cost ($) Gross",
-                      "Weekend & Public Holiday Cost ($)",
-                      "Working Employees",
-                    ],
-                    2: [
-                      "Average Cost per Hour ($/hr)",
-                      "Working Employees",
-                      "Overtime Hours ($)",
-                      "Weekend & Public Holiday Cost ($)",
-                    ],
-                    3: [
-                      "% Employees on Leave",
-                      "Total Leave Hours",
-                    ],
-                  };
+                  // ✅ 2️⃣ If totals exist (from root scorecard), show them too
+                  const totals = activeTabData.analysisData.scorecard?.totals || {};
 
-                  const allowedKeys = allowedKeysByPage[activeTabData.currentPage] || [];
+                  // ✅ Merge both (page first, then totals if page is empty)
+                  let displayData = {};
 
-                  return Object.entries(pageScorecard)
-                    .filter(([label]) => allowedKeys.length === 0 || allowedKeys.includes(label))
-                    .map(([label, value], index) => (
-                      <div key={index} className="summary-card">
-                        <p>{label}</p>
-                        <h3>
-                          {typeof value === "number"
-                            ? `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
-                            : value}
-                        </h3>
-                      </div>
-                    ));
+                  if (Object.keys(pageScorecard).length > 0) {
+                    // ✅ Page has its own scorecard (e.g., Page 1 or 3)
+                    displayData = pageScorecard;
+                  }
+
+                  // ✅ 3️⃣ Render all fields dynamically
+                  return Object.entries(displayData).map(([label, value], index) => (
+                    <div key={index} className="summary-card">
+                      <p>{label}</p>
+                      <h3>
+                        {typeof value === "number"
+                          ? value.toLocaleString(undefined, { maximumFractionDigits: 2 })
+                          : value}
+                      </h3>
+                    </div>
+                  ));
                 })()}
               </div>
             )}
+
 
             <div className="charts-grid">
               {(activeTabData.analysisData.pages?.[`page ${activeTabData.currentPage}`]?.figures || [])
