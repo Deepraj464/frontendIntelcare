@@ -5,6 +5,9 @@ import "../../../Styles/TlcCustomReporting.css";
 import TLCLogo from "../../../Images/TLCLogo.png";
 import UploadTlcIcon from "../../../Images/UploadTlcIcon.png";
 import { FiChevronDown } from "react-icons/fi";
+import parse, { domToReact } from "html-react-parser";
+
+
 
 export default function TlcCustomerReporting(props) {
   console.log("props", props);
@@ -179,8 +182,6 @@ export default function TlcCustomerReporting(props) {
     });
 
     console.log(`✅ Selected ${type} files:`, validFiles.map((f) => f.name));
-
-    e.target.value = "";
   };
 
 
@@ -222,6 +223,7 @@ export default function TlcCustomerReporting(props) {
       );
 
       if (hasAnyFile) {
+        lastManualWithFilesRef.current = true;
         console.log("🧾 Upload path selected — validating uploaded files...");
 
         const invalidUploads = [];
@@ -302,6 +304,7 @@ export default function TlcCustomerReporting(props) {
           setUploading(false);
         }
       } else {
+        lastManualWithFilesRef.current = false;
         console.log("📂 No files selected. Proceeding with existing database data...");
       }
 
@@ -334,7 +337,9 @@ export default function TlcCustomerReporting(props) {
       }
 
       console.log("✅ Analysis data received successfully.");
+      justRanManualAnalysisRef.current = true;
       updateTab({ analysisData: analyzeData.analysisResult, stage: "overview" });
+      lastManualWithFilesRef.current = false;
     } catch (err) {
       console.error("❌ Error in handleAnalyse:", err);
       updateTab({ error: err.message, stage: "filters" });
@@ -347,10 +352,15 @@ export default function TlcCustomerReporting(props) {
 
   // 🧠 Auto-run analysis logic (final stable version)
   const lastAnalysisKeyRef = useRef("");
-
+  const lastManualWithFilesRef = useRef(false);
+  const justRanManualAnalysisRef = useRef(false);
   useEffect(() => {
     if (!activeTabData) return;
-
+    if (justRanManualAnalysisRef.current) {
+      console.log("⏸ Skipping auto-analyze (manual analyse just completed)");
+      justRanManualAnalysisRef.current = false; // reset for next time
+      return;
+    }
     const {
       startDate,
       endDate,
@@ -374,7 +384,8 @@ export default function TlcCustomerReporting(props) {
       hasDateRange &&
       !uploading &&
       !loading &&
-      (noFilesUploaded || analysisData); // no upload or already analysed
+      (noFilesUploaded || analysisData) &&
+      !lastManualWithFilesRef.current; // no upload or already analysed
 
     if (!shouldAutoAnalyse) return;
 
@@ -397,7 +408,9 @@ export default function TlcCustomerReporting(props) {
       console.log("⚙️ Auto-analyzing triggered (date/filter change, safe)...");
       handleAnalyse();
     }, 1000); // debounce
-
+    if (noFilesUploaded) {
+      lastManualWithFilesRef.current = false;
+    }
     return () => clearTimeout(timer);
   }, [
     activeTabData,
@@ -711,217 +724,52 @@ export default function TlcCustomerReporting(props) {
     );
   };
 
-  const PlotlyChart = React.memo(({ chartHTML, id }) => {
-    const containerRef = useRef(null);
-    const renderedRef = useRef(false);
-    const [isVisible, setIsVisible] = useState(false);
 
-    useEffect(() => {
-      const container = containerRef.current;
-      if (!container || !chartHTML || renderedRef.current) return;
+  // const renderHtmlFigure = (htmlString) => {
+  //   return parse(htmlString, {
+  //     replace: (domNode) => {
+  //       // Safely execute <script> tags
+  //       if (domNode.name === "script") {
+  //         if (domNode.children && domNode.children.length > 0) {
+  //           try {
+  //             new Function(domNode.children[0].data)();
+  //           } catch (e) {
+  //             console.warn("Script execution error", e);
+  //           }
+  //         }
+  //         return null; // Don't render the <script> tag itself
+  //       }
+  //     },
+  //   });
+  // }
 
-      const innerWrapper = document.createElement("div");
-      innerWrapper.className = "chart-inner";
-      container.replaceChildren(innerWrapper);
+  const renderHtmlFigure = (htmlString) => {
+    const parsed = parse(htmlString, {
+      replace: (domNode) => (domNode.name === "script" ? null : undefined),
+    });
 
-      const renderChart = async () => {
-        const virtualDOM = document.createElement("div");
-        virtualDOM.innerHTML = chartHTML.trim();
+    setTimeout(() => {
+      try {
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = htmlString;
 
-        const scripts = Array.from(virtualDOM.querySelectorAll("script"));
-        scripts.forEach((s) => s.remove());
-
-        innerWrapper.innerHTML = virtualDOM.innerHTML;
-
-        for (const script of scripts) {
-          await new Promise((resolve) => {
-            const newScript = document.createElement("script");
-            newScript.async = true;
-
-            if (script.src) {
-              newScript.src = script.src;
-              newScript.onload = resolve;
-              newScript.onerror = resolve;
-              document.body.appendChild(newScript);
-            } else {
-              setTimeout(() => {
-                try {
-                  new Function(script.textContent || "")();
-                } catch (e) {
-                  console.warn("⚠️ Inline Plotly script error:", e);
-                }
-                resolve();
-              }, 0);
-            }
-          });
+        const scripts = tempDiv.getElementsByTagName("script");
+        for (let script of scripts) {
+          const newScript = document.createElement("script");
+          if (script.src) newScript.src = script.src;
+          else if (script.textContent) newScript.text = script.textContent;
+          document.body.appendChild(newScript);
+          document.body.removeChild(newScript);
         }
+      } catch (e) {
+        console.warn("Script execution error:", e);
+      }
+    }, 0);
 
-        requestAnimationFrame(() => {
-          const plots = innerWrapper.querySelectorAll(".plotly-graph-div");
-          plots.forEach((div) => {
-            const isTable =
-              id.startsWith("table-") ||
-              id.includes("leave") ||
-              chartHTML.toLowerCase().includes("employee leave") ||
-              chartHTML.includes("<table");
-            console.log("Detected table for", id, "→", isTable);
-            if (isTable) {
-              div.style.scale = "1.2";
-              div.style.width = "95%";
-              div.style.height = "600px";
-              div.style.margin = "40px auto";
-              div.style.transformOrigin = "top center";
-              div.style.transition = "all 0.4s ease";
-              div.style.fontSize = "14px";
-            } else {
-              div.style.scale = "0.55";
-              div.style.width = "100%";
-              div.style.height = "260px";
-              div.style.marginTop = "0";
-              div.style.transformOrigin = "top center";
-              div.style.transition = "scale 0.4s ease, opacity 0.6s ease";
-            }
+    return parsed;
+  };
 
-            div.style.opacity = "1";
-            div.parentElement.style.overflow = "hidden";
 
-            if (!isTable) {
-              div.querySelectorAll("svg, canvas").forEach((el) => {
-                el.style.marginTop = "250px";
-              });
-            }
-          });
-        });
-
-        renderedRef.current = true;
-      };
-
-      const observer = new IntersectionObserver(
-        (entries) => {
-          const [entry] = entries;
-          if (entry.isIntersecting && !renderedRef.current) {
-            setIsVisible(true);
-            observer.disconnect();
-            renderChart();
-          }
-        },
-        { threshold: 0.2 }
-      );
-
-      observer.observe(container);
-
-      return () => {
-        observer.disconnect();
-        if (container.contains(innerWrapper)) {
-          container.replaceChildren();
-        }
-        renderedRef.current = false;
-      };
-    }, [chartHTML]);
-
-    return (
-      <div
-        ref={containerRef}
-        id={id}
-        className="chart-box fade-in"
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          overflow: "hidden",
-          height: "280px",
-          width: "100%",
-          background: "#fff",
-          borderRadius: "12px",
-          boxShadow: "0 2px 10px rgba(0, 0, 0, 0.05)",
-          position: "relative",
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? "translateY(0px)" : "translateY(20px)",
-          transition: "opacity 0.6s ease, transform 0.6s ease",
-        }}
-      >
-        {!renderedRef.current && (
-          <div
-            style={{
-              fontSize: "14px",
-              color: "#999",
-              textAlign: "center",
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-            }}
-          >
-            Rendering chart...
-          </div>
-        )}
-      </div>
-    );
-  });
-
-  const TableRenderer = React.memo(({ id, rawHTML }) => {
-    if (!rawHTML) return null;
-
-    const titleMatch =
-      rawHTML.match(/<h\d[^>]*>(.*?)<\/h\d>/i) ||
-      rawHTML.match(/<div[^>]*>([^<]*Employee[^<]*)<\/div>/i) ||
-      rawHTML.match(/<span[^>]*>([^<]*Employee[^<]*)<\/span>/i);
-
-    const tableTitle = titleMatch ? titleMatch[1].trim() : null;
-
-    const cleanHTML = titleMatch
-      ? rawHTML.replace(titleMatch[0], "")
-      : rawHTML;
-
-    return (
-      <div
-        className="table-section"
-        style={{
-          width: "100%",
-          margin: "50px auto 60px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        {tableTitle && (
-          <h3
-            className="table-title"
-            style={{
-              marginBottom: "12px",
-              marginTop: "0px",
-              fontSize: "20px",
-              color: "#1f2d3d",
-              fontWeight: 700,
-              fontFamily: "Inter, sans-serif",
-              letterSpacing: "0.3px",
-              textAlign: "center",
-              width: "100%",
-            }}
-          >
-            {tableTitle}
-          </h3>
-        )}
-
-        <div
-          className="table-box"
-          style={{
-            gridColumn: "1 / -1",
-            width: "95%",
-            background: "#fff",
-            borderRadius: "12px",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
-            padding: "25px 20px",
-            overflowX: "auto",
-            overflowY: "auto",
-            maxHeight: "700px",
-          }}
-        >
-          <PlotlyChart id={id} chartHTML={cleanHTML} />
-        </div>
-      </div>
-    );
-  });
 
   // -------------------- TAB BAR --------------------
   const renderTabBar = () => (
@@ -1221,16 +1069,18 @@ export default function TlcCustomerReporting(props) {
                     !chartHTML.toLowerCase().includes("employee leave")
                 )
                 .map((chartHTML, index) => (
-                  <PlotlyChart
+                  <div
                     key={`${activeTabData.currentPage}-${index}`}
                     id={`chart-${activeTabData.currentPage}-${index}`}
-                    chartHTML={chartHTML}
-                  />
+                  >
+                    {renderHtmlFigure(chartHTML)}
+                  </div>
                 ))}
             </div>
 
+            {/* Page 3 Table */}
             {activeTabData.currentPage === 3 && (() => {
-              const tableFigure = (activeTabData.analysisData.pages?.["page 3"]?.figures || []).find(
+              const tableFigure = (activeTabData.analysisData.pages?.[`page ${activeTabData.currentPage}`]?.figures || []).find(
                 (html) =>
                   html.toLowerCase().includes("<table") ||
                   html.toLowerCase().includes("employee leave")
@@ -1238,35 +1088,29 @@ export default function TlcCustomerReporting(props) {
               if (!tableFigure) return null;
 
               return (
-                <TableRenderer
-                  id={`leave-table-${activeTabData.currentPage}`}
-                  rawHTML={tableFigure}
-                />
+                <div id={`leave-table-${activeTabData.currentPage}`}>
+                  {renderHtmlFigure(tableFigure)}
+                </div>
               );
             })()}
 
-            {activeTabData.currentPage === 1 && (
-              (() => {
-                const tableHTML =
-                  activeTabData.analysisData.table ||
-                  activeTabData.analysisData.pages?.["page 1"]?.table ||
-                  "";
+            {/* Page 1 Table */}
+            {activeTabData.currentPage === 1 && (() => {
+              const tableHTML =
+                activeTabData.analysisData.table ||
+                activeTabData.analysisData.pages?.["page 1"]?.table ||
+                "";
+              if (!tableHTML) return null;
 
-                if (!tableHTML) return null;
+              return (
+                <div className="table-box" id={`table-${activeTabData.currentPage}`}>
+                  {renderHtmlFigure(tableHTML)}
+                </div>
+              );
+            })()}
 
-                return (
-                  <div className="table-box">
-                    <TableRenderer
-                      id={`table-${activeTabData.currentPage}`}
-                      rawHTML={tableHTML}
-                    />
-                  </div>
-                );
-              })()
-            )}
-
+            {/* Navigation Buttons */}
             <div className="nav-buttons">
-              {/* Back button for Page 2 and 3 */}
               {activeTabData.currentPage > 1 && (
                 <button
                   className="back-btn"
@@ -1276,7 +1120,6 @@ export default function TlcCustomerReporting(props) {
                 </button>
               )}
 
-              {/* Conditional Next Buttons */}
               {activeTabData.currentPage === 1 && (
                 <button
                   className="next-btn"
@@ -1307,7 +1150,6 @@ export default function TlcCustomerReporting(props) {
                 </button>
               )}
             </div>
-
 
           </section>
         )}
