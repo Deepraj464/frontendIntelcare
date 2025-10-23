@@ -287,6 +287,7 @@ const FinancialHealth = (props) => {
         reportResponse: analysisData,
         from_date: fromDate,
         to_date: toDate,
+        userEmail: userEmail
       };
 
 
