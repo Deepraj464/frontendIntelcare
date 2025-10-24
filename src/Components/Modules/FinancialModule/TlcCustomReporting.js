@@ -6,6 +6,7 @@ import TLCLogo from "../../../Images/TLCLogo.png";
 import UploadTlcIcon from "../../../Images/UploadTlcIcon.png";
 import { FiChevronDown } from "react-icons/fi";
 import parse, { domToReact } from "html-react-parser";
+import { RiDeleteBin6Line } from "react-icons/ri";
 
 
 
@@ -654,6 +655,7 @@ export default function TlcCustomerReporting(props) {
                     checked={isSelected}
                     readOnly
                     style={{ marginRight: "8px" }}
+                    className="custom-checkbox"
                   />
                   {option.label}
                 </div>
@@ -666,23 +668,6 @@ export default function TlcCustomerReporting(props) {
   };
 
 
-  // const renderHtmlFigure = (htmlString) => {
-  //   return parse(htmlString, {
-  //     replace: (domNode) => {
-  //       // Safely execute <script> tags
-  //       if (domNode.name === "script") {
-  //         if (domNode.children && domNode.children.length > 0) {
-  //           try {
-  //             new Function(domNode.children[0].data)();
-  //           } catch (e) {
-  //             console.warn("Script execution error", e);
-  //           }
-  //         }
-  //         return null; // Don't render the <script> tag itself
-  //       }
-  //     },
-  //   });
-  // }
 
   const renderHtmlFigure = (htmlString) => {
     const parsed = parse(htmlString, {
@@ -860,27 +845,30 @@ export default function TlcCustomerReporting(props) {
             placeholder="Employment Type"
           />
         </div>
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <button
-            onClick={handleAnalyse}
-            disabled={loading || uploading}
-            style={{
-              backgroundColor: "#6c4cdc",
-              padding: "10px 30px",
-              textAlign: "center",
-              border: "none",
-              borderRadius: "6px",
-              marginTop: "20px",
-              cursor: "pointer",
-              color: "white",
-              fontWeight: "500",
-              fontSize: "14px",
-              opacity: loading || uploading ? 0.7 : 1,
-            }}
-          >
-            {loading || uploading ? "Processing..." : "Apply Filters"}
-          </button>
-        </div>
+        {activeTabData.analysisData && (
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <button
+              onClick={handleAnalyse}
+              disabled={loading || uploading}
+              style={{
+                backgroundColor: "#6c4cdc",
+                padding: "10px 30px",
+                textAlign: "center",
+                border: "none",
+                borderRadius: "6px",
+                marginTop: "20px",
+                cursor: "pointer",
+                color: "white",
+                fontWeight: "500",
+                fontSize: "14px",
+                opacity: loading || uploading ? 0.7 : 1,
+              }}
+            >
+              {loading || uploading ? "Processing..." : "Apply Filters"}
+            </button>
+          </div>
+        )}
+
       </section>
 
       <section className="uploads-containers">
@@ -890,34 +878,67 @@ export default function TlcCustomerReporting(props) {
           { key: "employee", label: "Employee Update Data" },
         ].map((item) => (
           <div key={item.key} style={{ marginBottom: "16px" }}>
-            <div style={{ textAlign: "left", fontSize: "12px", fontFamily: "Inter", fontWeight: 500 }}>
+            <div
+              style={{
+                textAlign: "left",
+                fontSize: "12px",
+                fontFamily: "Inter",
+                fontWeight: 500,
+              }}
+            >
               Upload {item.label}
             </div>
 
-            <div className="upload-boxes">
-              <label>
-                <input
-                  key={`${activeTab}-${item.key}-${activeTabData.fileNames[item.key].join(",")}`}
-                  type="file"
-                  multiple
-                  accept=".xlsx, .xls, .csv"
-                  data-type={item.key}
-                  data-tab={activeTab}
-                  onChange={(e) => handleFileChange(e, item.key)}
-                  style={{ cursor: "pointer" }}
+            <div
+              className="upload-boxes"
+              style={{ cursor: "pointer" }}
+              onClick={(e) => {
+                // Only trigger file input if the click is NOT on uploaded file or delete button
+                if (!e.target.dataset.ignore) {
+                  document.getElementById(`file-${activeTab}-${item.key}`).click();
+                }
+              }}
+            >
+              <input
+                id={`file-${activeTab}-${item.key}`}
+                type="file"
+                multiple
+                accept=".xlsx, .xls, .csv"
+                data-type={item.key}
+                data-tab={activeTab}
+                onChange={(e) => handleFileChange(e, item.key)}
+                style={{ display: "none" }}
+              />
+
+              <div className="uploadss-iconss">
+                <img
+                  src={UploadTlcIcon}
+                  alt="uploadtlcIcon"
+                  style={{ height: "48px", width: "48px" }}
                 />
-                <div className="uploadss-iconss" style={{ cursor: 'pointer' }}>
-                  <img src={UploadTlcIcon} alt="uploadtlcIcon" style={{ height: "48px", width: "48px" }} />
-                </div>
-                <p style={{ fontSize: '14px', color: '#444', fontFamily: 'Inter', cursor: 'pointer' }}>
-                  {activeTabData.fileNames[item.key].length === 0
-                    ? <>Click to upload <span style={{ color: '#6C4CDC' }}>{item.label}</span><br></br><small>.XLSX, .XLS, .CSV</small></>
-                    : "Uploaded files:"}
-                </p>
-              </label>
+              </div>
+              <p style={{ fontSize: "14px", color: "#444", fontFamily: "Inter" }}>
+                {activeTabData.fileNames[item.key].length === 0 ? (
+                  <>
+                    Click to upload{" "}
+                    <span style={{ color: "#6C4CDC" }}>{item.label}</span>
+                    <br />
+                    <small>.XLSX, .XLS, .CSV</small>
+                  </>
+                ) : (
+                  "Uploaded files:"
+                )}
+              </p>
+
               <div className="upload-content">
-                {/* Uploaded files list */}
-                <div style={{ marginTop: "8px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                <div
+                  style={{
+                    marginTop: "8px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "4px",
+                  }}
+                >
                   {activeTabData.fileNames[item.key].map((fileName, idx) => (
                     <div
                       key={idx}
@@ -930,16 +951,15 @@ export default function TlcCustomerReporting(props) {
                         borderRadius: "6px",
                         fontSize: "14px",
                         fontFamily: "Inter",
-                        marginBottom: '4px'
                       }}
+                      // mark as ignore so clicking doesn't trigger file dialog
+                      data-ignore="true"
                     >
-                      <span title={fileName}>
-                        {fileName.length > 20 ? fileName.slice(0, 30) + "..." : fileName}
-                      </span>
+                      <span title={fileName}>{fileName.length > 20 ? fileName.slice(0, 30) + "..." : fileName}</span>
                       <span
                         style={{ cursor: "pointer", color: "#6C4CDC", fontWeight: "bold" }}
+                        data-ignore="true"
                         onClick={() => {
-                          // Remove file from the array
                           const updatedFiles = activeTabData.fileNames[item.key].filter((_, i) => i !== idx);
                           updateTab({
                             fileNames: { ...activeTabData.fileNames, [item.key]: updatedFiles },
@@ -1170,7 +1190,7 @@ export default function TlcCustomerReporting(props) {
                       onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.2)")}
                       onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1.0)")}
                     >
-                      ×
+                      <RiDeleteBin6Line color='#6c4cdc' size={18} />
                     </button>
 
                     {/* History card body */}
@@ -1265,7 +1285,7 @@ export default function TlcCustomerReporting(props) {
                         marginBottom: "16px",
                       }}
                     >
-                      Are you sure?
+                      Are you sure you want to delete history?
                     </h4>
 
                     <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
