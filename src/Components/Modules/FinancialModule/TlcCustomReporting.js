@@ -845,27 +845,30 @@ export default function TlcCustomerReporting(props) {
             placeholder="Employment Type"
           />
         </div>
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <button
-            onClick={handleAnalyse}
-            disabled={loading || uploading}
-            style={{
-              backgroundColor: "#6c4cdc",
-              padding: "10px 30px",
-              textAlign: "center",
-              border: "none",
-              borderRadius: "6px",
-              marginTop: "20px",
-              cursor: "pointer",
-              color: "white",
-              fontWeight: "500",
-              fontSize: "14px",
-              opacity: loading || uploading ? 0.7 : 1,
-            }}
-          >
-            {loading || uploading ? "Processing..." : "Apply Filters"}
-          </button>
-        </div>
+        {activeTabData.analysisData && (
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <button
+              onClick={handleAnalyse}
+              disabled={loading || uploading}
+              style={{
+                backgroundColor: "#6c4cdc",
+                padding: "10px 30px",
+                textAlign: "center",
+                border: "none",
+                borderRadius: "6px",
+                marginTop: "20px",
+                cursor: "pointer",
+                color: "white",
+                fontWeight: "500",
+                fontSize: "14px",
+                opacity: loading || uploading ? 0.7 : 1,
+              }}
+            >
+              {loading || uploading ? "Processing..." : "Apply Filters"}
+            </button>
+          </div>
+        )}
+
       </section>
 
       <section className="uploads-containers">
@@ -1187,7 +1190,7 @@ export default function TlcCustomerReporting(props) {
                       onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.2)")}
                       onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1.0)")}
                     >
-                      <RiDeleteBin6Line  color='#6c4cdc' size={18}/>
+                      <RiDeleteBin6Line color='#6c4cdc' size={18} />
                     </button>
 
                     {/* History card body */}
