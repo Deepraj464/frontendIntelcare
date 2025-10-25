@@ -1041,7 +1041,7 @@ export default function TlcCustomerReporting(props) {
             </div>
             }
             {showReport &&
-              <div style={{ marginBottom: '24px', textAlign: 'left', }}>
+              <div style={{ marginBottom: '24px', textAlign: 'left',background:'#ded8ff',borderRadius:'8px',padding:'14px' }}>
                 <div style={{ fontFamily: 'Inter', fontWeight: 'bold', fontSize: '20px',marginBottom:'14px'}}>Report will be displayed here....</div>
                 <div> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nisl sit amet tincidunt malesuada, urna augue fermentum metus, vel interdum erat urna sed enim. Praesent tincidunt sapien vel est consequat, nec facilisis turpis cursus. Integer sit amet eros vel elit luctus convallis. Curabitur a arcu a libero aliquet elementum. Nulla facilisi. Duis vitae sem ac dolor tincidunt bibendum. Suspendisse potenti.
                 </div>
