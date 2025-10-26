@@ -52,7 +52,7 @@ export default function AIAnalysisReportViewer({ reportText, loading }) {
             fontFamily: "Inter",
             fontWeight: "700",
             fontSize: "22px",
-            color: "#3a2fc2",
+            color: "#6c4cdc",
             margin: "auto",
           }}
         >
@@ -89,7 +89,7 @@ export default function AIAnalysisReportViewer({ reportText, loading }) {
               h2: ({ node, ...props }) => (
                 <h2
                   style={{
-                    color: "#4b37d6",
+                    color: "#6c4cdc",
                     fontSize: "19px",
                     fontWeight: 700,
                     marginTop: "28px",

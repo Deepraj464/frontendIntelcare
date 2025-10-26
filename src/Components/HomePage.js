@@ -3,6 +3,7 @@ import "../Styles/UploaderPage.css";
 import BlackExpandIcon from "../../src/Images/BlackExpandIcon.png";
 import axios from "axios";
 import { FaPaperPlane } from "react-icons/fa";
+import { FaCircleArrowRight } from "react-icons/fa6";
 import Modal from "./Modal";
 import SignIn from "./SignIn";
 import MarkdownParser from "./MarkdownParser";
@@ -12,7 +13,9 @@ import PricingModal from "./PricingModal";
 import SubscriptionStatus from "./SubscriptionStatus";
 import { IoMdInformationCircleOutline } from "react-icons/io";
 import askAiStar from "../Images/askaiStar.png";
+import aksAiPurpleStar from '../Images/AskAiPurpleStar.png';
 import purpleStar from "../Images/PurpleStar.png";
+import askAiPersonIcon from '../Images/AskAiPersonIcon.png';
 import { RxCrossCircled } from "react-icons/rx";
 import Sidebar from "./Sidebar";
 import FinancialHealth from "./Modules/FinancialModule/FinancialHealth";
@@ -32,10 +35,16 @@ import RosteringDashboard from "./Modules/RosteringModule/SmartRostering";
 import HRAnalysis from "./Modules/SupportAtHomeModule.js/HRAnalysis";
 import IncidentAuditing from "./Modules/NDISModule/IncidentAuditing";
 import TlcCustomerReporting from "./Modules/FinancialModule/TlcCustomReporting";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+import rehypeHighlight from "rehype-highlight";
+import "highlight.js/styles/github.css";
 
 const HomePage = () => {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [documentString, setDocumentString] = useState("");
+  const [tlcAskAiPayload, setTlcAskAiPayload] = useState("");
   const [showAIChat, setShowAIChat] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
@@ -53,9 +62,16 @@ const HomePage = () => {
   const [showUploadedReport, setShowUploadReport] = useState(false);
   const [loadingUser, setLoadingUser] = useState(true);
   console.log("user", user)
-  const isTlcPage = selectedRole === "Custom Reporting";
+  const isTlcPage = selectedRole === "TLC Payroll Custom";
   const handleModalOpen = () => setModalVisible(true);
   const handleModalClose = () => setModalVisible(false);
+
+  const Suggestions = [
+    "What is NDIS?",
+    "What is Aged Care?",
+    "How Does this module works?",
+    "Do you offer support?"
+  ];
 
   useEffect(() => {
     getCount();
@@ -63,32 +79,54 @@ const HomePage = () => {
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
 
+  console.log('Tlc', tlcAskAiPayload);
+
   const handleSend = async () => {
     if (!input.trim()) return;
 
     setMessages((prev) => [...prev, { sender: "user", text: input }]);
+    const tempBotMessage = { sender: "bot", text: "Generating response...", temp: true };
+    setMessages((prev) => [...prev, tempBotMessage]);
 
-    const payload = { query: input };
-    if (documentString) payload.document = documentString;
+    const userInput = input;
+    setInput("");
+
+    const isTlcPage = selectedRole === "TLC Payroll Custom";
+
+    let payload = {};
+
+    if (isTlcPage && tlcAskAiPayload) {
+      payload = {
+        objects: [
+          {
+            periodEndDate: new Date().toISOString().split("T")[0],
+            payrollJournal: Array.isArray(tlcAskAiPayload) ? tlcAskAiPayload : [tlcAskAiPayload],
+          }
+        ],
+        query: userInput
+      };
+    } else {
+      payload = { query: userInput };
+      if (documentString) payload.document = documentString;
+    }
+    const baseURL = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io";
+    const apiURL = isTlcPage
+      ? `${baseURL}/tlc/payroll/payroll_askai`
+      : `${baseURL}/askai`;
 
     try {
-      const response = await axios.post(
-        "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/askai",
-        payload
-      );
+      console.log('Payload', payload);
+      const response = await axios.post(apiURL, payload);
 
-      const botReply =
-        response.data?.response?.text ||
-        response.data?.response ||
-        "No response from server.";
-
-      setMessages((prev) => [...prev, { sender: "bot", text: botReply }]);
+      console.log('response', response);
+      const botReply = isTlcPage
+        ? response.data?.answer || "No response"
+        : response.data?.response?.text || response.data?.response || "No response";
+      setMessages((prev) => prev.map(msg => msg.temp ? { sender: "bot", text: botReply } : msg));
     } catch (error) {
       console.error("Error calling API:", error);
-      setMessages((prev) => [...prev, { sender: "bot", text: "Sorry, something went wrong!" }]);
+      setMessages((prev) => prev.map(msg => msg.temp ? { sender: "bot", text: "Something went wrong!" } : msg));
     }
-
-    setInput("");
   };
 
   const handleClick = async () => {
@@ -188,9 +226,9 @@ const HomePage = () => {
                   <IncidentManagement selectedRole="Custom Incident Management" handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} />
                 </div>
 
-                <div style={{ display: selectedRole === "Custom Reporting" ? "block" : "none" }}>
+                <div style={{ display: selectedRole === "TLC Payroll Custom" ? "block" : "none" }}>
                   {/* <CustomReporting selectedRole="Custom Reporting" handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} /> */}
-                  <TlcCustomerReporting user={user} />
+                  <TlcCustomerReporting user={user} setTlcAskAiPayload={setTlcAskAiPayload} />
                 </div>
 
                 <div style={{ display: selectedRole === "Smart Onboarding (Staff)" ? "block" : "none" }}>
@@ -216,43 +254,115 @@ const HomePage = () => {
 
               <Modal isVisible={isModalVisible} onClose={handleModalClose}></Modal>
 
-              {!isTlcPage &&
-                <div className="ask-ai-button" onClick={() => setShowAIChat(!showAIChat)}>
-                  <img src={askAiStar} alt="askAiStar" style={{ width: "22px", height: "22px" }} />
-                  <div style={{ fontFamily: "Inter", fontSize: "16px", color: "white" }}>Ask AI</div>
-                </div>
-              }
+
+              <div className="ask-ai-button" onClick={() => setShowAIChat(!showAIChat)}>
+                <img src={askAiStar} alt="askAiStar" style={{ width: "22px", height: "22px" }} />
+                <div style={{ fontFamily: "Inter", fontSize: "16px", color: "white" }}>Ask AI</div>
+              </div>
 
               {showAIChat && (
-                <div style={{ position: "fixed", bottom: "100px", right: "30px", width: "350px", height: "400px", backgroundColor: "#000", borderRadius: "10px", boxShadow: "0px 4px 12px rgba(0,0,0,0.2)", zIndex: 999, display: "flex", flexDirection: "column", justifyContent: "space-between", border: "none" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px", backgroundColor: "white", borderTopRightRadius: "10px", borderTopLeftRadius: "10px", padding: "12px 8px" }}>
-                    <div style={{ display: "flex", gap: "10px", marginLeft: "20px", alignItems: "center" }}>
-                      <img src={purpleStar} alt="purple star" style={{ width: "24px", height: "24px" }} />
-                      <div style={{ fontSize: "12px", fontFamily: "Inter" }}>I can help with Support at Home, NDIS, compliance and reporting</div>
-                    </div>
-                    <RxCrossCircled size={24} color="#4A4A4A" onClick={() => setShowAIChat(false)} style={{ cursor: "pointer" }} />
+                <div style={{ position: "fixed", bottom: "85px", right: "30px", width: "45%", height: "80%", backgroundColor: "#FFFEFF", borderRadius: "24px", zIndex: 999, display: "flex", flexDirection: "column", justifyContent: "space-between", border: '1.09px solid #6C4CDC', boxShadow: '0px 4.36px 65.42px 0px #FFFFFF03', padding: ' 14px 30px' }}>
+                  <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", borderTopRightRadius: "24px", borderTopLeftRadius: "24px", }}>
+                    <RxCrossCircled size={24} color="#6c4cdc" onClick={() => setShowAIChat(false)} style={{ cursor: "pointer" }} />
                   </div>
+                  {messages.length === 0 &&
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px' }}>
+                        <img src={purpleStar} alt='blue-star' style={{ width: '36px', height: 'auto' }} />
+                      </div>
+                      <div style={{ textAlign: 'center', fontSize: '24px', fontFamily: 'Inter', fontWeight: '500' }}>
+                        Got a question? Just ask AI.
+                      </div>
+                      <div style={{ textAlign: 'center', fontSize: '16px', fontWeight: '400', marginTop: '10px' }}>
+                        Your Aged Care & NDIS helper.<br></br>Ask a question get simple, trusted guidance.
+                      </div>
+                    </div>
+                  }
 
                   <div style={{ flex: 1, marginTop: "10px", overflowY: "auto", padding: "10px" }}>
                     {messages.map((msg, index) => (
-                      <div key={index} style={{ display: "flex", justifyContent: msg.sender === "user" ? "flex-end" : "flex-start", marginBottom: "8px" }}>
-                        <div style={{ backgroundColor: msg.sender === "user" ? "#fff" : "#6C4CDC", padding: "10px", borderRadius: "10px", maxWidth: "75%", fontSize: "14px", textAlign: "left", color: msg.sender === "user" ? "black" : "white", fontFamily: "Inter" }}>
-                          <MarkdownParser text={msg.text} />
+                      <div
+                        key={index}
+                        style={{
+                          display: "flex",
+                          justifyContent: msg.sender === "user" ? "flex-end" : "flex-start",
+                          marginBottom: "8px",
+                          position: "relative"
+                        }}
+                      >
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: msg.sender === "user" ? "flex-end" : "flex-start", position: "relative" }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '4px' }}>
+                            <img
+                              src={aksAiPurpleStar}
+                              alt="user icon"
+                              style={{ width: "32px", height: "32px", display: msg.sender === 'user' ? 'none' : 'block' }}
+                            />
+                            <div
+                              style={{
+                                backgroundColor: msg.sender === "user" ? "#F9F8FF" : "#6C4CDC",
+                                padding: "10px",
+                                borderRadius: "10px",
+                                maxWidth: "75%",
+                                fontSize: "14px",
+                                textAlign: "left",
+                                color: msg.sender === "user" ? "black" : "white",
+                                fontFamily: "Inter",
+                                border: msg.sender === 'user' ? '1px solid #6c4cdc' : 'none'
+                              }}
+                              className="ask-ai-res-div"
+                            >
+                              <ReactMarkdown
+                                children={msg.text
+                                  .replace(/```(?:\w+)?\n?/, "")
+                                  .replace(/```$/, "")
+                                }
+                                remarkPlugins={[remarkGfm]}
+                                rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                              />
+                            </div>
+                            <img
+                              src={askAiPersonIcon}
+                              alt="user icon"
+                              style={{ width: "38px", height: "38px", display: msg.sender === 'user' ? 'block' : 'none' }}
+                            />
+                          </div>
                         </div>
                       </div>
                     ))}
-                  </div>
 
-                  <div style={{ position: "relative", marginTop: "10px", marginBottom: "16px", width: "75%", display: "flex", alignSelf: "center" }}>
-                    <input
-                      type="text"
-                      placeholder="Type your question..."
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                      style={{ width: "100%", padding: "8px 40px 8px 8px", borderRadius: "10px", border: "1px solid #ccc" }}
-                    />
-                    <FaPaperPlane onClick={handleSend} size={18} style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", cursor: "pointer", color: "#6C4CDC" }} />
+                  </div>
+                  <div>
+                    {messages.length === 0 &&
+                      <div>
+                        <div style={{ textAlign: 'left', marginBottom: '14px', fontSize: '14px', fontWeight: '500', fontFamily: 'Inter' }}>
+                          Suggestions
+                        </div>
+                        <div style={{ display: "flex", flexDirection: 'column', width: '45%' }}>
+                          {Suggestions.map((q, i) => (
+                            <button
+                              key={i}
+                              onClick={() => { }}
+                              style={{ padding: "10px", borderRadius: "8px", background: "#F9F8FF", border: "1px solid #6c4cdc", cursor: "pointer", marginBottom: '10px', textAlign: 'left' }}
+                            >
+                              {q}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    }
+
+                    <div style={{ position: "relative", marginTop: "10px", marginBottom: "16px", width: "100%", display: "flex", alignSelf: "center" }}>
+                      <input
+                        type="text"
+                        placeholder="Type your question..."
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                        style={{ width: "100%", padding: "12px 40px 12px 12px", borderRadius: "30px", border: "1px solid  #1602114D" }}
+                      />
+                      <FaCircleArrowRight onClick={handleSend} size={22} style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", cursor: "pointer", color: "#6C4CDC" }} />
+                    </div>
+
                   </div>
                 </div>
               )}

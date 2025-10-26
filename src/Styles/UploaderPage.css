@@ -548,3 +548,52 @@ html,
 .tippy-box[data-theme~='custom'] > .tippy-arrow::before {
   color: #DDD7FF; /* same as background */
 }
+
+.ask-ai-res-div h1,
+.ask-ai-res-div h2,
+.ask-ai-res-div h3 {
+  margin-top: 1rem;
+  margin-bottom: 20px;
+  font-size: 22px;
+}
+
+.ask-ai-res-div hr {
+  margin: 1rem 0;
+  border: none;
+  border-top: 1px solid #ddd;
+}
+
+.ask-ai-res-div table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+
+.ask-ai-res-div th,
+.ask-ai-res-div td {
+  border: 1px solid #ccc;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.ask-ai-res-div th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+}
+
+.ask-ai-res-div strong {
+  font-weight: bold;
+}
+
+.ask-ai-res-div em {
+  font-style: italic;
+}
+
+.ask-ai-res-div span {
+  font-weight: bold;
+  color: orange;
+}
+
+.ask-ai-res-div ul {
+  margin-left: 30px;
+}

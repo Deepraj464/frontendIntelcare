@@ -357,6 +357,7 @@ export default function TlcCustomerReporting(props) {
       const analyzeRes = await fetch(url);
       const analyzeData = await analyzeRes.json();
       console.log("📊 Analyze API response:", analyzeData);
+      props.setTlcAskAiPayload(analyzeData.filteredData);
       setProgressStage("preparing");
       if (!analyzeRes.ok || !analyzeData.analysisResult) {
         throw new Error(analyzeData.error || "Analysis failed. No valid response received.");
@@ -612,7 +613,7 @@ export default function TlcCustomerReporting(props) {
           payrollJournal: filteredData,
         },
       ];
-
+ console.log('Payload',payload);
       const res = await fetch(
         "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/tlc/payroll/ai-analysis-report",
         {
@@ -652,6 +653,7 @@ export default function TlcCustomerReporting(props) {
         `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/getById/${item.id}`
       );
       const data = await res.json();
+      props.setTlcAskAiPayload(data.data.analysisResult);
 
       if (!res.ok) throw new Error(data.error || "Failed to fetch analysis");
 
