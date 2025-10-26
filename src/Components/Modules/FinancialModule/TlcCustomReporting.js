@@ -7,6 +7,8 @@ import UploadTlcIcon from "../../../Images/UploadTlcIcon.png";
 import { FiChevronDown } from "react-icons/fi";
 import parse, { domToReact } from "html-react-parser";
 import { RiDeleteBin6Line } from "react-icons/ri";
+import star from '../../../Images/star.png';
+import AIAnalysisReportViewer from "./TlcAiAnalysisReport";
 
 
 
@@ -32,9 +34,17 @@ export default function TlcCustomerReporting(props) {
       analysisData: null,
       error: null,
       currentPage: 1,
+      viewingHistory: false,
+      showReport: false,
+      aiReport: null,
+      aiLoading: false,
     },
   ]);
   const [activeTab, setActiveTab] = useState(1);
+  // const [showReport, setShowReport] = useState(false);
+  // const [aiReport, setAiReport] = useState(null);
+  // const [viewingHistory, setViewingHistory] = useState(false);
+
   const activeTabData = tabs.find((t) => t.id === activeTab);
 
   const updateTab = (updates) => {
@@ -59,6 +69,10 @@ export default function TlcCustomerReporting(props) {
       analysisData: null,
       error: null,
       currentPage: 1,
+      viewingHistory: false,
+      showReport: false,
+      aiReport: null,
+      aiLoading: false,
     };
     console.log("Creating new tab:", newTab);
     setTabs((prev) => [...prev, newTab]);
@@ -84,6 +98,7 @@ export default function TlcCustomerReporting(props) {
   const [selectedHistoryId, setSelectedHistoryId] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [isAllowed, setIsAllowed] = useState(null);
+
   const optionsState = [
     { label: "New South Wales", value: "New South Wales" },
     { label: "Queensland", value: "Queensland" },
@@ -171,7 +186,7 @@ export default function TlcCustomerReporting(props) {
     });
 
     if (validFiles.length === 0) {
-      alert(`⚠️ Invalid file uploaded in ${type.toUpperCase()} section.`);
+      alert(`⚠️ Invalid file uploaded in ${type.toUpperCase()} section.`)
       e.target.value = "";
       return;
     }
@@ -216,6 +231,8 @@ export default function TlcCustomerReporting(props) {
 
     try {
       setLoading(true);
+      updateTab({ showReport: false });
+
       updateTab({ stage: "loading", error: null });
       setProgressStage("uploading");
       console.log("🚀 Starting analysis process for tab:", activeTab);
@@ -348,7 +365,7 @@ export default function TlcCustomerReporting(props) {
       await new Promise(resolve => setTimeout(resolve, 800));
       console.log("✅ Analysis data received successfully.");
       justRanManualAnalysisRef.current = true;
-      updateTab({ analysisData: analyzeData.analysisResult, stage: "overview" });
+      updateTab({ analysisData: { ...analyzeData.analysisResult, filteredData: analyzeData.filteredData, }, stage: "overview" });
       lastManualWithFilesRef.current = false;
     } catch (err) {
       console.error("❌ Error in handleAnalyse:", err);
@@ -360,6 +377,17 @@ export default function TlcCustomerReporting(props) {
       setTimeout(() => setProgressStage("idle"), 800);
     }
   };
+
+  const { startDate, endDate, selectedState, selectedDepartment, selectedRole, selectedEmploymentType } = activeTabData;
+  const hasFiltersFieldChanged = [
+    startDate,
+    endDate,
+    selectedState?.length,
+    selectedDepartment?.length,
+    selectedRole?.length,
+    selectedEmploymentType?.length,
+  ].some(Boolean);
+
 
   // 🧠 Auto-run analysis logic (final stable version)
   const lastAnalysisKeyRef = useRef("");
@@ -458,9 +486,10 @@ export default function TlcCustomerReporting(props) {
     setSaving(true);
     try {
       console.log("📤 Saving analysis data to database for tab:", activeTab);
-
+      console.log("analysisData", analysisData)
       const enrichedAnalysis = {
-        ...analysisData,
+        pages: analysisData?.pages,
+        scorecard: analysisData?.scorecard,
         filters: {
           start: startDate ? startDate.toISOString().split("T")[0] : null,
           end: endDate ? endDate.toISOString().split("T")[0] : null,
@@ -471,6 +500,10 @@ export default function TlcCustomerReporting(props) {
         },
       };
 
+      console.log("enrichedAnalysis", enrichedAnalysis)
+      const markdownReport = activeTabData.aiReport || activeTabData.analysisData?.report_md || "";
+
+      console.log("markdown in save history", markdownReport)
       const response = await fetch(
         "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/save",
         {
@@ -479,6 +512,7 @@ export default function TlcCustomerReporting(props) {
           body: JSON.stringify({
             analysisData: enrichedAnalysis,
             email,
+            markdown: markdownReport
           }),
         }
       );
@@ -552,6 +586,63 @@ export default function TlcCustomerReporting(props) {
     fetchHistory();
   }, [props.user]);
 
+  const handleAiAnalysis = async () => {
+    if (!activeTabData?.analysisData) {
+      alert("Please run the regular analysis first.");
+      return;
+    }
+
+    const { filteredData } = activeTabData.analysisData;
+    console.log("filteredData in handleAiAnalysis", filteredData);
+
+    if (!filteredData || filteredData.length === 0) {
+      alert("No filtered data available for AI Analysis.");
+      return;
+    }
+
+    try {
+      updateTab({ aiLoading: true, aiReport: null });
+      updateTab({ aiReport: null });
+
+      console.log("🚀 Sending data to AI Analysis API...");
+
+      const payload = [
+        {
+          periodEndDate: new Date().toISOString().split("T")[0],
+          payrollJournal: filteredData,
+        },
+      ];
+
+      const res = await fetch(
+        "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/tlc/payroll/ai-analysis-report",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await res.json();
+      console.log("✅ AI Analysis Response:", data);
+
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || "AI Analysis failed");
+      }
+
+      updateTab({
+        aiReport: data?.report_md,
+        showReport: true,
+      });
+
+    } catch (err) {
+      console.error("❌ AI Analysis Error:", err);
+      alert("AI Analysis failed: " + err.message);
+    } finally {
+      updateTab({ aiLoading: false });
+    }
+  };
+
+
   // -------------------- HISTORY CLICK --------------------
   const handleHistoryClick = async (item) => {
     try {
@@ -565,18 +656,36 @@ export default function TlcCustomerReporting(props) {
       if (!res.ok) throw new Error(data.error || "Failed to fetch analysis");
 
       console.log("✅ Loaded analysis data:", data.data);
+
+      // ✅ Update tab with analysis data
       updateTab({
         analysisData: data.data.analysisResult,
         stage: "overview",
         currentPage: 1,
-        isFromHistory: true, // ✅ mark as loaded from history
+        isFromHistory: true,
       });
+
+      // ✅ Show markdown report if exists
+      if (data.data.reportMarkdown) {
+        updateTab({
+          aiReport: data.data.reportMarkdown,
+          showReport: true,
+        });
+      } else {
+        updateTab({
+          aiReport: null,
+          showReport: false,
+        });
+      }
+
+      updateTab({ viewingHistory: true });
 
     } catch (err) {
       console.error("❌ Error loading analysis:", err);
       alert("Failed to load analysis: " + err.message);
     }
   };
+
 
   const formatDateRange = () => {
     if (!activeTabData || !activeTabData.startDate || !activeTabData.endDate) return "Selected Date Range";
@@ -790,192 +899,218 @@ export default function TlcCustomerReporting(props) {
               <div className="date-text">{formatDateRange()}</div>
               {renderTabBar()}
             </div>
-            <button
-              className="save-btnss"
-              onClick={handleSaveToDatabase}
-              disabled={saving}
-            >
-              {saving ? "Processing..." : "Save to Database"}
-            </button>
+            {!activeTabData.viewingHistory && (
+              <button
+                className="save-btnss"
+                onClick={handleSaveToDatabase}
+                disabled={saving}
+              >
+                {saving ? "Processing..." : "Save to Database"}
+              </button>
+            )}
           </div>
         </div>
 
       </div>
+      {!activeTabData.viewingHistory && (
+        <section className="filters-card">
+          <div className="filters-header">Filters</div>
+          <div className="filters-grid">
+            <div>
+              <DatePicker
+                selectsRange
+                startDate={activeTabData.startDate}
+                endDate={activeTabData.endDate}
+                onChange={(dates) => {
+                  const [start, end] = dates;
+                  updateTab({ startDate: start, endDate: end });
+                }}
+                placeholderText="Select Date Range"
+                className="filter-input"
+                dateFormat="dd/MM/yy"
+              />
+            </div>
 
-      <section className="filters-card">
-        <div className="filters-header">Filters</div>
-        <div className="filters-grid">
-          <div>
-            <DatePicker
-              selectsRange
-              startDate={activeTabData.startDate}
-              endDate={activeTabData.endDate}
-              onChange={(dates) => {
-                const [start, end] = dates;
-                updateTab({ startDate: start, endDate: end });
-              }}
-              placeholderText="Select Date Range"
-              className="filter-input"
-              dateFormat="dd/MM/yy"
+            <MultiSelectCustom
+              options={optionsState}
+              selected={activeTabData.selectedState}
+              setSelected={(v) => updateTab({ selectedState: v })}
+              placeholder="Select State"
+            />
+            <MultiSelectCustom
+              options={optionsDepartment}
+              selected={activeTabData.selectedDepartment}
+              setSelected={(v) => updateTab({ selectedDepartment: v })}
+              placeholder="Select Department"
+            />
+            <MultiSelectCustom
+              options={optionsRole}
+              selected={activeTabData.selectedRole}
+              setSelected={(v) => updateTab({ selectedRole: v })}
+              placeholder="Select Role"
+            />
+            <MultiSelectCustom
+              options={optionsType}
+              selected={activeTabData.selectedEmploymentType}
+              setSelected={(v) => updateTab({ selectedEmploymentType: v })}
+              placeholder="Employment Type"
             />
           </div>
-
-          <MultiSelectCustom
-            options={optionsState}
-            selected={activeTabData.selectedState}
-            setSelected={(v) => updateTab({ selectedState: v })}
-            placeholder="Select State"
-          />
-          <MultiSelectCustom
-            options={optionsDepartment}
-            selected={activeTabData.selectedDepartment}
-            setSelected={(v) => updateTab({ selectedDepartment: v })}
-            placeholder="Select Department"
-          />
-          <MultiSelectCustom
-            options={optionsRole}
-            selected={activeTabData.selectedRole}
-            setSelected={(v) => updateTab({ selectedRole: v })}
-            placeholder="Select Role"
-          />
-          <MultiSelectCustom
-            options={optionsType}
-            selected={activeTabData.selectedEmploymentType}
-            setSelected={(v) => updateTab({ selectedEmploymentType: v })}
-            placeholder="Employment Type"
-          />
-        </div>
-        {activeTabData.analysisData && (
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <button
-              onClick={handleAnalyse}
-              disabled={loading || uploading}
-              style={{
-                backgroundColor: "#6c4cdc",
-                padding: "10px 30px",
-                textAlign: "center",
-                border: "none",
-                borderRadius: "6px",
-                marginTop: "20px",
-                cursor: "pointer",
-                color: "white",
-                fontWeight: "500",
-                fontSize: "14px",
-                opacity: loading || uploading ? 0.7 : 1,
-              }}
-            >
-              {loading || uploading ? "Processing..." : "Apply Filters"}
-            </button>
-          </div>
-        )}
-
-      </section>
-
-      <section className="uploads-containers">
-        {[
-          { key: "payroll", label: "Payroll Data" },
-          { key: "people", label: "People and Teams Data" },
-          { key: "employee", label: "Employee Update Data" },
-        ].map((item) => (
-          <div key={item.key} style={{ marginBottom: "16px" }}>
-            <div
-              style={{
-                textAlign: "left",
-                fontSize: "12px",
-                fontFamily: "Inter",
-                fontWeight: 500,
-              }}
-            >
-              Upload {item.label}
+          {activeTabData.analysisData && (
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <button
+                onClick={handleAnalyse}
+                disabled={loading || uploading}
+                style={{
+                  backgroundColor: "#6c4cdc",
+                  padding: "10px 30px",
+                  textAlign: "center",
+                  border: "none",
+                  borderRadius: "6px",
+                  marginTop: "20px",
+                  cursor: "pointer",
+                  color: "white",
+                  fontWeight: "500",
+                  fontSize: "14px",
+                  opacity: loading || uploading ? 0.7 : 1,
+                }}
+              >
+                {loading || uploading ? "Processing..." : "Apply Filters"}
+              </button>
             </div>
+          )}
 
-            <div
-              className="upload-boxes"
-              style={{ cursor: "pointer" }}
-              onClick={(e) => {
-                // Only trigger file input if the click is NOT on uploaded file or delete button
-                if (!e.target.dataset.ignore) {
-                  document.getElementById(`file-${activeTab}-${item.key}`).click();
-                }
-              }}
-            >
-              <input
-                id={`file-${activeTab}-${item.key}`}
-                type="file"
-                multiple
-                accept=".xlsx, .xls, .csv"
-                data-type={item.key}
-                data-tab={activeTab}
-                onChange={(e) => handleFileChange(e, item.key)}
-                style={{ display: "none" }}
-              />
+        </section>
+      )}
 
-              <div className="uploadss-iconss">
-                <img
-                  src={UploadTlcIcon}
-                  alt="uploadtlcIcon"
-                  style={{ height: "48px", width: "48px" }}
-                />
-              </div>
-              <p style={{ fontSize: "14px", color: "#444", fontFamily: "Inter" }}>
-                {activeTabData.fileNames[item.key].length === 0 ? (
-                  <>
-                    Click to upload{" "}
-                    <span style={{ color: "#6C4CDC" }}>{item.label}</span>
-                    <br />
-                    <small>.XLSX, .XLS, .CSV</small>
-                  </>
-                ) : (
-                  "Uploaded files:"
-                )}
-              </p>
-
-              <div className="upload-content">
+      {!activeTabData.viewingHistory && activeTabData.stage !== "overview" &&
+        (!activeTabData.analysisData ||
+          Object.keys(activeTabData.analysisData).length === 0) && (
+          <section className="uploads-containers">
+            {[
+              { key: "payroll", label: "Payroll Data" },
+              { key: "people", label: "People and Teams Data" },
+              { key: "employee", label: "Employee Update Data" },
+            ].map((item) => (
+              <div key={item.key} style={{ marginBottom: "16px" }}>
                 <div
                   style={{
-                    marginTop: "8px",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "4px",
+                    textAlign: "left",
+                    fontSize: "12px",
+                    fontFamily: "Inter",
+                    fontWeight: 500,
                   }}
                 >
-                  {activeTabData.fileNames[item.key].map((fileName, idx) => (
+                  Upload {item.label}
+                </div>
+
+                <div
+                  className="upload-boxes"
+                  style={{ cursor: "pointer" }}
+                  onClick={(e) => {
+                    if (!e.target.dataset.ignore) {
+                      document.getElementById(`file-${activeTab}-${item.key}`).click();
+                    }
+                  }}
+                >
+                  <input
+                    id={`file-${activeTab}-${item.key}`}
+                    type="file"
+                    multiple
+                    accept=".xlsx, .xls, .csv"
+                    data-type={item.key}
+                    data-tab={activeTab}
+                    onChange={(e) => handleFileChange(e, item.key)}
+                    style={{ display: "none" }}
+                  />
+
+                  <div className="uploadss-iconss">
+                    <img
+                      src={UploadTlcIcon}
+                      alt="uploadtlcIcon"
+                      style={{ height: "48px", width: "48px" }}
+                    />
+                  </div>
+                  <p
+                    style={{
+                      fontSize: "14px",
+                      color: "#444",
+                      fontFamily: "Inter",
+                    }}
+                  >
+                    {activeTabData.fileNames[item.key].length === 0 ? (
+                      <>
+                        Click to upload{" "}
+                        <span style={{ color: "#6C4CDC" }}>{item.label}</span>
+                        <br />
+                        <small>.XLSX, .XLS, .CSV</small>
+                      </>
+                    ) : (
+                      "Uploaded files:"
+                    )}
+                  </p>
+
+                  <div className="upload-content">
                     <div
-                      key={idx}
                       style={{
+                        marginTop: "8px",
                         display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        background: "#DADADA",
-                        padding: "4px 8px",
-                        borderRadius: "6px",
-                        fontSize: "14px",
-                        fontFamily: "Inter",
+                        flexDirection: "column",
+                        gap: "4px",
                       }}
-                      // mark as ignore so clicking doesn't trigger file dialog
-                      data-ignore="true"
                     >
-                      <span title={fileName}>{fileName.length > 20 ? fileName.slice(0, 30) + "..." : fileName}</span>
-                      <span
-                        style={{ cursor: "pointer", color: "#6C4CDC", fontWeight: "bold" }}
-                        data-ignore="true"
-                        onClick={() => {
-                          const updatedFiles = activeTabData.fileNames[item.key].filter((_, i) => i !== idx);
-                          updateTab({
-                            fileNames: { ...activeTabData.fileNames, [item.key]: updatedFiles },
-                          });
-                        }}
-                      >
-                        ×
-                      </span>
+                      {activeTabData.fileNames[item.key].map((fileName, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            background: "#DADADA",
+                            padding: "4px 8px",
+                            borderRadius: "6px",
+                            fontSize: "14px",
+                            fontFamily: "Inter",
+                          }}
+                          data-ignore="true"
+                        >
+                          <span title={fileName}>
+                            {fileName.length > 30
+                              ? fileName.slice(0, 30) + "..."
+                              : fileName}
+                          </span>
+                          <span
+                            style={{
+                              cursor: "pointer",
+                              color: "#6C4CDC",
+                              fontWeight: "bold",
+                            }}
+                            data-ignore="true"
+                            onClick={() => {
+                              const updatedFiles =
+                                activeTabData.fileNames[item.key].filter(
+                                  (_, i) => i !== idx
+                                );
+                              updateTab({
+                                fileNames: {
+                                  ...activeTabData.fileNames,
+                                  [item.key]: updatedFiles,
+                                },
+                              });
+                            }}
+                          >
+                            ×
+                          </span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-        ))}
-      </section>
+            ))}
+          </section>
+        )}
+
 
 
       {activeTabData.stage === "loading" && (
@@ -993,6 +1128,27 @@ export default function TlcCustomerReporting(props) {
       <div className="search-section">
         {activeTabData.stage === "overview" && activeTabData.analysisData && (
           <section className="dashboard">
+            {!activeTabData.showReport && <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '24px', marginTop: '-20px' }}>
+              {!activeTabData.viewingHistory && (
+                <button
+                  className="analyse-btn"
+                  style={{ cursor: 'pointer' }}
+                  onClick={handleAiAnalysis}
+                  disabled={activeTabData.aiLoading}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    {activeTabData.aiLoading ? "Analyzing..." : "AI Analysis"}
+                    <img src={star} alt='img' style={{ width: '20px', height: '20px' }} />
+                  </div>
+                </button>
+              )
+              }
+            </div>
+            }
+            {activeTabData.showReport && (
+              <AIAnalysisReportViewer reportText={activeTabData.aiReport} loading={activeTabData.aiLoading} />
+            )}
+
             <h2 className="payroll-section-title">
               {(() => {
                 const titles = {

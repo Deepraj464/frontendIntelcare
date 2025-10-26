@@ -135,8 +135,8 @@
   }
   .graph-gridsss{
     display: grid;
-    grid-template-columns: 48% 48%;
-    column-gap: 4%;
+    grid-template-columns: 49% 49%;
+    column-gap: 2%;
     margin-bottom: 40px;
     margin-top: 40px;
   }
