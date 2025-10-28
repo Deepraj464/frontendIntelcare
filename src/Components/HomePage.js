@@ -45,6 +45,7 @@ const HomePage = () => {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [documentString, setDocumentString] = useState("");
   const [tlcAskAiPayload, setTlcAskAiPayload] = useState("");
+  const [tlcAskAiHistoryPayload, setTlcAskAiHistoryPayload] = useState("");
   const [showAIChat, setShowAIChat] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
@@ -92,42 +93,78 @@ const HomePage = () => {
     setInput("");
 
     const isTlcPage = selectedRole === "TLC Payroll Custom";
-
     let payload = {};
 
-    if (isTlcPage && tlcAskAiPayload) {
-      payload = {
-        objects: [
-          {
-            periodEndDate: new Date().toISOString().split("T")[0],
-            payrollJournal: Array.isArray(tlcAskAiPayload) ? tlcAskAiPayload : [tlcAskAiPayload],
-          }
-        ],
-        query: userInput
-      };
-    } else {
-      payload = { query: userInput };
-      if (documentString) payload.document = documentString;
-    }
-    const baseURL = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io";
-    const apiURL = isTlcPage
-      ? `${baseURL}/tlc/payroll/payroll_askai`
-      : `${baseURL}/askai`;
-
     try {
-      console.log('Payload', payload);
+      // 🟢 CASE 1: If TLC page and tlcAskAiPayload already exists (ready-to-use data)
+      if (isTlcPage && tlcAskAiPayload && tlcAskAiPayload.length > 0) {
+        payload = {
+          objects: Array.isArray(tlcAskAiPayload)
+            ? tlcAskAiPayload
+            : [tlcAskAiPayload],
+          query: userInput,
+        };
+      }
+
+      // 🟢 CASE 2: If TLC page and tlcAskAiHistoryPayload exists (filters only → fetch filtered data)
+      else if (isTlcPage && tlcAskAiHistoryPayload) {
+        const { start, end } = tlcAskAiHistoryPayload.filters;
+
+        const query = new URLSearchParams({
+          start: new Date(start).toISOString().split("T")[0],
+          end: new Date(end).toISOString().split("T")[0],
+        });
+
+        const filterApiResponse = await axios.get(
+          `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/filter?${query}`
+        );
+
+        console.log("filter api response in ask ai", filterApiResponse);
+
+        const filteredPayload = filterApiResponse.data?.payload || [];
+
+        payload = {
+          objects: filteredPayload,
+          query: userInput,
+        };
+      }
+
+      // 🟢 CASE 3: Non-TLC pages
+      else {
+        payload = { query: userInput };
+        if (documentString) payload.document = documentString;
+      }
+
+      console.log("🟡 Final payload in ask ai:", payload);
+
+      const baseURL =
+        "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io";
+      const apiURL = isTlcPage
+        ? `${baseURL}/tlc/payroll/payroll_askai`
+        : `${baseURL}/askai`;
+
+      console.log("Payload sending to API:", payload);
       const response = await axios.post(apiURL, payload);
 
-      console.log('response', response);
+      console.log("response from ask ai", response);
+
       const botReply = isTlcPage
         ? response.data?.answer || "No response"
         : response.data?.response?.text || response.data?.response || "No response";
-      setMessages((prev) => prev.map(msg => msg.temp ? { sender: "bot", text: botReply } : msg));
+
+      setMessages((prev) =>
+        prev.map((msg) => (msg.temp ? { sender: "bot", text: botReply } : msg))
+      );
     } catch (error) {
       console.error("Error calling API:", error);
-      setMessages((prev) => prev.map(msg => msg.temp ? { sender: "bot", text: "Something went wrong!" } : msg));
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.temp ? { sender: "bot", text: "Something went wrong!" } : msg
+        )
+      );
     }
   };
+
 
   const handleClick = async () => {
     await incrementCount();
@@ -228,7 +265,7 @@ const HomePage = () => {
 
                 <div style={{ display: selectedRole === "TLC Payroll Custom" ? "block" : "none" }}>
                   {/* <CustomReporting selectedRole="Custom Reporting" handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} /> */}
-                  <TlcCustomerReporting user={user} setTlcAskAiPayload={setTlcAskAiPayload} />
+                  <TlcCustomerReporting user={user} setTlcAskAiPayload={setTlcAskAiPayload} tlcAskAiPayload={tlcAskAiPayload} setTlcAskAiHistoryPayload={setTlcAskAiHistoryPayload} tlcAskAiHistoryPayload={tlcAskAiHistoryPayload} />
                 </div>
 
                 <div style={{ display: selectedRole === "Smart Onboarding (Staff)" ? "block" : "none" }}>

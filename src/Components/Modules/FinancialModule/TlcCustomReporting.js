@@ -14,8 +14,6 @@ import AIAnalysisReportViewer from "./TlcAiAnalysisReport";
 
 export default function TlcCustomerReporting(props) {
   console.log("props", props);
-  const [uploading, setUploading] = useState(false);
-  const [progressStage, setProgressStage] = useState("idle");
 
 
   // -------------------- MULTI TAB SUPPORT --------------------
@@ -38,12 +36,14 @@ export default function TlcCustomerReporting(props) {
       showReport: false,
       aiReport: null,
       aiLoading: false,
+      loading: false,
+      uploading: false,
+      progressStage: "idle",
+      tlcAskAiPayload: null,
+      tlcAskAiHistoryPayload: null,
     },
   ]);
   const [activeTab, setActiveTab] = useState(1);
-  // const [showReport, setShowReport] = useState(false);
-  // const [aiReport, setAiReport] = useState(null);
-  // const [viewingHistory, setViewingHistory] = useState(false);
 
   const activeTabData = tabs.find((t) => t.id === activeTab);
 
@@ -52,7 +52,13 @@ export default function TlcCustomerReporting(props) {
       prev.map((t) => (t.id === activeTab ? { ...t, ...updates } : t))
     );
   };
-
+  useEffect(() => {
+    const active = tabs.find((t) => t.id === activeTab);
+    if (active) {
+      props.setTlcAskAiPayload(active.tlcAskAiPayload || "");
+      props.setTlcAskAiHistoryPayload(active.tlcAskAiHistoryPayload || "");
+    }
+  }, [activeTab, tabs]);
   const handleNewTab = () => {
     const newId = tabs.length ? Math.max(...tabs.map((t) => t.id)) + 1 : 1;
     const newTab = {
@@ -73,6 +79,11 @@ export default function TlcCustomerReporting(props) {
       showReport: false,
       aiReport: null,
       aiLoading: false,
+      loading: false,
+      uploading: false,
+      progressStage: "idle",
+      tlcAskAiPayload: null,
+      tlcAskAiHistoryPayload: null,
     };
     console.log("Creating new tab:", newTab);
     setTabs((prev) => [...prev, newTab]);
@@ -93,7 +104,6 @@ export default function TlcCustomerReporting(props) {
   const [historyList, setHistoryList] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedHistoryId, setSelectedHistoryId] = useState(null);
   const [deleting, setDeleting] = useState(false);
@@ -171,6 +181,10 @@ export default function TlcCustomerReporting(props) {
     { label: "Full Time", value: "Full Time" },
     { label: "Part Time", value: "Part Time" },
   ];
+  const formatTabDate = (start, end) => {
+    if (!start || !end) return null;
+    return `${start.toLocaleDateString("en-US")} - ${end.toLocaleDateString("en-US")}`;
+  };
 
   const handleFileChange = (e, type) => {
     const files = Array.from(e.target.files);
@@ -230,11 +244,10 @@ export default function TlcCustomerReporting(props) {
     }
 
     try {
-      setLoading(true);
-      updateTab({ showReport: false });
+      updateTab({ loading: true, showReport: false });
 
       updateTab({ stage: "loading", error: null });
-      setProgressStage("uploading");
+      updateTab({ uploading: true, progressStage: "uploading" });
       console.log("🚀 Starting analysis process for tab:", activeTab);
 
       // -------------------------------
@@ -284,13 +297,11 @@ export default function TlcCustomerReporting(props) {
           (input) => input && input.files && input.files.length > 0
         );
 
-        if (invalidUploads.length > 0 || !allTypesUploaded) {
-          setLoading(false);
+        if (invalidUploads.length > 0) {
+          updateTab({ loading: false });
           updateTab({ stage: "filters" });
 
           let message = "⚠️ Please correct the following before analysing:\n\n";
-          if (!allTypesUploaded)
-            message += "- You must upload all three file types (Payroll, People, Employee)\n";
           if (invalidUploads.length > 0)
             message += "\n" + invalidUploads.join("\n");
 
@@ -301,8 +312,8 @@ export default function TlcCustomerReporting(props) {
         // ✅ If everything is valid, upload first
         console.log("✅ All uploaded files are valid. Uploading before analysis...");
         try {
-          setUploading(true);
-          setProgressStage("uploading");
+          updateTab({ uploading: true });
+          updateTab({ uploading: true, progressStage: "uploading" });
           const formData = new FormData();
           inputs.forEach((input) => {
             Array.from(input.files).forEach((file) => formData.append("files", file));
@@ -321,16 +332,16 @@ export default function TlcCustomerReporting(props) {
           }
 
           console.log("✅ Files uploaded successfully before analysis.");
-          setProgressStage("analysing");
+          updateTab({ progressStage: "analysing" });
         } catch (uploadErr) {
           console.error("❌ Upload failed:", uploadErr);
           alert("Some files failed to upload. Continuing with existing data...");
         } finally {
-          setUploading(false);
+          updateTab({ uploading: false });
         }
       } else {
         lastManualWithFilesRef.current = false;
-        setProgressStage("analysing");
+        updateTab({ progressStage: "analysing" });
         console.log("📂 No files selected. Proceeding with existing database data...");
       }
 
@@ -357,25 +368,48 @@ export default function TlcCustomerReporting(props) {
       const analyzeRes = await fetch(url);
       const analyzeData = await analyzeRes.json();
       console.log("📊 Analyze API response:", analyzeData);
-      props.setTlcAskAiPayload(analyzeData.filteredData);
-      setProgressStage("preparing");
+      updateTab({ tlcAskAiPayload: analyzeData.payload });
+      if (tabs.find(t => t.id === activeTab)) {
+        props.setTlcAskAiPayload(analyzeData.payload);
+      }
+
+      // 🧩 Handle invalid date range
+      if (analyzeData.message && analyzeData.message.includes("Invalid date range")) {
+        alert("⚠️ Invalid date range selected. Please choose correct start and end dates.");
+        updateTab({ loading: false, uploading: false, stage: "filters" });
+        return;
+      }
+
+      // 🧩 Handle no data found
+      if (analyzeData.analysisResult?.message === "No data found for given filters.") {
+        alert("⚠️ No data found for the selected filters. Please adjust your filters and try again.");
+        updateTab({ loading: false, uploading: false, stage: "filters" });
+        return;
+      }
+      updateTab({ progressStage: "preparing" });
       if (!analyzeRes.ok || !analyzeData.analysisResult) {
         throw new Error(analyzeData.error || "Analysis failed. No valid response received.");
       }
-      setProgressStage("preparing");
+      updateTab({ progressStage: "preparing" });
       await new Promise(resolve => setTimeout(resolve, 800));
       console.log("✅ Analysis data received successfully.");
       justRanManualAnalysisRef.current = true;
-      updateTab({ analysisData: { ...analyzeData.analysisResult, filteredData: analyzeData.filteredData, }, stage: "overview" });
+      updateTab({
+        analysisData: { ...analyzeData.analysisResult, payload: analyzeData.payload },
+        stage: "overview",
+        loading: false,
+        uploading: false,
+        progressStage: "idle",
+      });
       lastManualWithFilesRef.current = false;
     } catch (err) {
       console.error("❌ Error in handleAnalyse:", err);
       updateTab({ error: err.message, stage: "filters" });
       alert("Something went wrong: " + err.message);
     } finally {
-      setLoading(false);
-      setUploading(false);
-      setTimeout(() => setProgressStage("idle"), 800);
+      updateTab({ loading: false, uploading: false });
+      updateTab({ loading: false, uploading: false });
+      setTimeout(() => updateTab({ progressStage: "idle" }), 800);
     }
   };
 
@@ -593,33 +627,32 @@ export default function TlcCustomerReporting(props) {
       return;
     }
 
-    const { filteredData } = activeTabData.analysisData;
-    console.log("filteredData in handleAiAnalysis", filteredData);
+    // ✅ Step 1: Retrieve payload from props or analysisData
+    const aiPayload =
+      props.tlcAskAiPayload ||
+      activeTabData.analysisData?.payload ||
+      [];
 
-    if (!filteredData || filteredData.length === 0) {
-      alert("No filtered data available for AI Analysis.");
+    console.log("📦 AI Payload ready to send:", aiPayload);
+
+    if (!aiPayload || aiPayload.length === 0) {
+      alert("No valid payload available for AI Analysis.");
       return;
     }
 
     try {
+      // ✅ Step 2: Start loading
       updateTab({ aiLoading: true, aiReport: null });
-      updateTab({ aiReport: null });
 
-      console.log("🚀 Sending data to AI Analysis API...");
+      console.log("🚀 Sending full payload to AI Analysis API...");
 
-      const payload = [
-        {
-          periodEndDate: new Date().toISOString().split("T")[0],
-          payrollJournal: filteredData,
-        },
-      ];
- console.log('Payload',payload);
+      // ✅ Step 3: Send directly (no re-wrapping or redeclaration)
       const res = await fetch(
         "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/tlc/payroll/ai-analysis-report",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          body: JSON.stringify(aiPayload), // ✅ Send as-is
         }
       );
 
@@ -630,18 +663,19 @@ export default function TlcCustomerReporting(props) {
         throw new Error(data.error || "AI Analysis failed");
       }
 
+      // ✅ Step 4: Save report into tab
       updateTab({
         aiReport: data?.report_md,
         showReport: true,
+        aiLoading: false,
       });
-
     } catch (err) {
       console.error("❌ AI Analysis Error:", err);
       alert("AI Analysis failed: " + err.message);
-    } finally {
       updateTab({ aiLoading: false });
     }
   };
+
 
 
   // -------------------- HISTORY CLICK --------------------
@@ -653,7 +687,11 @@ export default function TlcCustomerReporting(props) {
         `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/getById/${item.id}`
       );
       const data = await res.json();
-      props.setTlcAskAiPayload(data.data.analysisResult);
+      updateTab({ tlcAskAiHistoryPayload: data.data.analysisResult });
+      if (tabs.find(t => t.id === activeTab)) {
+        props.setTlcAskAiHistoryPayload(data.data.analysisResult);
+      }
+
 
       if (!res.ok) throw new Error(data.error || "Failed to fetch analysis");
 
@@ -814,7 +852,10 @@ export default function TlcCustomerReporting(props) {
       {tabs.map((tab) => (
         <div
           key={tab.id}
-          onClick={() => setActiveTab(tab.id)}
+          onClick={() => {
+            setActiveTab(tab.id); props.setTlcAskAiPayload(tab.tlcAskAiPayload || "");
+            props.setTlcAskAiHistoryPayload(tab.tlcAskAiHistoryPayload || "");
+          }}
           style={{
             padding: "8px 16px",
             borderRadius: "8px",
@@ -925,7 +966,8 @@ export default function TlcCustomerReporting(props) {
                 endDate={activeTabData.endDate}
                 onChange={(dates) => {
                   const [start, end] = dates;
-                  updateTab({ startDate: start, endDate: end });
+                  const formatted = formatTabDate(start, end);
+                  updateTab({ startDate: start, endDate: end, name: formatted || `Tab ${activeTab}`, });
                 }}
                 placeholderText="Select Date Range"
                 className="filter-input"
@@ -962,7 +1004,7 @@ export default function TlcCustomerReporting(props) {
             <div style={{ display: "flex", justifyContent: "center" }}>
               <button
                 onClick={handleAnalyse}
-                disabled={loading || uploading}
+                disabled={activeTabData.loading || activeTabData.uploading}
                 style={{
                   backgroundColor: "#6c4cdc",
                   padding: "10px 30px",
@@ -974,10 +1016,10 @@ export default function TlcCustomerReporting(props) {
                   color: "white",
                   fontWeight: "500",
                   fontSize: "14px",
-                  opacity: loading || uploading ? 0.7 : 1,
+                  opacity: activeTabData.loading || activeTabData.uploading ? 0.7 : 1,
                 }}
               >
-                {loading || uploading ? "Processing..." : "Apply Filters"}
+                {activeTabData.loading || activeTabData.uploading ? "Processing..." : "Apply Filters"}
               </button>
             </div>
           )}
@@ -1119,9 +1161,9 @@ export default function TlcCustomerReporting(props) {
         <div className="inline-loader-wrapper">
           <div className="loader"></div>
           <div className="loading-text">
-            {progressStage === "uploading" && "📤 Uploading your files..."}
-            {progressStage === "analysing" && "🔍 Analysing data..."}
-            {progressStage === "preparing" && "📊 Preparing your dashboard..."}
+            {activeTabData.progressStage === "uploading" && "📤 Uploading your files..."}
+            {activeTabData.progressStage === "analysing" && "🔍 Analysing data..."}
+            {activeTabData.progressStage === "preparing" && "📊 Preparing your dashboard..."}
           </div>
         </div>
       )}
@@ -1290,8 +1332,8 @@ export default function TlcCustomerReporting(props) {
         )}
 
         {activeTabData.stage === "filters" && !activeTabData.analysisData && (
-          <button className="search-btn" onClick={handleAnalyse} disabled={loading}>
-            {loading ? "Processing..." : "Analyse"}
+          <button className="search-btn" onClick={handleAnalyse} disabled={activeTabData.loading}>
+            {activeTabData.loading ? "Processing..." : "Analyse"}
           </button>
         )}
       </div>
