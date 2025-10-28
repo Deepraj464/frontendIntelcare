@@ -181,6 +181,10 @@ export default function TlcCustomerReporting(props) {
     { label: "Full Time", value: "Full Time" },
     { label: "Part Time", value: "Part Time" },
   ];
+  const formatTabDate = (start, end) => {
+    if (!start || !end) return null;
+    return `${start.toLocaleDateString("en-US")} - ${end.toLocaleDateString("en-US")}`;
+  };
 
   const handleFileChange = (e, type) => {
     const files = Array.from(e.target.files);
@@ -962,7 +966,8 @@ export default function TlcCustomerReporting(props) {
                 endDate={activeTabData.endDate}
                 onChange={(dates) => {
                   const [start, end] = dates;
-                  updateTab({ startDate: start, endDate: end });
+                  const formatted = formatTabDate(start, end);
+                  updateTab({ startDate: start, endDate: end, name: formatted || `Tab ${activeTab}`, });
                 }}
                 placeholderText="Select Date Range"
                 className="filter-input"
