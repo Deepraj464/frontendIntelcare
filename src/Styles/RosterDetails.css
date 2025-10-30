@@ -1,162 +1,197 @@
 .roster-page {
-    margin-top: 60px;
-    font-family: 'Inter';
+  margin-top: 60px;
+  font-family: "Inter";
 }
 
+/* ===== Layout ===== */
 .roster-layout {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 100px;
-    margin-bottom: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 100px;
+  margin-bottom: 40px;
 }
 
 .roster-peronal-img-h {
-    display: flex;
-    margin-bottom: 14px;
-    align-items: center;
+  display: flex;
+  margin-bottom: 14px;
+  align-items: center;
 }
 
 .roster-section-title {
-    font-size: 20px;
-    font-weight: 600;
-    /* margin-bottom: 12px; */
+  font-size: 22px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 16px;
 }
 
 .roster-personal-info {
-    background: #f4f0fa;
-    border-radius: 12px;
-    padding: 20px;
-    flex: 1;
+  background: #f4f0fa;
+  border-radius: 12px;
+  padding: 20px;
+  flex: 1;
 }
 
 .roster-info-grid p {
-    margin: 2px 0;
-    font-size: 14px;
-    color: #8A8A8A;
-    font-family: 'Inter';
-    font-weight: 400;
-}
-.history-icon-h{
-    display: flex;
-    align-items: center;
-    margin-bottom: 30px;
+  margin: 2px 0;
+  font-size: 14px;
+  color: #8a8a8a;
+  font-family: "Inter";
+  font-weight: 400;
 }
 
-.history-card-roster{
-    margin-bottom: 14px;
-    display: flex;
-    align-items: flex-start;
+.history-icon-h {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
 }
 
-.staff-details{
-    font-size: 16px;
-    margin-bottom: 2px;
-    font-weight: 500;
-    color: #8A8A8A;
-    font-family: 'Inter';
-    text-align: start;
+.history-card-roster {
+  margin-bottom: 14px;
+  display: flex;
+  align-items: flex-start;
 }
 
+.staff-details {
+  font-size: 16px;
+  margin-bottom: 2px;
+  font-weight: 500;
+  color: #8a8a8a;
+  font-family: "Inter";
+  text-align: start;
+}
+
+/* ===== Staff Section ===== */
 .roster-staff-section {
-    margin: 30px 0;
+  margin: 40px 0;
 }
 
+/* Modern grid layout for staff cards */
 .roster-staff-cards {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  justify-content: center;
 }
 
 .roster-staff-card {
-    background: #f3f0fa;
-    border-radius: 10px;
-    padding: 15px;
-    width: 180px;
-    cursor: pointer;
-    transition: 0.2s;
-    text-align: left;
+  background: #ffffff;
+  border: 1px solid #e2d9ff;
+  border-radius: 14px;
+  padding: 18px 20px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 0 2px 8px rgba(108, 76, 220, 0.06);
 }
 
-.roster-staff-card h4 {
-    margin: 5px 0;
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.roster-staff-card p {
-    margin: 2px 0;
-    font-size: 16px;
-    color: #555;
-}
-
-.roster-staff-number {
-    background: #6c4cdc;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    text-align: center;
-    line-height: 20px;
+.roster-staff-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(108, 76, 220, 0.18);
 }
 
 .roster-staff-card.roster-selected {
-    box-shadow: -4px -4px 10px 0px #14c8a8,
-                4px 4px 10px 0px #14c8a8;
-  }
+  border: 2px solid #14c8a8;
+  box-shadow: 0 0 10px rgba(20, 200, 168, 0.4);
+}
 
+.roster-staff-number {
+  background: #6c4cdc;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  text-align: center;
+  line-height: 28px;
+  flex-shrink: 0;
+}
+
+.roster-staff-card p {
+  font-size: 14px;
+  color: #555;
+  margin: 4px 0;
+}
+
+.roster-staff-card .staff-details strong {
+  color: #6c4cdc;
+  font-weight: 600;
+}
+
+.roster-staff-card ul {
+  list-style: disc;
+  padding-left: 20px;
+  margin-top: 8px;
+}
+
+.roster-staff-card li {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+/* ===== Broadcast Button ===== */
 .roster-broadcast-btn {
-    background: #6c4cdc;
-    color: white;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 20px;
-    font-size: 16px;
-    cursor: pointer;
-    display: block;
-    margin: 0 auto;
+  background: #6c4cdc;
+  color: white;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 24px;
+  font-size: 16px;
+  cursor: pointer;
+  display: block;
+  margin: 0 auto;
+  font-family: "Inter";
+  transition: background 0.25s ease;
 }
 
 .roster-broadcast-btn:hover {
-    background: #6a5be0;
+  background: #5a3ce2;
 }
+
+/* ===== Success Overlay ===== */
 .success-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.9); /* transparent white */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-  }
-  
-  .success-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 24px;
-  }
-  
-  .success-img {
-    width: 120px;
-    height: auto
-  }
-  
-  .done-btn {
-    background: #6c4cdc;
-    color: white;
-    border: none;
-    padding: 10px 30px;
-    border-radius: 30px;
-    font-size: 16px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-family: 'Inter';
-  }
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.success-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.success-img {
+  width: 120px;
+  height: auto;
+}
+
+.done-btn {
+  background: #6c4cdc;
+  color: white;
+  border: none;
+  padding: 10px 30px;
+  border-radius: 30px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Inter";
+  transition: background 0.25s ease;
+}
+
+.done-btn:hover {
+  background: #5a3ce2;
+}
