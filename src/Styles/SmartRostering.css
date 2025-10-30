@@ -8,10 +8,10 @@
   
   .rostering-date {
     font-size: 24px;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     font-family: 'Inter';
     color: black;
-    margin-top: 30px;
+    margin-top: 20px;
   }
   
   .rostering-stats-row {
@@ -23,7 +23,7 @@
   
   .rostering-stat-card {
     background: #F0EDF6;
-    padding: 40px 20px;
+    padding: 20px;
     border-radius: 8px;
     display: flex;
     flex-direction: column;
@@ -99,7 +99,7 @@
   
   /* Input */
   .rostering-input-box {
-    margin: 46px auto;
+    margin: 24px auto 46px;
     max-width: 600px;
     text-align: center;
   }
@@ -148,4 +148,35 @@
     color: #455A64;
     cursor: pointer;
   }
-  
+  .overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.85);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  color: #6C4CDC;
+  z-index: 9999;
+}
+
+.spinner {
+  border: 4px solid #e0d9ff;
+  border-top: 4px solid #6C4CDC;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+

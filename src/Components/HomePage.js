@@ -285,7 +285,7 @@ const HomePage = () => {
                 </div>
 
                 <div style={{ display: selectedRole === "Smart Rostering" ? "block" : "none" }}>
-                  <RosteringDashboard />
+                  <RosteringDashboard user={user}/>
                 </div>
               </>
 
