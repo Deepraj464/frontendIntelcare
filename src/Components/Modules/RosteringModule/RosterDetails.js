@@ -6,7 +6,7 @@ import SuccessCheck from '../../../Images/SuccessCheck.png';
 import { GoHistory, GoArrowLeft } from "react-icons/go";
 import axios from "axios";
 
-const RosterDetails = ({ setScreen, rosteringResponse, API_BASE }) => {
+const RosterDetails = ({ setScreen, rosteringResponse, API_BASE ,selectedClient}) => {
     const [selected, setSelected] = useState([]);
     const [showSuccess, setShowSuccess] = useState(false);
     const [broadcasting, setBroadcasting] = useState(false);
@@ -77,20 +77,20 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE }) => {
 
                     <div className="roster-info-grid">
                         <div style={{ display: 'flex', paddingLeft: '54px', gap: '42px', paddingTop: '20px', paddingBottom: '20px', borderBottom: '1px solid #E4E4E4' }}>
-                            <p>ID: <span style={{ color: 'black' }}>{client.id || 'N/A'}</span></p>
-                            <p>Name: <span style={{ color: 'black' }}>{client.client_name || 'N/A'}</span></p>
+                            <p>ID: <span style={{ color: 'black' }}>{client.id || selectedClient.clientId || 'N/A'}</span></p>
+                            <p>Name: <span style={{ color: 'black' }}>{client.client_name || selectedClient.name || 'N/A'}</span></p>
                             <p>DOB: <span style={{ color: 'black' }}>{client.dob || 'N/A'}</span></p>
-                            <p>Gender: <span style={{ color: 'black' }}>{client.gender || 'N/A'}</span></p>
+                            <p>Gender: <span style={{ color: 'black' }}>{client.gender || selectedClient.sex || 'N/A'}</span></p>
                         </div>
                         <div style={{ display: 'flex', paddingLeft: '54px', gap: '42px', paddingTop: '20px', paddingBottom: '20px', borderBottom: '1px solid #E4E4E4' }}>
-                            <p>Phone: <span style={{ color: 'black' }}>{client.phone || 'N/A'}</span></p>
-                            <p>Plan Start Date: <span style={{ color: 'black' }}>{client.plan_start_date || 'N/A'}</span></p>
+                            <p>Phone: <span style={{ color: 'black' }}>{client.phone || selectedClient.phone || 'N/A'}</span></p>
+                            <p>Plan Start Date: <span style={{ color: 'black' }}>{client.plan_start_date || selectedClient.date || 'N/A'}</span></p>
                         </div>
                         <div style={{ display: 'flex', paddingLeft: '54px', gap: '42px', paddingTop: '20px', paddingBottom: '20px', borderBottom: '1px solid #E4E4E4' }}>
                             <p>Address: <span style={{ color: 'black' }}>
                                 {client.address
                                     ? `${client.address.street_number} ${client.address.street}, ${client.address.suburb}, ${client.address.state} ${client.address.postcode}, ${client.address.country}`
-                                    : 'N/A'}
+                                    : selectedClient.address?selectedClient.address: 'N/A'}
                             </span></p>
                         </div>
                     </div>

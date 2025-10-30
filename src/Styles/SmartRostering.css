@@ -8,10 +8,10 @@
   
   .rostering-date {
     font-size: 24px;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     font-family: 'Inter';
     color: black;
-    margin-top: 30px;
+    margin-top: 20px;
   }
   
   .rostering-stats-row {
@@ -23,7 +23,7 @@
   
   .rostering-stat-card {
     background: #F0EDF6;
-    padding: 40px 20px;
+    padding: 20px;
     border-radius: 8px;
     display: flex;
     flex-direction: column;
@@ -99,7 +99,7 @@
   
   /* Input */
   .rostering-input-box {
-    margin: 46px auto;
+    margin: 24px auto 46px;
     max-width: 600px;
     text-align: center;
   }
@@ -148,4 +148,3 @@
     color: #455A64;
     cursor: pointer;
   }
-  
