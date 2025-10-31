@@ -6,18 +6,34 @@ import SuccessCheck from '../../../Images/SuccessCheck.png';
 import { GoHistory, GoArrowLeft } from "react-icons/go";
 import axios from "axios";
 
-const RosterDetails = ({ setScreen, rosteringResponse, API_BASE ,selectedClient}) => {
+const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient }) => {
     const [selected, setSelected] = useState([]);
     const [showSuccess, setShowSuccess] = useState(false);
     const [broadcasting, setBroadcasting] = useState(false);
-    // Extract data from backend response
-    const client = rosteringResponse?.data?.client || {};
-    
-    // ✅ Only keep staff with role "SW"
-    const staffList = rosteringResponse?.data?.staff_workers || []
 
-    const request = rosteringResponse?.data?.request || {};
-    const message = rosteringResponse?.data?.message || "";
+    // ✅ Handle both response structures (direct rostering vs filler+rostering)
+    const isFillerResponse = rosteringResponse?.filler;
+
+    // Extract client data based on response type
+    const client = isFillerResponse
+        ? rosteringResponse?.filler?.match?.matched_record || {}
+        : rosteringResponse?.data?.client || {};
+
+    // Extract ranked staff from correct path
+    const rankedStaff = isFillerResponse
+        ? rosteringResponse?.rostering_summary?.final_ranked || []
+        : rosteringResponse?.data?.final_ranked || [];
+
+    // Extract request details
+    const request = isFillerResponse
+        ? rosteringResponse?.filler?.llm?.inputs || {}
+        : rosteringResponse?.data?.request || {};
+
+    const message = rosteringResponse?.message || "";
+
+    console.log("Client data:", client);
+    console.log("Ranked staff:", rankedStaff);
+
     const handleSelect = (id) => {
         if (selected.includes(id)) {
             setSelected(selected.filter((s) => s !== id));
@@ -36,20 +52,32 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE ,selectedClient}
             alert("Please select at least one staff to broadcast.");
             return;
         }
-        
+
         setBroadcasting(true);
         try {
-            // Filter staff based on selection
-            const selectedStaff = selected.map(index => staffList[index]);
-            
+            // ✅ FIXED: Use rankedStaff (displayed staff) instead of staffList
+            const selectedStaff = selected.map(index => rankedStaff[index]);
+
             // Call broadcast endpoint
-            const response = await axios.post(`${API_BASE}/broadcast-shift`, {
-                selectedStaff,
-                client,
-                request,
-                message
+            const response = await axios.post(`${API_BASE}/broadcast`, {
+                clientData: {
+                    ClientId: client.ClientId || client.id || selectedClient?.clientId,
+                    PreferredName: client.PreferredName || client.FirstName || selectedClient?.name
+                },
+                staffList: selected.map(index => ({
+                    name: rankedStaff[index].name,
+                    phone: "+61419015351",
+                    role: "SW"
+                })),
+                rosteringManagers: [
+                    {
+                        name: "Kris",
+                        phone: "+61419015351", // hardcoded RM number
+                        role: "RM"
+                    }
+                ]
             });
-            
+
             console.log("Broadcast response:", response.data);
             setShowSuccess(true);
         } catch (error) {
@@ -58,6 +86,19 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE ,selectedClient}
         } finally {
             setBroadcasting(false);
         }
+    };
+
+    // Helper function to format address
+    const formatAddress = () => {
+        if (client.Address1) {
+            return `${client.Address1}${client.Address2 ? ', ' + client.Address2 : ''}, ${client.Suburb}, ${client.State} ${client.PostCode}`;
+        }
+        if (client.address) {
+            return typeof client.address === 'string'
+                ? client.address
+                : `${client.address.street_number} ${client.address.street}, ${client.address.suburb}, ${client.address.state} ${client.address.postcode}, ${client.address.country}`;
+        }
+        return selectedClient?.address || 'N/A';
     };
 
     return (
@@ -77,20 +118,30 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE ,selectedClient}
 
                     <div className="roster-info-grid">
                         <div style={{ display: 'flex', paddingLeft: '54px', gap: '42px', paddingTop: '20px', paddingBottom: '20px', borderBottom: '1px solid #E4E4E4' }}>
-                            <p>ID: <span style={{ color: 'black' }}>{client.id || selectedClient.clientId || 'N/A'}</span></p>
-                            <p>Name: <span style={{ color: 'black' }}>{client.client_name || selectedClient.name || 'N/A'}</span></p>
-                            <p>DOB: <span style={{ color: 'black' }}>{client.dob || 'N/A'}</span></p>
-                            <p>Gender: <span style={{ color: 'black' }}>{client.gender || selectedClient.sex || 'N/A'}</span></p>
+                            <p>ID: <span style={{ color: 'black' }}>
+                                {client.ClientId || client.id || selectedClient?.clientId || request.client_id || 'N/A'}
+                            </span></p>
+                            <p>Name: <span style={{ color: 'black' }}>
+                                {client.PreferredName || client.FirstName || client.client_name || selectedClient?.name || request.client_name || 'N/A'}
+                            </span></p>
+                            <p>DOB: <span style={{ color: 'black' }}>
+                                {client.DateOfBirth || client.dob || 'N/A'}
+                            </span></p>
+                            <p>Gender: <span style={{ color: 'black' }}>
+                                {client.Gender || client.gender || selectedClient?.sex || 'N/A'}
+                            </span></p>
                         </div>
                         <div style={{ display: 'flex', paddingLeft: '54px', gap: '42px', paddingTop: '20px', paddingBottom: '20px', borderBottom: '1px solid #E4E4E4' }}>
-                            <p>Phone: <span style={{ color: 'black' }}>{client.phone || selectedClient.phone || 'N/A'}</span></p>
-                            <p>Plan Start Date: <span style={{ color: 'black' }}>{client.plan_start_date || selectedClient.date || 'N/A'}</span></p>
+                            <p>Phone: <span style={{ color: 'black' }}>
+                                {client.Phone1 || client.phone || selectedClient?.phone || 'N/A'}
+                            </span></p>
+                            <p>Plan Start Date: <span style={{ color: 'black' }}>
+                                {client.ServiceStart || client.plan_start_date || request.shift_date || selectedClient?.date || 'N/A'}
+                            </span></p>
                         </div>
                         <div style={{ display: 'flex', paddingLeft: '54px', gap: '42px', paddingTop: '20px', paddingBottom: '20px', borderBottom: '1px solid #E4E4E4' }}>
                             <p>Address: <span style={{ color: 'black' }}>
-                                {client.address
-                                    ? `${client.address.street_number} ${client.address.street}, ${client.address.suburb}, ${client.address.state} ${client.address.postcode}, ${client.address.country}`
-                                    : selectedClient.address?selectedClient.address: 'N/A'}
+                                {formatAddress()}
                             </span></p>
                         </div>
                     </div>
@@ -117,7 +168,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE ,selectedClient}
                                 </div>
                             ))
                         ) : (
-                            <p>No roster history available.</p>
+                            <p style={{ padding: '20px', color: '#666', fontSize: '14px' }}>No roster history available.</p>
                         )}
                     </div>
                 </div>
@@ -125,33 +176,112 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE ,selectedClient}
 
             {/* Available Staff */}
             <div className="roster-staff-section">
-                <h3 className="roster-section-title" style={{ textAlign: 'left', marginBottom: '20px' }}>Available Staff</h3>
+                <h3 className="roster-section-title" style={{ textAlign: "left", marginBottom: "20px" }}>
+                    Available Staff
+                </h3>
+
                 <div className="roster-staff-cards">
-                    {staffList.length > 0 ? (
-                        staffList.map((staff, index) => (
+                    {rankedStaff.length > 0 ? (
+                        rankedStaff.map((staff, index) => (
                             <div
                                 key={index}
                                 className={`roster-staff-card ${selected.includes(index) ? "roster-selected" : ""}`}
                                 onClick={() => handleSelect(index)}
                             >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                                {/* Header with Rank & Name */}
+                                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
                                     <div className="roster-staff-number">{index + 1}</div>
-                                    <div style={{ fontSize: '14px', fontWeight: '600', color: 'black' }}>{staff.name}</div>
+                                    <div style={{ fontSize: "15px", fontWeight: "600", color: "black" }}>
+                                        {staff.name || "Unknown"}
+                                    </div>
                                 </div>
-                                <p className="staff-details" style={{ fontWeight: '400' }}>Rate: <span style={{ color: 'black' }}>${staff.hourly_rate}/hour</span></p>
-                                <p className="staff-details" style={{ fontWeight: '400' }}>Gender: <span style={{ color: 'black' }}>{staff.gender}</span></p>
-                                <p className="staff-details" style={{ fontWeight: '400' }}>Age: <span style={{ color: 'black' }}>{staff.age}</span></p>
+
+                                {/* Score */}
+                                <p className="staff-details" style={{ fontWeight: "600", fontSize: "14px" }}>
+                                    Score: <span style={{ color: "#6C4CDC", fontWeight: "700" }}>{staff.score || "N/A"}</span>
+                                </p>
+
+                                {/* Gender */}
+                                <p className="staff-details" style={{ fontWeight: "400" }}>
+                                    Gender: <span style={{ color: "black" }}>{staff.sex || staff.gender || "N/A"}</span>
+                                </p>
+
+                                {/* Phone */}
+                                <p className="staff-details" style={{ fontWeight: "400" }}>
+                                    Phone: <span style={{ color: "black" }}>{staff.phone || "N/A"}</span>
+                                </p>
+
+                                {/* Email */}
+                                <p className="staff-details" style={{ fontWeight: "400" }}>
+                                    Email: <span style={{ color: "black" }}>{staff.email || "N/A"}</span>
+                                </p>
+
+                                {/* Languages */}
+                                <p className="staff-details" style={{ fontWeight: "400" }}>
+                                    Languages: <span style={{ color: "black" }}>{staff.languages || "N/A"}</span>
+                                </p>
+
+                                {/* Experience Years */}
+                                <p className="staff-details" style={{ fontWeight: "400" }}>
+                                    Experience: <span style={{ color: "black" }}>{staff.experience_years ? `${staff.experience_years} years` : "N/A"}</span>
+                                </p>
+
+                                {/* Role Description */}
+                                <p className="staff-details" style={{ fontWeight: "400" }}>
+                                    Role: <span style={{ color: "black" }}>{staff.role_description || "N/A"}</span>
+                                </p>
+
+                                {/* Award Description (if not null) */}
+                                {staff.award_desc && (
+                                    <p className="staff-details" style={{ fontWeight: "400", fontSize: "13px" }}>
+                                        Award: <span style={{ color: "black" }}>{staff.award_desc}</span>
+                                    </p>
+                                )}
+
+                                {/* Location */}
+                                <p className="staff-details" style={{ fontWeight: "400" }}>
+                                    Location: <span style={{ color: "black" }}>{staff.location?.address || "N/A"}</span>
+                                </p>
+
+                                {/* Skill Descriptions */}
+                                {staff.skill_descriptions && staff.skill_descriptions.length > 0 && (
+                                    <div style={{ marginTop: "10px" }}>
+                                        <p className="staff-details" style={{ fontWeight: "600", marginBottom: "6px" }}>
+                                            Skills:
+                                        </p>
+                                        <ul style={{ paddingLeft: "20px", fontSize: "12px", color: "#555", margin: "0" }}>
+                                            {staff.skill_descriptions.map((skill, idx) => (
+                                                <li key={idx} style={{ marginBottom: "4px" }}>{skill}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {/* Reason (Highlighted at bottom) */}
+                                {staff.reason && (
+                                    <p className="staff-details" style={{
+                                        fontWeight: "400",
+                                        fontSize: "13px",
+                                        marginTop: "12px",
+                                        padding: "8px",
+                                        background: "#f9f7ff",
+                                        borderRadius: "6px",
+                                        borderLeft: "3px solid #6C4CDC"
+                                    }}>
+                                        <strong>Why this staff?</strong> <span style={{ color: "black" }}>{staff.reason}</span>
+                                    </p>
+                                )}
                             </div>
                         ))
                     ) : (
-                        <p>No staff with role "SW" available.</p>
+                        <p>No staff available for this shift.</p>
                     )}
                 </div>
             </div>
 
             {/* Broadcast Button */}
-            <button 
-                className="roster-broadcast-btn" 
+            <button
+                className="roster-broadcast-btn"
                 onClick={handleBroadcast}
                 disabled={broadcasting}
             >
