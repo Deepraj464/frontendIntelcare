@@ -211,10 +211,10 @@ const SmartRostering = (props) => {
 
 
     const handleSubmit = async () => {
-        if (selectedFile.length !== 2) {
-            alert("Please upload exactly 2 files before sending.");
-            return;
-        }
+        // if (selectedFile.length !== 2) {
+        //     alert("Please upload exactly 2 files before sending.");
+        //     return;
+        // }
 
         if (!query.trim()) {
             alert("Please enter a query first.");
