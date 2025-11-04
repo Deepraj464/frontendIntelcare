@@ -369,7 +369,7 @@ const HomePage = () => {
 
                   </div>
                   <div>
-                    {messages.length === 0 &&
+                    {/* {messages.length === 0 &&
                       <div>
                         <div style={{ textAlign: 'left', marginBottom: '14px', fontSize: '14px', fontWeight: '500', fontFamily: 'Inter' }}>
                           Suggestions
@@ -386,7 +386,7 @@ const HomePage = () => {
                           ))}
                         </div>
                       </div>
-                    }
+                    } */}
 
                     <div style={{ position: "relative", marginTop: "10px", marginBottom: "16px", width: "100%", display: "flex", alignSelf: "center" }}>
                       <input
