@@ -63,14 +63,15 @@
 
 /* ===== Staff Section ===== */
 .roster-staff-section {
-  margin: 40px 0;
+  margin: 40px 0 130px;
 }
 
 /* Modern grid layout for staff cards */
 .roster-staff-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
+  grid-template-columns: 32% 32% 32%;
+column-gap: 2%;
+row-gap: 0.6%;
   justify-content: center;
 }
 
@@ -111,7 +112,7 @@
 .roster-staff-card p {
   font-size: 14px;
   color: #555;
-  margin: 4px 0;
+  margin: 8px 0;
 }
 
 .roster-staff-card .staff-details strong {

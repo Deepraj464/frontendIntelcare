@@ -1199,6 +1199,7 @@ export default function TlcCustomerReporting(props) {
                   1: "Payroll Overview",
                   2: "Detailed Breakdown",
                   3: "Leave & Absences",
+                  4: "Payroll Comparison"
                 };
                 return titles[activeTabData.currentPage] || `Page ${activeTabData.currentPage}`;
               })()}
@@ -1271,6 +1272,40 @@ export default function TlcCustomerReporting(props) {
               );
             })()}
 
+            {activeTabData.currentPage === 4 && (() => {
+              const page4Data = activeTabData.analysisData.pages?.["page 4"];
+              if (!page4Data) return null;
+
+              // 1️⃣ If there are figures (charts or visuals)
+              const figures = page4Data.figures || [];
+
+              // 2️⃣ If there’s a main table HTML block
+              const tableHTML = page4Data.table || "";
+
+              return (
+                <div id="page-4-content">
+                  {/* Render charts first if available */}
+                  {figures.length > 0 && (
+                    <div className="charts-grid">
+                      {figures.map((chartHTML, index) => (
+                        <div key={`page4-chart-${index}`}>
+                          {renderHtmlFigure(chartHTML)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Render table (main Workforce Summary table) */}
+                  {tableHTML && (
+                    <div className="table-box" style={{ marginTop: "20px" }}>
+                      {renderHtmlFigure(tableHTML)}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+
             {/* Page 1 Table */}
             {activeTabData.currentPage === 1 && (() => {
               const tableHTML =
@@ -1324,6 +1359,20 @@ export default function TlcCustomerReporting(props) {
                   }}
                 >
                   View Leave Summary →
+                </button>
+              )}
+              {activeTabData.currentPage === 3 && (
+                <button
+                  className="next-btn"
+                  onClick={() => updateTab({ currentPage: 4 })}
+                  style={{
+                    marginLeft: "auto",
+                    background: "#6C4CDC",
+                    color: "#fff",
+                    fontWeight: 600,
+                  }}
+                >
+                  Payroll Comparison →
                 </button>
               )}
             </div>

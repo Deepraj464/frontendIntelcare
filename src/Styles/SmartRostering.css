@@ -11,7 +11,7 @@
     margin-bottom: 20px;
     font-family: 'Inter';
     color: black;
-    margin-top: 20px;
+    margin-top: 24px;
   }
   
   .rostering-stats-row {
@@ -99,7 +99,7 @@
   
   /* Input */
   .rostering-input-box {
-    margin: 24px auto 46px;
+    margin: 32px auto 46px;
     max-width: 600px;
     text-align: center;
   }

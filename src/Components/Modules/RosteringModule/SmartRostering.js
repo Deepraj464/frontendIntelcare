@@ -31,6 +31,7 @@ const SmartRostering = (props) => {
     const [startIndex, setStartIndex] = useState(0);
     const visibleCount = 3;
     const [visualCareCreds, setVisualCareCreds] = useState(null);
+    const [unauthorized, setUnauthorized] = useState(false);
 
     useEffect(() => {
         const fetchVisualCareCreds = async () => {
@@ -44,8 +45,7 @@ const SmartRostering = (props) => {
                     );
 
                     if (!matched) {
-                        alert("Access denied. Your email is not authorized to use Smart Rostering.");
-                        return;
+                        setUnauthorized(true);
                     }
 
                     setVisualCareCreds(matched.creds); // ✅ Save credentials for later API use
@@ -210,65 +210,83 @@ const SmartRostering = (props) => {
 
 
 
-const handleSubmit = async () => {
-  if (selectedFile.length !== 2) {
-    alert("Please upload exactly 2 files before sending.");
-    return;
-  }
+    const handleSubmit = async () => {
+        // if (selectedFile.length !== 2) {
+        //     alert("Please upload exactly 2 files before sending.");
+        //     return;
+        // }
 
-  if (!query.trim()) {
-    alert("Please enter a query first.");
-    return;
-  }
+        if (!query.trim()) {
+            alert("Please enter a query first.");
+            return;
+        }
 
-  setPromptLoading(true);
-  try {
-    const user = visualCareCreds?.user;
-    const key = visualCareCreds?.key;
-    const secret = visualCareCreds?.secret;
+        setPromptLoading(true);
+        try {
+            const user = visualCareCreds?.user;
+            const key = visualCareCreds?.key;
+            const secret = visualCareCreds?.secret;
 
-    console.log("📤 Sending to Filler + Smart Rostering Controller:", query);
+            console.log("📤 Sending to Filler + Smart Rostering Controller:", query);
 
-    const response = await axios.post(
-      `${API_BASE}/run-manifest-filler?user=${user}&key=${key}&secret=${secret}`,
-      { prompt: query },
-      { headers: { "Content-Type": "application/json" } }
-    );
+            const response = await axios.post(
+                `${API_BASE}/run-manifest-filler?user=${user}&key=${key}&secret=${secret}`,
+                { prompt: query },
+                { headers: { "Content-Type": "application/json" } }
+            );
 
-    console.log("✅ Combined Filler + Smart Rostering Response:", response.data);
+            console.log("✅ Combined Filler + Smart Rostering Response:", response.data);
 
-    // ✅ Corrected access path for ranked staff
-    const rankedStaff = response.data?.rostering_summary?.final_ranked || [];
+            // ✅ Corrected access path for ranked staff
+            const rankedStaff = response.data?.rostering_summary?.final_ranked || [];
 
-    if (Array.isArray(rankedStaff) && rankedStaff.length > 0) {
-      // Store entire response for details screen
-      setRosteringResponse(response.data);
+            if (Array.isArray(rankedStaff) && rankedStaff.length > 0) {
+                // Store entire response for details screen
+                setRosteringResponse(response.data);
 
-      // ✅ Extract client info from filler.llm.inputs
-      const fillerInputs = response.data?.filler?.llm?.inputs || {};
-      const selectedClientData = {
-        name: fillerInputs.client_name || "Unknown",
-        dateOfService: fillerInputs.shift_date || "-",
-        startTime: fillerInputs.shift_start || "-",
-        minutes: fillerInputs.shift_minutes
-          ? `${fillerInputs.shift_minutes} min`
-          : "-",
-      };
+                // ✅ Extract client info from filler.llm.inputs
+                const fillerInputs = response.data?.filler?.llm?.inputs || {};
+                const selectedClientData = {
+                    name: fillerInputs.client_name || "Unknown",
+                    dateOfService: fillerInputs.shift_date || "-",
+                    startTime: fillerInputs.shift_start || "-",
+                    minutes: fillerInputs.shift_minutes
+                        ? `${fillerInputs.shift_minutes} min`
+                        : "-",
+                };
 
-      setSelectedClient(selectedClientData);
-      setScreen(2); // move to details view
-    } else {
-      console.warn("⚠️ No ranked staff returned:", rankedStaff);
-      alert("No staff found for this shift.");
-    }
-  } catch (error) {
-    console.error("❌ Error running filler-smart-rostering:", error);
-    alert("Failed to run manifest filler + smart rostering.");
-  } finally {
-    setPromptLoading(false);
-  }
-};
+                setSelectedClient(selectedClientData);
+                setScreen(2); // move to details view
+            } else {
+                console.warn("⚠️ No ranked staff returned:", rankedStaff);
+                alert("No staff found for this shift.");
+            }
+        } catch (error) {
+            console.error("❌ Error running filler-smart-rostering:", error);
+            alert("Failed to run manifest filler + smart rostering.");
+        } finally {
+            setPromptLoading(false);
+        }
+    };
 
+    if (unauthorized) {
+        return (
+          <div style={{
+            textAlign: "center",
+            padding: "120px 20px",
+            fontFamily: "Inter, sans-serif",
+            color: "#1f2937"
+          }}>
+            <h2 style={{ fontSize: "24px", marginBottom: "12px", color: "#6C4CDC" }}>
+              Access Restricted 🚫
+            </h2>
+            <p style={{ fontSize: "16px", color: "#555" }}>
+              Sorry, your account (<strong>{userEmail}</strong>) is not authorized to view this page.
+            </p>
+          </div>
+        );
+      }
+      
 
 
 
@@ -279,8 +297,7 @@ const handleSubmit = async () => {
         <>
             {screen === 1 && (
                 <div className="rostering-dashboard">
-                    <h2 className="rostering-date">{formattedDate}</h2>
-                    <div className="info-table" style={{ marginBottom: '40px' }}>
+                    <div className="info-table">
                         <div className="table-headerss">
                             <span>If You Upload This...</span>
                             <span>Our AI Will Instantly...</span>
@@ -304,6 +321,8 @@ const handleSubmit = async () => {
                             </ul>
                         </div>
                     </div>
+
+                    <h2 className="rostering-date">{formattedDate}</h2>
 
                     <div className="rostering-stats-row">
                         <div className="rostering-stat-card">
@@ -413,7 +432,7 @@ const handleSubmit = async () => {
                                                         flex: "0 0 300px",
                                                         border: "1px solid #6c4cdc",
                                                         borderRadius: "10px",
-                                                        padding: "14px",
+                                                        padding: "16px",
                                                         background: "#fff",
                                                         fontFamily: "Inter",
                                                         textAlign: "left",
@@ -435,17 +454,16 @@ const handleSubmit = async () => {
                                                     onClick={() => handleClientClick(client)}
 
                                                 >
-                                                    <p><strong>Date:</strong> {client.date}</p>
-                                                    <p><strong>Date Of Service:</strong> {client.dateOfService}</p>
-                                                    <p><strong>Client ID:</strong> {client.clientId}</p>
-                                                    <p><strong>Client Name:</strong> {client.name}</p>
-                                                    <p><strong>Sex:</strong> {client.sex}</p>
-                                                    <p><strong>Phone:</strong> {client.phone}</p>
-                                                    <p><strong>Email:</strong> {client.email}</p>
-                                                    <p><strong>Address:</strong> {client.address}</p>
-                                                    <p><strong>Start Time:</strong> {client.startTime}</p>
-                                                    <p><strong>Minutes:</strong> {client.minutes}</p>
-                                                    <p><strong>OnHoldType:</strong> {client.onHoldType}</p>
+                                                    <p style={{ marginBottom: '12px' }}><strong>Date Of Service:</strong> {client.dateOfService}</p>
+                                                    <p style={{ marginBottom: '12px' }}><strong>Client ID:</strong> {client.clientId}</p>
+                                                    <p style={{ marginBottom: '12px' }}><strong>Client Name:</strong> {client.name}</p>
+                                                    <p style={{ marginBottom: '12px' }}><strong>Sex:</strong> {client.sex}</p>
+                                                    <p style={{ marginBottom: '12px' }}><strong>Phone:</strong> {client.phone}</p>
+                                                    <p style={{ marginBottom: '12px' }}><strong>Email:</strong> {client.email}</p>
+                                                    <p style={{ marginBottom: '12px' }}><strong>Address:</strong> {client.address}</p>
+                                                    <p style={{ marginBottom: '12px' }}><strong>Start Time:</strong> {client.startTime}</p>
+                                                    <p style={{ marginBottom: '12px' }}><strong>Minutes:</strong> {client.minutes}</p>
+                                                    <p style={{ marginBottom: '12px' }}><strong>OnHoldType:</strong> {client.onHoldType}</p>
                                                     <p><strong>OnHoldNote:</strong> {client.onHoldNote}</p>
                                                 </div>
                                             ))}
@@ -480,6 +498,7 @@ const handleSubmit = async () => {
                                             cursor: "pointer",
                                             opacity: startIndex === 0 ? 0.5 : 1,
                                             fontSize: "18px",
+                                            color: '#6c4cdc',
                                         }}
                                     >
                                         &#8249;
@@ -511,6 +530,7 @@ const handleSubmit = async () => {
                                             opacity:
                                                 startIndex + visibleCount >= unallocatedClients.length ? 0.5 : 1,
                                             fontSize: "18px",
+                                            color: '#6c4cdc'
                                         }}
                                     >
                                         &#8250;
