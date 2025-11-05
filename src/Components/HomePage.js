@@ -40,6 +40,7 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
+import incrementAnalysisCount from "./Modules/FinancialModule/TLcAnalysisCount";
 
 const HomePage = () => {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -155,6 +156,14 @@ const HomePage = () => {
       setMessages((prev) =>
         prev.map((msg) => (msg.temp ? { sender: "bot", text: botReply } : msg))
       );
+      if (isTlcPage && user?.email) {
+      try {
+        const email = user.email.trim().toLowerCase();
+        await incrementAnalysisCount(email, "tlc-askai",response?.data?.ai_analysis_cost);
+      } catch (err) {
+        console.error("❌ Failed to increment TLC AskAI count:", err.message);
+      }
+    }
     } catch (error) {
       console.error("Error calling API:", error);
       setMessages((prev) =>
@@ -369,7 +378,7 @@ const HomePage = () => {
 
                   </div>
                   <div>
-                    {messages.length === 0 &&
+                    {/* {messages.length === 0 &&
                       <div>
                         <div style={{ textAlign: 'left', marginBottom: '14px', fontSize: '14px', fontWeight: '500', fontFamily: 'Inter' }}>
                           Suggestions
@@ -386,7 +395,7 @@ const HomePage = () => {
                           ))}
                         </div>
                       </div>
-                    }
+                    } */}
 
                     <div style={{ position: "relative", marginTop: "10px", marginBottom: "16px", width: "100%", display: "flex", alignSelf: "center" }}>
                       <input
