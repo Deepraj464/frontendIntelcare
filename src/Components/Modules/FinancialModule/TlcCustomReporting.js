@@ -9,13 +9,10 @@ import parse, { domToReact } from "html-react-parser";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import star from '../../../Images/star.png';
 import AIAnalysisReportViewer from "./TlcAiAnalysisReport";
-
-
+import incrementAnalysisCount from "./TLcAnalysisCount";
 
 export default function TlcCustomerReporting(props) {
   console.log("props", props);
-
-
   // -------------------- MULTI TAB SUPPORT --------------------
   const [tabs, setTabs] = useState([
     {
@@ -392,7 +389,7 @@ export default function TlcCustomerReporting(props) {
       }
       updateTab({ progressStage: "preparing" });
       await new Promise(resolve => setTimeout(resolve, 800));
-      console.log("✅ Analysis data received successfully.");
+      console.log("Analysis data received successfully.");
       justRanManualAnalysisRef.current = true;
       updateTab({
         analysisData: { ...analyzeData.analysisResult, payload: analyzeData.payload },
@@ -401,6 +398,16 @@ export default function TlcCustomerReporting(props) {
         uploading: false,
         progressStage: "idle",
       });
+      try {
+        const userEmail = props?.user?.email?.trim()?.toLowerCase();
+        if (userEmail) {
+          await incrementAnalysisCount(userEmail, "tlc-report-analysis");
+        } else {
+          console.warn("⚠️ User email missing — skipping count increment");
+        }
+      } catch (err) {
+        console.error("❌ Failed to increment count:", err.message);
+      }
       lastManualWithFilesRef.current = false;
     } catch (err) {
       console.error("❌ Error in handleAnalyse:", err);
@@ -669,6 +676,14 @@ export default function TlcCustomerReporting(props) {
         showReport: true,
         aiLoading: false,
       });
+      try {
+        const userEmail = props?.user?.email?.trim()?.toLowerCase();
+        if (userEmail) {
+          await incrementAnalysisCount(userEmail, "tlc-ai-analysis",data?.ai_analysis_cost);
+        }
+      } catch (err) {
+        console.error("Error incrementing AI analysis count:", err);
+      }
     } catch (err) {
       console.error("❌ AI Analysis Error:", err);
       alert("AI Analysis failed: " + err.message);
