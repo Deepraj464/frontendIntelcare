@@ -174,12 +174,12 @@ const SmartRostering = (props) => {
             const user = visualCareCreds?.user;
             const key = visualCareCreds?.key;
             const secret = visualCareCreds?.secret;
-            console.log("client details before smart rostering",client)
+
             const inputs = {
                 client_id: client.clientId,
                 shift_date: client.dateOfService,
                 shift_start: client.startTime,
-                shift_minutes: Number(client.minutes?.replace(" min", "")) || 0,
+                shift_minutes: client.minutes?.replace(" min", "") || 0,
             };
 
             console.log("📤 Sending to Smart Rostering Controller:", inputs);
