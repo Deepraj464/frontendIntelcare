@@ -63,19 +63,35 @@ const SmartRostering = (props) => {
     }, [userEmail]);
 
     useEffect(() => {
-        const fetchRosteringData = async () => {
+        const fetchMetrics = async () => {
+            if (!visualCareCreds) return;
+
+            const { user, key, secret } = visualCareCreds;
             try {
-                const response = await axios.get(
-                    "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/get-header-metrices"
-                );
-                setRosteringMetrics(response.data);
-            } catch (error) {
-                console.error("Error fetching rostering data:", error);
+                const res = await axios.get(`${API_BASE}/api/getFortnightMetrics`, {
+                    params: { user, key, secret },
+                });
+
+                if (res.data?.success) {
+                    const data = res.data.metrics;
+
+                    // Normalize naming for your UI cards
+                    setRosteringMetrics({
+                        shift_coverage: data.shift_coverage_pct,
+                        Unallocated_shift: data.unallocated_shifts,
+                        staff_utilisation: data.staff_utilization_pct,
+                    });
+
+                    console.log("✅ Fetched fortnight metrics:", data);
+                }
+            } catch (err) {
+                console.error("❌ Error fetching fortnight metrics:", err);
             }
         };
 
-        fetchRosteringData();
-    }, []);
+        fetchMetrics();
+    }, [visualCareCreds]);
+
     // console.log("rosteringResponse",rosteringMetrics)
     // 🔹 Fetch unallocated shifts from API
     console.log("visualCareCreds", visualCareCreds)
@@ -102,21 +118,19 @@ const SmartRostering = (props) => {
                 const grouped = res.data.grouped || {};
                 const allClients = Object.entries(grouped).flatMap(([label, shifts]) =>
                     shifts.map((shift) => ({
-                        date: shift.start_time?.split(" ")[0] || "-",
-                        clientId: shift.id || "-",
+                        dateOfService: shift.date_of_service || "-", // ✅ correct field
+                        clientId: shift.client_id || "-",            // ✅ renamed
                         name: shift.client_name || "Unknown",
                         sex: shift.sex || "-",
                         phone: shift.phone || "-",
-                        email: shift.email || "-",
+                        email: shift.email?.trim() || "-",
                         address: shift.address || "-",
-                        startTime: shift.start_time?.split(" ")[1] || "-",
-                        minutes: shift.minutes ? `${shift.minutes} min` : "-",
-                        onHoldType: shift.onhold_type || "-",
-                        onHoldNote: shift.onhold_note || "-",
-                        dateOfService: shift.date_of_service || "-",
-                        label, // today / tomorrow etc.
+                        startTime: shift.start_time || "-",          // ✅ time only now
+                        minutes: shift.minutes ? `${shift.minutes} min` : "-", // ✅ consistent display
+                        label, // today / tomorrow / day after
                     }))
                 );
+
 
                 setUnallocatedClients(allClients);
             } catch (error) {
@@ -271,25 +285,21 @@ const SmartRostering = (props) => {
 
     if (unauthorized) {
         return (
-          <div style={{
-            textAlign: "center",
-            padding: "120px 20px",
-            fontFamily: "Inter, sans-serif",
-            color: "#1f2937"
-          }}>
-            <h2 style={{ fontSize: "24px", marginBottom: "12px", color: "#6C4CDC" }}>
-              Access Restricted 🚫
-            </h2>
-            <p style={{ fontSize: "16px", color: "#555" }}>
-              Sorry, your account (<strong>{userEmail}</strong>) is not authorized to view this page.
-            </p>
-          </div>
+            <div style={{
+                textAlign: "center",
+                padding: "120px 20px",
+                fontFamily: "Inter, sans-serif",
+                color: "#1f2937"
+            }}>
+                <h2 style={{ fontSize: "24px", marginBottom: "12px", color: "#6C4CDC" }}>
+                    Access Restricted 🚫
+                </h2>
+                <p style={{ fontSize: "16px", color: "#555" }}>
+                    Sorry, your account (<strong>{userEmail}</strong>) is not authorized to view this page.
+                </p>
+            </div>
         );
-      }
-      
-
-
-
+    }
 
 
 
@@ -463,8 +473,8 @@ const SmartRostering = (props) => {
                                                     <p style={{ marginBottom: '12px' }}><strong>Address:</strong> {client.address}</p>
                                                     <p style={{ marginBottom: '12px' }}><strong>Start Time:</strong> {client.startTime}</p>
                                                     <p style={{ marginBottom: '12px' }}><strong>Minutes:</strong> {client.minutes}</p>
-                                                    <p style={{ marginBottom: '12px' }}><strong>OnHoldType:</strong> {client.onHoldType}</p>
-                                                    <p><strong>OnHoldNote:</strong> {client.onHoldNote}</p>
+                                                    {/* <p style={{ marginBottom: '12px' }}><strong>OnHoldType:</strong> {client.onHoldType}</p> */}
+                                                    {/* <p><strong>OnHoldNote:</strong> {client.onHoldNote}</p> */}
                                                 </div>
                                             ))}
                                     </div>
@@ -568,6 +578,7 @@ const SmartRostering = (props) => {
                     rosteringResponse={rosteringResponse}
                     API_BASE={API_BASE}
                     selectedClient={selectedClient}
+                    visualCareCreds={visualCareCreds}
                 />
             )}
             {loading && (

@@ -196,3 +196,33 @@ row-gap: 0.6%;
 .done-btn:hover {
   background: #5a3ce2;
 }
+
+.roster-history {
+  background: #f9f7ff;
+  border-radius: 12px;
+  padding: 20px;
+  max-height: 300px; 
+  overflow-y: auto;
+  scrollbar-width: thin; 
+  scrollbar-color: #cfc5f9 #f4f0fa; 
+}
+
+.roster-history::-webkit-scrollbar {
+  width: 8px;
+}
+
+.roster-history::-webkit-scrollbar-track {
+  background: #f4f0fa;
+  border-radius: 10px;
+}
+
+.roster-history::-webkit-scrollbar-thumb {
+  background-color: #cfc5f9;
+  border-radius: 10px;
+  transition: background 0.3s;
+}
+
+.roster-history::-webkit-scrollbar-thumb:hover {
+  background-color: #a998f9;
+}
+
