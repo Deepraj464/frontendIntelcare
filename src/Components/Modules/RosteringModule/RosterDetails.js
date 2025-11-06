@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../../../Styles/RosterDetails.css";
 import PersonalInformationIcon from '../../../Images/PersonalInformation.png';
 import ContactIcon from '../../../Images/ContactNameicon.png';
@@ -6,10 +6,12 @@ import SuccessCheck from '../../../Images/SuccessCheck.png';
 import { GoHistory, GoArrowLeft } from "react-icons/go";
 import axios from "axios";
 
-const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient }) => {
+const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient, visualCareCreds }) => {
     const [selected, setSelected] = useState([]);
     const [showSuccess, setShowSuccess] = useState(false);
     const [broadcasting, setBroadcasting] = useState(false);
+    const [timesheetHistory, setTimesheetHistory] = useState([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
 
     // ✅ Handle both response structures (direct rostering vs filler+rostering)
     const isFillerResponse = rosteringResponse?.filler;
@@ -100,7 +102,58 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient 
         }
         return selectedClient?.address || 'N/A';
     };
+    useEffect(() => {
+        const fetchTimesheetHistory = async () => {
+            if (!selectedClient || !visualCareCreds) return;
 
+            setLoadingHistory(true);
+            try {
+                // 🕓 Dynamic date range (last 10 days)
+                const today = new Date();
+                const tenDaysAgo = new Date(today);
+                tenDaysAgo.setDate(today.getDate() - 10);
+
+                // Format as YYYY-MM-DD
+                const formatDate = (date) => date.toISOString().split("T")[0];
+                const fromDate = formatDate(tenDaysAgo);
+                const toDate = formatDate(today);
+
+                const { user, key, secret } = visualCareCreds;
+
+                console.log("📤 Fetching timesheets:", { user, key, secret, fromDate, toDate });
+
+                const res = await axios.get(`${API_BASE}/api/getTimesheets`, {
+                    params: { user, key, secret, fromDate, toDate },
+                });
+
+                if (res.data?.success) {
+                    console.log("✅ Timesheet history:", res.data);
+
+                    // Normalize data
+                    let allRecords = Array.isArray(res.data.data)
+                        ? res.data.data
+                        : res.data.data?.items || [];
+
+                    // 🧠 Sort by date (descending) and take latest 10
+                    allRecords = allRecords
+                        .sort((a, b) => new Date(b.DateOfService) - new Date(a.DateOfService))
+                        .slice(0, 10);
+
+                    setTimesheetHistory(allRecords);
+                } else {
+                    console.warn("⚠️ No timesheet data returned:", res.data);
+                    setTimesheetHistory([]);
+                }
+            } catch (err) {
+                console.error("❌ Error fetching timesheet history:", err);
+            } finally {
+                setLoadingHistory(false);
+            }
+        };
+
+        fetchTimesheetHistory();
+    }, [selectedClient, visualCareCreds]);
+    console.log("time sheet history", timesheetHistory)
     return (
         <div className="roster-page">
             {/* Layout wrapper */}
@@ -148,6 +201,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient 
                 </div>
 
                 {/* History */}
+                {/* History */}
                 <div className="roster-history">
                     <div className="history-icon-h">
                         <GoHistory size={28} color="#6C4CDC" style={{ marginRight: '14px' }} />
@@ -155,23 +209,46 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient 
                     </div>
 
                     <div>
-                        {rosteringResponse?.data?.roster_history?.length > 0 ? (
-                            rosteringResponse.data.roster_history.map((staff, index) => (
+                        {loadingHistory ? (
+                            <p style={{ padding: '20px', color: '#666' }}>Loading timesheet history...</p>
+                        ) : timesheetHistory.length > 0 ? (
+                            timesheetHistory.map((item, index) => (
                                 <div className="history-card-roster" key={index}>
-                                    <img src={ContactIcon} alt="contactIcon" style={{ width: '24px', marginRight: '14px' }} />
+                                    <img
+                                        src={ContactIcon}
+                                        alt="contactIcon"
+                                        style={{ width: '24px', marginRight: '14px' }}
+                                    />
                                     <div>
                                         <p className="staff-details">
-                                            Staff Name: <span style={{ color: 'black' }}>{staff.staff_name}</span>
+                                            <strong>Date of Service:</strong>{' '}
+                                            <span style={{ color: 'black' }}>
+                                                {item.DateOfService || 'N/A'}
+                                            </span>
                                         </p>
-                                        <p className="staff-details" style={{ fontWeight: '400' }}>{staff.date}</p>
+                                        <p className="staff-details">
+                                            <strong>Carer ID:</strong>{' '}
+                                            <span style={{ color: 'black' }}>
+                                                {item.CarerId ?? 'N/A'}
+                                            </span>
+                                        </p>
+                                        <p className="staff-details">
+                                            <strong>Minutes:</strong>{' '}
+                                            <span style={{ color: 'black' }}>
+                                                {item.Minutes ?? 'N/A'}
+                                            </span>
+                                        </p>
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            <p style={{ padding: '20px', color: '#666', fontSize: '14px' }}>No roster history available.</p>
+                            <p style={{ padding: '20px', color: '#666', fontSize: '14px' }}>
+                                No recent timesheet records found.
+                            </p>
                         )}
                     </div>
                 </div>
+
             </div>
 
             {/* Available Staff */}
@@ -304,3 +381,4 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient 
 };
 
 export default RosterDetails;
+
