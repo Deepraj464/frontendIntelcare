@@ -345,15 +345,15 @@ const HomePage = () => {
                             />
                             <div
                               style={{
-                                backgroundColor: msg.sender === "user" ? "#F9F8FF" : "#6C4CDC",
+                                backgroundColor: "#F9F8FF",
                                 padding: "10px",
                                 borderRadius: "10px",
                                 maxWidth: "75%",
                                 fontSize: "14px",
                                 textAlign: "left",
-                                color: msg.sender === "user" ? "black" : "white",
+                                color: "black",
                                 fontFamily: "Inter",
-                                border: msg.sender === 'user' ? '1px solid #6c4cdc' : 'none'
+                                border:'1px solid #6c4cdc'
                               }}
                               className="ask-ai-res-div"
                             >
