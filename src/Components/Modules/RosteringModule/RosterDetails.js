@@ -5,7 +5,8 @@ import ContactIcon from '../../../Images/ContactNameicon.png';
 import SuccessCheck from '../../../Images/SuccessCheck.png';
 import { GoHistory, GoArrowLeft } from "react-icons/go";
 import axios from "axios";
-
+import clockCircleIcon from "../../../Images/clock circle.png"
+import clickHandIcon from "../../../Images/clock hand.png"
 const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient, visualCareCreds }) => {
     const [selected, setSelected] = useState([]);
     const [showSuccess, setShowSuccess] = useState(false);
@@ -154,6 +155,42 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
         fetchTimesheetHistory();
     }, [selectedClient, visualCareCreds]);
     console.log("time sheet history", timesheetHistory)
+    const ClockIcon = () => (
+        <div
+            style={{
+                position: "relative",
+                width: "14px", // 🔹 smaller icon size
+                height: "14px",
+                marginRight: "6px",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+            }}
+        >
+            <img
+                src={clockCircleIcon}
+                alt="Clock Circle"
+                style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                }}
+            />
+            <img
+                src={clickHandIcon}
+                alt="Clock Hand"
+                style={{
+                    position: "absolute",
+                    width: "55%",
+                    height: "55%",
+                    objectFit: "contain",
+                    marginLeft: "2px",
+                    marginBottom: "1px",
+                }}
+            />
+        </div>
+    );
+
     return (
         <div className="roster-page">
             {/* Layout wrapper */}
@@ -259,97 +296,134 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
 
                 <div className="roster-staff-cards">
                     {rankedStaff.length > 0 ? (
-                        rankedStaff.map((staff, index) => (
-                            <div
-                                key={index}
-                                className={`roster-staff-card ${selected.includes(index) ? "roster-selected" : ""}`}
-                                onClick={() => handleSelect(index)}
-                            >
-                                {/* Header with Rank & Name */}
-                                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-                                    <div className="roster-staff-number">{index + 1}</div>
-                                    <div style={{ fontSize: "15px", fontWeight: "600", color: "black" }}>
-                                        {staff.name || "Unknown"}
+                        rankedStaff.map((staff, index) => {
+                            // if (!staff.eliminated_reason || staff.eliminated_reason.length === 0) {
+                            //     staff.eliminated_reason = [
+                            //         "Worked extra night shifts throughout the week due to a last-minute schedule change and staff shortage."
+                            //     ];
+                            // }
+                            // if (!staff.overtime_hours) staff.overtime_hours = 3;
+                            return (
+                                <div
+                                    key={index}
+                                    className={`roster-staff-card ${selected.includes(index) ? "roster-selected" : ""}`}
+                                    onClick={() => handleSelect(index)}
+                                >
+                                    {/* Header with Rank & Name */}
+                                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
+                                        <div className="roster-staff-number">{index + 1}</div>
+                                        <div style={{ fontSize: "15px", fontWeight: "600", color: "black" }}>
+                                            {staff.name || "Unknown"}
+                                        </div>
                                     </div>
-                                </div>
+                                    {/* Overtime and Elimination Info */}
+                                    {(staff.overtime_hours > 0 || staff.eliminated_reason?.[0]) && (
+                                        <div
+                                            style={{
+                                                marginTop: "10px",
+                                                padding: "8px",
+                                                background: "#f9f7ff",
+                                                borderRadius: "6px",
+                                                borderLeft: "3px solid #6C4CDC",
+                                            }}
+                                        >
+                                            {staff.overtime_hours > 0 && (
+                                                <div style={{ display: "flex", alignItems: "center" }}>
+                                                    <ClockIcon />
+                                                    <p className="staff-details" style={{ fontSize: "13px", fontWeight: "500", margin: 0 }}>
+                                                        <strong>Overtime Hours:</strong>{" "}
+                                                        <span style={{ color: "black" }}>{staff.overtime_hours}</span>
+                                                    </p>
+                                                </div>
+                                            )}
 
-                                {/* Score */}
-                                <p className="staff-details" style={{ fontWeight: "600", fontSize: "14px" }}>
-                                    Score: <span style={{ color: "#6C4CDC", fontWeight: "700" }}>{staff.score || "N/A"}</span>
-                                </p>
+                                            {staff.eliminated_reason?.[0] && (
+                                                <p className="staff-details" style={{ fontSize: "13px", fontWeight: "500", color: "black" }}>
+                                                    <strong>Overtime Reason:</strong>{" "}
+                                                    <span>{staff.eliminated_reason[0]}</span>
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
 
-                                {/* Gender */}
-                                <p className="staff-details" style={{ fontWeight: "400" }}>
-                                    Gender: <span style={{ color: "black" }}>{staff.sex || staff.gender || "N/A"}</span>
-                                </p>
-
-                                {/* Phone */}
-                                <p className="staff-details" style={{ fontWeight: "400" }}>
-                                    Phone: <span style={{ color: "black" }}>{staff.phone || "N/A"}</span>
-                                </p>
-
-                                {/* Email */}
-                                <p className="staff-details" style={{ fontWeight: "400" }}>
-                                    Email: <span style={{ color: "black" }}>{staff.email || "N/A"}</span>
-                                </p>
-
-                                {/* Languages */}
-                                <p className="staff-details" style={{ fontWeight: "400" }}>
-                                    Languages: <span style={{ color: "black" }}>{staff.languages || "N/A"}</span>
-                                </p>
-
-                                {/* Experience Years */}
-                                <p className="staff-details" style={{ fontWeight: "400" }}>
-                                    Experience: <span style={{ color: "black" }}>{staff.experience_years ? `${staff.experience_years} years` : "N/A"}</span>
-                                </p>
-
-                                {/* Role Description */}
-                                <p className="staff-details" style={{ fontWeight: "400" }}>
-                                    Role: <span style={{ color: "black" }}>{staff.role_description || "N/A"}</span>
-                                </p>
-
-                                {/* Award Description (if not null) */}
-                                {staff.award_desc && (
-                                    <p className="staff-details" style={{ fontWeight: "400", fontSize: "13px" }}>
-                                        Award: <span style={{ color: "black" }}>{staff.award_desc}</span>
+                                    {/* Score */}
+                                    <p className="staff-details" style={{ fontWeight: "600", fontSize: "14px" }}>
+                                        Score: <span style={{ color: "#6C4CDC", fontWeight: "700" }}>{staff.score || "N/A"}</span>
                                     </p>
-                                )}
 
-                                {/* Location */}
-                                <p className="staff-details" style={{ fontWeight: "400" }}>
-                                    Location: <span style={{ color: "black" }}>{staff.location?.address || "N/A"}</span>
-                                </p>
+                                    {/* Gender */}
+                                    <p className="staff-details" style={{ fontWeight: "400" }}>
+                                        Gender: <span style={{ color: "black" }}>{staff.sex || staff.gender || "N/A"}</span>
+                                    </p>
 
-                                {/* Skill Descriptions */}
-                                {staff.skill_descriptions && staff.skill_descriptions.length > 0 && (
-                                    <div style={{ marginTop: "10px" }}>
-                                        <p className="staff-details" style={{ fontWeight: "600", marginBottom: "6px" }}>
-                                            Skills:
+                                    {/* Phone */}
+                                    <p className="staff-details" style={{ fontWeight: "400" }}>
+                                        Phone: <span style={{ color: "black" }}>{staff.phone || "N/A"}</span>
+                                    </p>
+
+                                    {/* Email */}
+                                    <p className="staff-details" style={{ fontWeight: "400" }}>
+                                        Email: <span style={{ color: "black" }}>{staff.email || "N/A"}</span>
+                                    </p>
+
+                                    {/* Languages */}
+                                    <p className="staff-details" style={{ fontWeight: "400" }}>
+                                        Languages: <span style={{ color: "black" }}>{staff.languages || "N/A"}</span>
+                                    </p>
+
+                                    {/* Experience Years */}
+                                    <p className="staff-details" style={{ fontWeight: "400" }}>
+                                        Experience: <span style={{ color: "black" }}>{staff.experience_years ? `${staff.experience_years} years` : "N/A"}</span>
+                                    </p>
+
+                                    {/* Role Description */}
+                                    <p className="staff-details" style={{ fontWeight: "400" }}>
+                                        Role: <span style={{ color: "black" }}>{staff.role_description || "N/A"}</span>
+                                    </p>
+
+                                    {/* Award Description (if not null) */}
+                                    {staff.award_desc && (
+                                        <p className="staff-details" style={{ fontWeight: "400", fontSize: "13px" }}>
+                                            Award: <span style={{ color: "black" }}>{staff.award_desc}</span>
                                         </p>
-                                        <ul style={{ paddingLeft: "20px", fontSize: "12px", color: "#555", margin: "0" }}>
-                                            {staff.skill_descriptions.map((skill, idx) => (
-                                                <li key={idx} style={{ marginBottom: "4px" }}>{skill}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
+                                    )}
 
-                                {/* Reason (Highlighted at bottom) */}
-                                {staff.reason && (
-                                    <p className="staff-details" style={{
-                                        fontWeight: "400",
-                                        fontSize: "13px",
-                                        marginTop: "12px",
-                                        padding: "8px",
-                                        background: "#f9f7ff",
-                                        borderRadius: "6px",
-                                        borderLeft: "3px solid #6C4CDC"
-                                    }}>
-                                        <strong>Why this staff?</strong> <span style={{ color: "black" }}>{staff.reason}</span>
+                                    {/* Location */}
+                                    <p className="staff-details" style={{ fontWeight: "400" }}>
+                                        Location: <span style={{ color: "black" }}>{staff.location?.address || "N/A"}</span>
                                     </p>
-                                )}
-                            </div>
-                        ))
+
+                                    {/* Skill Descriptions */}
+                                    {staff.skill_descriptions && staff.skill_descriptions.length > 0 && (
+                                        <div style={{ marginTop: "10px" }}>
+                                            <p className="staff-details" style={{ fontWeight: "600", marginBottom: "6px" }}>
+                                                Skills:
+                                            </p>
+                                            <ul style={{ paddingLeft: "20px", fontSize: "12px", color: "#555", margin: "0" }}>
+                                                {staff.skill_descriptions.map((skill, idx) => (
+                                                    <li key={idx} style={{ marginBottom: "4px" }}>{skill}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {/* Reason (Highlighted at bottom) */}
+                                    {staff.reason && (
+                                        <p className="staff-details" style={{
+                                            fontWeight: "400",
+                                            fontSize: "13px",
+                                            marginTop: "12px",
+                                            padding: "8px",
+                                            background: "#f9f7ff",
+                                            borderRadius: "6px",
+                                            borderLeft: "3px solid #6C4CDC"
+                                        }}>
+                                            <strong>Why this staff?</strong> <span style={{ color: "black" }}>{staff.reason}</span>
+                                        </p>
+                                    )}
+                                </div>
+                            )
+                        })
                     ) : (
                         <p>No staff available for this shift.</p>
                     )}

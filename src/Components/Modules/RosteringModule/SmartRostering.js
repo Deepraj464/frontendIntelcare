@@ -99,12 +99,11 @@ const SmartRostering = (props) => {
         const fetchUnallocatedShifts = async () => {
             setLoadingClients(true);
             try {
-                // ✅ Add your credentials and query params dynamically
                 console.log("visual care creds", visualCareCreds)
                 const user = visualCareCreds?.user;
                 const key = visualCareCreds?.key;
                 const secret = visualCareCreds?.secret;
-                const days = 3; // or make this dynamic later
+                const days = 3; 
 
                 const res = await axios.get(
                     `${API_BASE}/getUnallocatedShifts`,
