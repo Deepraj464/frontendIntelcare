@@ -13,16 +13,14 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
     const [broadcasting, setBroadcasting] = useState(false);
     const [timesheetHistory, setTimesheetHistory] = useState([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
-
-    // ✅ Handle both response structures (direct rostering vs filler+rostering)
+    // console.log("rosteringResponse",rosteringResponse) 
+    // Handle both response structures (direct rostering vs filler+rostering)
     const isFillerResponse = rosteringResponse?.filler;
 
-    // Extract client data based on response type
     const client = isFillerResponse
         ? rosteringResponse?.filler?.match?.matched_record || {}
         : rosteringResponse?.data?.client || {};
 
-    // Extract ranked staff from correct path
     const rankedStaff = isFillerResponse
         ? rosteringResponse?.rostering_summary?.final_ranked || []
         : rosteringResponse?.data?.final_ranked || [];
@@ -198,7 +196,6 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                     <GoArrowLeft size={22} color="#6C4CDC" />
                     <span>Back</span>
                 </div>
-
                 {/* Personal Information */}
                 <div className="roster-personal-info">
                     <div className="roster-peronal-img-h">
@@ -241,7 +238,6 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                     </div>
                 </div>
 
-                {/* History */}
                 {/* History */}
                 <div className="roster-history">
                     <div className="history-icon-h">
