@@ -7,22 +7,22 @@ import { GoHistory, GoArrowLeft } from "react-icons/go";
 import axios from "axios";
 import clockCircleIcon from "../../../Images/clock circle.png"
 import clickHandIcon from "../../../Images/clock hand.png"
+import star_icon from "../../../Images/rostering_star.png"
 const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient, visualCareCreds }) => {
+    // console.log("rostering response", rosteringResponse)
     const [selected, setSelected] = useState([]);
     const [showSuccess, setShowSuccess] = useState(false);
     const [broadcasting, setBroadcasting] = useState(false);
     const [timesheetHistory, setTimesheetHistory] = useState([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
-
-    // ✅ Handle both response structures (direct rostering vs filler+rostering)
+    // console.log("rosteringResponse",rosteringResponse) 
+    // Handle both response structures (direct rostering vs filler+rostering)
     const isFillerResponse = rosteringResponse?.filler;
 
-    // Extract client data based on response type
     const client = isFillerResponse
         ? rosteringResponse?.filler?.match?.matched_record || {}
         : rosteringResponse?.data?.client || {};
 
-    // Extract ranked staff from correct path
     const rankedStaff = isFillerResponse
         ? rosteringResponse?.rostering_summary?.final_ranked || []
         : rosteringResponse?.data?.final_ranked || [];
@@ -34,8 +34,8 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
 
     const message = rosteringResponse?.message || "";
 
-    console.log("Client data:", client);
-    console.log("Ranked staff:", rankedStaff);
+    // console.log("Client data:", client);
+    // console.log("Ranked staff:", rankedStaff);
 
     const handleSelect = (id) => {
         if (selected.includes(id)) {
@@ -81,7 +81,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                 ]
             });
 
-            console.log("Broadcast response:", response.data);
+            // console.log("Broadcast response:", response.data);
             setShowSuccess(true);
         } catch (error) {
             console.error("Error broadcasting:", error);
@@ -121,21 +121,17 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
 
                 const { user, key, secret } = visualCareCreds;
 
-                console.log("📤 Fetching timesheets:", { user, key, secret, fromDate, toDate });
-
                 const res = await axios.get(`${API_BASE}/api/getTimesheets`, {
                     params: { user, key, secret, fromDate, toDate },
                 });
 
                 if (res.data?.success) {
-                    console.log("✅ Timesheet history:", res.data);
-
                     // Normalize data
                     let allRecords = Array.isArray(res.data.data)
                         ? res.data.data
                         : res.data.data?.items || [];
 
-                    // 🧠 Sort by date (descending) and take latest 10
+                    // Sort by date (descending) and take latest 10
                     allRecords = allRecords
                         .sort((a, b) => new Date(b.DateOfService) - new Date(a.DateOfService))
                         .slice(0, 10);
@@ -154,7 +150,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
 
         fetchTimesheetHistory();
     }, [selectedClient, visualCareCreds]);
-    console.log("time sheet history", timesheetHistory)
+    // console.log("time sheet history", timesheetHistory)
     const ClockIcon = () => (
         <div
             style={{
@@ -190,11 +186,18 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
             />
         </div>
     );
-
+   console.log("timesheetHistory",timesheetHistory)
     return (
         <div className="roster-page">
             {/* Layout wrapper */}
             <div className="roster-layout">
+                <div
+                    className="roster-back-btn"
+                    onClick={() => setScreen(1)}
+                >
+                    <GoArrowLeft size={22} color="#6C4CDC" />
+                    <span>Back</span>
+                </div>
                 {/* Personal Information */}
                 <div className="roster-personal-info">
                     <div className="roster-peronal-img-h">
@@ -238,7 +241,6 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                 </div>
 
                 {/* History */}
-                {/* History */}
                 <div className="roster-history">
                     <div className="history-icon-h">
                         <GoHistory size={28} color="#6C4CDC" style={{ marginRight: '14px' }} />
@@ -264,9 +266,9 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                                             </span>
                                         </p>
                                         <p className="staff-details">
-                                            <strong>Carer ID:</strong>{' '}
+                                            <strong>Worker Name:</strong>{' '}
                                             <span style={{ color: 'black' }}>
-                                                {item.CarerId ?? 'N/A'}
+                                                {item.WorkerName ?? 'N/A'}
                                             </span>
                                         </p>
                                         <p className="staff-details">
@@ -310,12 +312,29 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                                     onClick={() => handleSelect(index)}
                                 >
                                     {/* Header with Rank & Name */}
-                                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px", position: "relative" }}>
                                         <div className="roster-staff-number">{index + 1}</div>
-                                        <div style={{ fontSize: "15px", fontWeight: "600", color: "black" }}>
-                                            {staff.name || "Unknown"}
+
+                                        <div style={{ display: "flex", alignItems: "center", gap: "22px" }}>
+                                            <div style={{ fontSize: "15px", fontWeight: "600", color: "black" }}>
+                                                {staff.name || "Unknown"}
+                                            </div>
+
+                                            {staff.preferred === "true" && (
+                                                <img
+                                                    src={star_icon}
+                                                    alt="Preferred"
+                                                    style={{
+                                                        width: "18px",
+                                                        height: "18px",
+                                                        objectFit: "contain",
+                                                        marginLeft: "50px",
+                                                    }}
+                                                />
+                                            )}
                                         </div>
                                     </div>
+
                                     {/* Overtime and Elimination Info */}
                                     {(staff.overtime_hours > 0 || staff.eliminated_reason?.[0]) && (
                                         <div

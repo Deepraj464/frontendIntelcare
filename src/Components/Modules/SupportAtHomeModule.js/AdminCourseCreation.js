@@ -10,7 +10,7 @@ import lms_tab_icon3 from "../../../Images/lms_tab_icon3.png"
 import lms_tab_icon4 from "../../../Images/lms_tab_icon4.png"
 import lms_plus_icon from "../../../Images/lms_plus_icon.png"
 const AdminCourseCreation = (props) => {
-  console.log('AdminCourseCreation props', props);
+  // console.log('AdminCourseCreation props', props);
   const [modules, setModules] = useState([]);
   const [activeModuleId, setActiveModuleId] = useState(null);
   const [activeLessonId, setActiveLessonId] = useState(null);
@@ -20,12 +20,12 @@ const AdminCourseCreation = (props) => {
   const [saving, setSaving] = useState(false);
 
   const AdminEmail = props?.user?.email || "";
-  console.log('AdminUserEmail', AdminEmail);
+  // console.log('AdminUserEmail', AdminEmail);
   useEffect(() => {
     const fetchModules = async () => {
       try {
         const rawModules = await getAllModulesApi(AdminEmail);
-        console.log("Fetched modules:", rawModules);
+        // console.log("Fetched modules:", rawModules);
 
         // normalize: convert `lectures` → `lessons`
         const normalizedModules = rawModules.map(m => ({
@@ -47,10 +47,10 @@ const AdminCourseCreation = (props) => {
 
   // derive activeModule & activeLesson from IDs
   const activeModule = modules.find((m) => m.id === activeModuleId) || null;
-  console.log('activeModule', activeModule);
+  // console.log('activeModule', activeModule);
   const activeLesson =
     activeModule?.lessons.find((l) => l.id === activeLessonId) || null;
-  console.log('activeLesson', activeLesson);
+  // console.log('activeLesson', activeLesson);
   // const addModule = () => {
   //   if (!newModuleName.trim()) return;
   //   const newModule = {
@@ -136,7 +136,7 @@ const AdminCourseCreation = (props) => {
   //   setModules(updatedModules);
   // };
   const updateLesson = async (moduleId, lessonId, updatedLesson) => {
-    console.log('updateLesson', moduleId, lessonId, updatedLesson, activeLesson);
+    // console.log('updateLesson', moduleId, lessonId, updatedLesson, activeLesson);
     try {
       const updatedModule = await updateLectureApi(
         moduleId,
@@ -163,7 +163,7 @@ const AdminCourseCreation = (props) => {
   // Rename just replaces the title directly
   // Rename (pass id, newTitle, and module)
   const handleRenameModule = async (id, newTitle, module) => {
-    console.log('handleRenameModule', id, newTitle, module);
+    // console.log('handleRenameModule', id, newTitle, module);
     if (!newTitle.trim()) {
       alert("Module title cannot be empty");
       return;
