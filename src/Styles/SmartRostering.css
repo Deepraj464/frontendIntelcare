@@ -19,6 +19,8 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
     margin-bottom: 40px;
+    margin-left: 80px;
+    margin-top: 33px;
   }
   
   .rostering-stat-card {
@@ -29,6 +31,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    width: 300px;
   }
   
   .rostering-stat-card p {

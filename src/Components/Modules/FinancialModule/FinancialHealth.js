@@ -40,62 +40,9 @@ const FinancialHealth = (props) => {
   const [apiExcelUrls, setApiExcelUrls] = useState([]);
   const [title, setTitle] = useState("");
   const raw = response
-  // console.log("raw",raw)
-  // const excelUrls = Object.values(raw.excel_exports)
-  //   .flat()
-  //   .map(item => item.data_url)
-  //   .filter(Boolean);
-  // console.log("excel urls", excelUrls)
 
   const [titleArray, setTitleArray] = useState([]);
 
-  // Inside your useEffect for merging API files
-  // useEffect(() => {
-  //   try {
-  //     const mergedWorkbook = XLSX.utils.book_new();
-  //     const usedSheetNames = new Set();
-
-  //     const excelFiles = Object.values(raw.excel_exports).flat();
-  //     const titlesArray = [];
-
-  //     for (const fileData of excelFiles) {
-  //       let base64 = fileData.data_url;
-  //       let fileTitle = fileData.title;
-  //       titlesArray.push(fileTitle);
-
-  //       const base64String = base64.includes("base64,") ? base64.split("base64,")[1] : base64;
-  //       const binary = atob(base64String);
-  //       const arrayBuffer = new ArrayBuffer(binary.length);
-  //       const view = new Uint8Array(arrayBuffer);
-  //       for (let i = 0; i < binary.length; i++) view[i] = binary.charCodeAt(i) & 0xff;
-
-  //       const workbook = XLSX.read(arrayBuffer, { type: "array" });
-
-  //       for (const sheetName of workbook.SheetNames) {
-  //         let newSheetName = fileTitle.slice(0, 31);
-  //         let counter = 1;
-  //         while (usedSheetNames.has(newSheetName)) {
-  //           const suffix = `_${counter++}`;
-  //           newSheetName = fileTitle.slice(0, 31 - suffix.length) + suffix;
-  //         }
-  //         usedSheetNames.add(newSheetName);
-  //         XLSX.utils.book_append_sheet(mergedWorkbook, workbook.Sheets[sheetName], newSheetName);
-  //       }
-  //     }
-
-  //     setTitleArray(titlesArray);
-
-  //     const wbout = XLSX.write(mergedWorkbook, { bookType: "xlsx", type: "binary" });
-  //     const blob = new Blob([s2ab(wbout)], {
-  //       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  //     });
-
-  //     const url = URL.createObjectURL(blob);
-  //     setApiExcelUrls([url]);
-  //   } catch (err) {
-  //     console.error("Error merging API Excel files:", err);
-  //   }
-  // }, [raw?.excel_exports]);
   const handleButtonClick = () => {
     setIsConsentChecked(true);
   };
@@ -274,7 +221,7 @@ const FinancialHealth = (props) => {
           maxBodyLength: Infinity,
         }
       );
-      console.log("analysisRes", analysisRes);
+      // console.log("analysisRes", analysisRes);
       analysisData = analysisRes.data;
 
       if (!analysisData) throw new Error("Empty response from analysis API");
@@ -293,22 +240,22 @@ const FinancialHealth = (props) => {
 
       // --- Step 3: Call Visualization API ---
       let vizData = null;
-      console.log("vizload", vizPayload)
+      // console.log("vizpayload", vizPayload)
       const vizRes = await axios.post(
         "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/vizualize-reports",
         vizPayload,
         { headers: { "Content-Type": "application/json" } }
       );
-      console.log("vizRes", vizRes)
+      // console.log("vizRes", vizRes)
       vizData = vizRes.data;
 
       // --- Step 4: Normalize Figures ---
       const normalizeFigures = (source) => {
-        console.log("source", source);
+        // console.log("source", source);
 
         const results = [];
 
-        // 🧩 1️⃣ Case: Normal Plotly JSON charts
+        // 1️⃣ Case: Normal Plotly JSON charts
         if (Array.isArray(source?.data?.figures)) {
           const charts = source.data.figures.map((fig, i) => ({
             type: "json",
@@ -332,7 +279,7 @@ const FinancialHealth = (props) => {
 
         // 🧩 3️⃣ Case: Unavailable metrics (✅ top level)
         if (Array.isArray(source?.unavailable_metrics)) {
-          console.log("✅ Found top-level unavailable_metrics", source.unavailable_metrics);
+          // console.log("Found top-level unavailable_metrics", source.unavailable_metrics);
           const seen = new Set();
           const uniqueMetrics = [];
 
@@ -355,7 +302,7 @@ const FinancialHealth = (props) => {
 
         // 🧩 4️⃣ Case: Unavailable metrics nested inside data
         if (Array.isArray(source?.data?.unavailable_metrics)) {
-          console.log("✅ Found nested unavailable_metrics", source.data.unavailable_metrics);
+          // console.log("Found nested unavailable_metrics", source.data.unavailable_metrics);
           const seen = new Set();
           const uniqueMetrics = [];
 
@@ -376,11 +323,11 @@ const FinancialHealth = (props) => {
           results.push(...blanks);
         }
 
-        console.log("✅ normalizeFigures results:", results);
+        // console.log("normalizeFigures results:", results);
         return results;
       };
 
-      console.log("vizPayload?.reportResponse?.excel_exports", vizPayload?.reportResponse?.excel_exports)
+      // console.log("vizPayload?.reportResponse?.excel_exports", vizPayload?.reportResponse?.excel_exports)
       if (type === "api") {
         if (vizPayload?.reportResponse?.excel_exports) {
           try {
@@ -431,7 +378,7 @@ const FinancialHealth = (props) => {
       } else {
         setApiExcelUrls([]); // clear for non-API types
       }
-      console.log("apiExcelUrls in handle analyse", apiExcelUrls)
+      // console.log("apiExcelUrls in handle analyse", apiExcelUrls)
       const figures = normalizeFigures(vizData);
 
       // --- Step 5: Save state ---
@@ -482,7 +429,7 @@ const FinancialHealth = (props) => {
     setFinancialShowReport(false);
     setIsConsentChecked(false);
   };
-  console.log("financial Visualizations", financialVisualizations);
+  // console.log("financial Visualizations", financialVisualizations);
 
   return (
 
