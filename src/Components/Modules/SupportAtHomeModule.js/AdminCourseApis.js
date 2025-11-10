@@ -5,7 +5,7 @@ const BASE_URL = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azur
 // ✅ Create Module
 export const createModuleApi = async (title, AdminEmail) => {
     const res = await axios.post(`${BASE_URL}/createModule`, { title, AdminEmail });
-    console.log(`createModuleApi response:`, res);
+    // console.log(`createModuleApi response:`, res);
     return res.data; // axios keeps response in res.data
 };
 
@@ -52,14 +52,14 @@ export const updateLectureApi = async (moduleId, lectureId, title, type, file) =
 
 export const getAllModulesApi = async (AdminEmail) => {
     const res = await axios.get(`${BASE_URL}/getAllModules/${AdminEmail}`);
-    console.log("getAllModulesApi response:", res);
+    // console.log("getAllModulesApi response:", res);
     return res.data.modules; // backend returns { modules: [...] }
 };
 
 export const editModuleApi = async (id, title) => {
     try {
         const res = await axios.put(`${BASE_URL}/updateModule`, { id, title });
-        console.log("editModuleApi response:", res);
+        // console.log("editModuleApi response:", res);
         return res.data; // updated module
     } catch (err) {
         console.error("❌ Error in editModuleApi:", err);
@@ -74,7 +74,7 @@ export const deleteModuleApi = async (id) => {
             headers: { "Content-Type": "application/json" },
             data: { id }, // 👈 must wrap id inside data
         });
-        console.log("deleteModuleApi response:", res);
+        // console.log("deleteModuleApi response:", res);
         return res.data; // { message: "Module deleted successfully" }
     } catch (err) {
         console.error("❌ Error in deleteModuleApi:", err);

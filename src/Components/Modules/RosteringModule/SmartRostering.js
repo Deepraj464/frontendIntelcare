@@ -11,7 +11,7 @@ import axios from "axios";
 const API_BASE = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net";
 
 const SmartRostering = (props) => {
-    console.log("props in smart rostering", props)
+    // console.log("props in smart rostering", props)
     const userEmail = props?.user?.email
     const [screen, setScreen] = useState(1);
     const [query, setQuery] = useState("");
@@ -37,7 +37,7 @@ const SmartRostering = (props) => {
         const fetchVisualCareCreds = async () => {
             try {
                 const res = await axios.get(`${API_BASE}/get-visualcare-creds`);
-                console.log("res", res)
+                // console.log("res", res)
                 if (res.data?.success && res.data?.data?.length > 0) {
                     // Find the record where logged-in user's email is in rosteringManager.emails[]
                     const matched = res.data.data.find((entry) =>
@@ -49,7 +49,7 @@ const SmartRostering = (props) => {
                     }
 
                     setVisualCareCreds(matched.creds); // ✅ Save credentials for later API use
-                    console.log("✅ Authorized VisualCare credentials loaded:", matched.creds);
+                    // console.log("Authorized VisualCare credentials loaded:", matched.creds);
                 } else {
                     alert("No VisualCare credentials found in the database.");
                 }
@@ -74,7 +74,6 @@ const SmartRostering = (props) => {
 
                 if (res.data?.success) {
                     const data = res.data.metrics;
-
                     // Normalize naming for your UI cards
                     setRosteringMetrics({
                         shift_coverage: data.shift_coverage_pct,
@@ -82,7 +81,6 @@ const SmartRostering = (props) => {
                         staff_utilisation: data.staff_utilization_pct,
                     });
 
-                    console.log("✅ Fetched fortnight metrics:", data);
                 }
             } catch (err) {
                 console.error("❌ Error fetching fortnight metrics:", err);
@@ -94,16 +92,15 @@ const SmartRostering = (props) => {
 
     // console.log("rosteringResponse",rosteringMetrics)
     // 🔹 Fetch unallocated shifts from API
-    console.log("visualCareCreds", visualCareCreds)
+    // console.log("visualCareCreds", visualCareCreds)
     useEffect(() => {
         const fetchUnallocatedShifts = async () => {
             setLoadingClients(true);
             try {
-                console.log("visual care creds", visualCareCreds)
                 const user = visualCareCreds?.user;
                 const key = visualCareCreds?.key;
                 const secret = visualCareCreds?.secret;
-                const days = 3; 
+                const days = 3;
 
                 const res = await axios.get(
                     `${API_BASE}/getUnallocatedShifts`,
@@ -112,7 +109,6 @@ const SmartRostering = (props) => {
                     }
                 );
 
-                console.log("Fetched unallocated shifts:", res.data);
 
                 const grouped = res.data.grouped || {};
                 const allClients = Object.entries(grouped).flatMap(([label, shifts]) =>
@@ -195,7 +191,6 @@ const SmartRostering = (props) => {
                 shift_minutes: client.minutes?.replace(" min", "") || 0,
             };
 
-            console.log("📤 Sending to Smart Rostering Controller:", inputs);
 
             const response = await axios.post(
                 `${API_BASE}/run-smart-rostering?user=${user}&key=${key}&secret=${secret}`,
@@ -203,7 +198,6 @@ const SmartRostering = (props) => {
                 { headers: { "Content-Type": "application/json" } }
             );
 
-            console.log("✅ Smart Rostering Response:", response.data);
 
             // ⏳ Only now switch to screen 2 after data is ready
             if (response.data?.data?.final_ranked?.length > 0) {
@@ -240,7 +234,7 @@ const SmartRostering = (props) => {
             const key = visualCareCreds?.key;
             const secret = visualCareCreds?.secret;
 
-            console.log("📤 Sending to Filler + Smart Rostering Controller:", query);
+            // console.log("Sending to Filler + Smart Rostering Controller:", query);
 
             const response = await axios.post(
                 `${API_BASE}/run-manifest-filler?user=${user}&key=${key}&secret=${secret}`,
@@ -248,9 +242,9 @@ const SmartRostering = (props) => {
                 { headers: { "Content-Type": "application/json" } }
             );
 
-            console.log("✅ Combined Filler + Smart Rostering Response:", response.data);
+            // console.log("Combined Filler + Smart Rostering Response:", response.data);
 
-            // ✅ Corrected access path for ranked staff
+            // Corrected access path for ranked staff
             const rankedStaff = response.data?.rostering_summary?.final_ranked || [];
 
             if (Array.isArray(rankedStaff) && rankedStaff.length > 0) {
@@ -300,8 +294,6 @@ const SmartRostering = (props) => {
         );
     }
 
-
-
     return (
         <>
             {screen === 1 && (
@@ -336,19 +328,19 @@ const SmartRostering = (props) => {
                     <div className="rostering-stats-row">
                         <div className="rostering-stat-card">
                             <p>Shift Coverage %</p>
-                            <span className="rostering-circle rostering-green">{rosteringMetrics?.shift_coverage ? rosteringMetrics?.shift_coverage : 2}</span>
+                            <span className="rostering-circle rostering-green">{rosteringMetrics?.shift_coverage ?? rosteringMetrics?.shift_coverage }</span>
                         </div>
 
                         <div className="rostering-stat-card">
                             <p>At-Risk Shifts</p>
-                            <span className="rostering-circle rostering-orange">{rosteringMetrics?.Unallocated_shift ? rosteringMetrics?.Unallocated_shift : 2}</span>
+                            <span className="rostering-circle rostering-orange">{rosteringMetrics?.Unallocated_shift ?? rosteringMetrics?.Unallocated_shift }</span>
                         </div>
 
                         <div className="rostering-stat-card">
                             <p>Staff Utilisation %</p>
-                            <span className="rostering-circle rostering-green">{rosteringMetrics?.staff_utilisation ? rosteringMetrics?.staff_utilisation : 2}</span>
+                            <span className="rostering-circle rostering-green">{rosteringMetrics?.staff_utilisation}</span>
                         </div>
-                        <div className="rostering-upload-card">
+                        {/* <div className="rostering-upload-card">
                             <div>
                                 {selectedFile.map((file, index) => (
                                     <div key={index} style={{ border: '1px solid #6c4cdc', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', padding: '8px 10px', marginBottom: '4px', width: '100%' }}>
@@ -388,7 +380,7 @@ const SmartRostering = (props) => {
                                     />
                                 </label>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
 
                     <div className="unallocated-shifts-section" style={{ marginTop: "40px" }}>
@@ -397,7 +389,8 @@ const SmartRostering = (props) => {
                                 fontFamily: "Inter",
                                 fontWeight: "600",
                                 marginBottom: "20px",
-                                textAlign: "left",
+                                textAlign: "center",
+                                fontSize:"24px"
                             }}
                         >
                             Unallocated Shifts

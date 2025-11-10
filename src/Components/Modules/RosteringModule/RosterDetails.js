@@ -34,8 +34,8 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
 
     const message = rosteringResponse?.message || "";
 
-    console.log("Client data:", client);
-    console.log("Ranked staff:", rankedStaff);
+    // console.log("Client data:", client);
+    // console.log("Ranked staff:", rankedStaff);
 
     const handleSelect = (id) => {
         if (selected.includes(id)) {
@@ -81,7 +81,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                 ]
             });
 
-            console.log("Broadcast response:", response.data);
+            // console.log("Broadcast response:", response.data);
             setShowSuccess(true);
         } catch (error) {
             console.error("Error broadcasting:", error);
@@ -121,21 +121,17 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
 
                 const { user, key, secret } = visualCareCreds;
 
-                console.log("📤 Fetching timesheets:", { user, key, secret, fromDate, toDate });
-
                 const res = await axios.get(`${API_BASE}/api/getTimesheets`, {
                     params: { user, key, secret, fromDate, toDate },
                 });
 
                 if (res.data?.success) {
-                    console.log("✅ Timesheet history:", res.data);
-
                     // Normalize data
                     let allRecords = Array.isArray(res.data.data)
                         ? res.data.data
                         : res.data.data?.items || [];
 
-                    // 🧠 Sort by date (descending) and take latest 10
+                    // Sort by date (descending) and take latest 10
                     allRecords = allRecords
                         .sort((a, b) => new Date(b.DateOfService) - new Date(a.DateOfService))
                         .slice(0, 10);
@@ -154,7 +150,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
 
         fetchTimesheetHistory();
     }, [selectedClient, visualCareCreds]);
-    console.log("time sheet history", timesheetHistory)
+    // console.log("time sheet history", timesheetHistory)
     const ClockIcon = () => (
         <div
             style={{
@@ -195,6 +191,14 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
         <div className="roster-page">
             {/* Layout wrapper */}
             <div className="roster-layout">
+                <div
+                    className="roster-back-btn"
+                    onClick={() => setScreen(1)} 
+                >
+                    <GoArrowLeft size={22} color="#6C4CDC" />
+                    <span>Back</span>
+                </div>
+
                 {/* Personal Information */}
                 <div className="roster-personal-info">
                     <div className="roster-peronal-img-h">

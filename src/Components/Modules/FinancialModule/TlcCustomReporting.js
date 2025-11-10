@@ -12,7 +12,6 @@ import AIAnalysisReportViewer from "./TlcAiAnalysisReport";
 import incrementAnalysisCount from "./TLcAnalysisCount";
 
 export default function TlcCustomerReporting(props) {
-  console.log("props", props);
   // -------------------- MULTI TAB SUPPORT --------------------
   const [tabs, setTabs] = useState([
     {
@@ -82,13 +81,12 @@ export default function TlcCustomerReporting(props) {
       tlcAskAiPayload: null,
       tlcAskAiHistoryPayload: null,
     };
-    console.log("Creating new tab:", newTab);
     setTabs((prev) => [...prev, newTab]);
     setActiveTab(newId);
   };
 
   const handleCloseTab = (id) => {
-    console.log("Closing tab:", id);
+    // console.log("Closing tab:", id);
     const remainingTabs = tabs.filter((t) => t.id !== id);
     setTabs(remainingTabs);
     if (id === activeTab && remainingTabs.length > 0) {
@@ -211,9 +209,9 @@ export default function TlcCustomerReporting(props) {
       [`${type}Files`]: validFiles, // 🧠 keep File objects
     });
 
-    console.log(`✅ Selected ${type} files:`, validFiles.map((f) => f.name));
+    // console.log(`Selected ${type} files:`, validFiles.map((f) => f.name));
 
-    // ✅ Allow reselecting same file
+    // Allow reselecting same file
     e.target.value = "";
   };
 
@@ -245,10 +243,10 @@ export default function TlcCustomerReporting(props) {
 
       updateTab({ stage: "loading", error: null });
       updateTab({ uploading: true, progressStage: "uploading" });
-      console.log("🚀 Starting analysis process for tab:", activeTab);
+      // console.log("Starting analysis process for tab:", activeTab);
 
       // -------------------------------
-      // STEP 1️⃣: VALIDATE FILE UPLOADS
+      // STEP 1️: VALIDATE FILE UPLOADS
       // -------------------------------
       const inputs = ["payroll", "people", "employee"].map((type) => ({
         type,
@@ -259,7 +257,7 @@ export default function TlcCustomerReporting(props) {
 
       if (hasAnyFile) {
         lastManualWithFilesRef.current = true;
-        console.log("🧾 Upload path selected — validating uploaded files...");
+        console.log("Upload path selected — validating uploaded files...");
 
         const invalidUploads = [];
 
@@ -306,8 +304,8 @@ export default function TlcCustomerReporting(props) {
           return;
         }
 
-        // ✅ If everything is valid, upload first
-        console.log("✅ All uploaded files are valid. Uploading before analysis...");
+        // If everything is valid, upload first
+        console.log("All uploaded files are valid. Uploading before analysis...");
         try {
           updateTab({ uploading: true });
           updateTab({ uploading: true, progressStage: "uploading" });
@@ -322,13 +320,12 @@ export default function TlcCustomerReporting(props) {
           );
 
           const uploadData = await uploadRes.json();
-          console.log("📤 Upload API response:", uploadData);
 
           if (!uploadRes.ok) {
             throw new Error(uploadData.error || "File upload failed.");
           }
 
-          console.log("✅ Files uploaded successfully before analysis.");
+          console.log("Files uploaded successfully before analysis.");
           updateTab({ progressStage: "analysing" });
         } catch (uploadErr) {
           console.error("❌ Upload failed:", uploadErr);
@@ -339,7 +336,7 @@ export default function TlcCustomerReporting(props) {
       } else {
         lastManualWithFilesRef.current = false;
         updateTab({ progressStage: "analysing" });
-        console.log("📂 No files selected. Proceeding with existing database data...");
+        console.log("No files selected. Proceeding with existing database data...");
       }
 
       // -------------------------------
@@ -360,11 +357,9 @@ export default function TlcCustomerReporting(props) {
         query.append("role", selectedRole.map((r) => r.value).join(","));
 
       const url = `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/filter?${query.toString()}`;
-      console.log("🌐 Calling analyze API:", url);
 
       const analyzeRes = await fetch(url);
       const analyzeData = await analyzeRes.json();
-      console.log("📊 Analyze API response:", analyzeData);
       updateTab({ tlcAskAiPayload: analyzeData.payload });
       if (tabs.find(t => t.id === activeTab)) {
         props.setTlcAskAiPayload(analyzeData.payload);
@@ -480,7 +475,7 @@ export default function TlcCustomerReporting(props) {
         );
 
         const data = await res.json();
-        console.log("📥 Admin email list:", data);
+        // console.log("Admin email list:", data);
 
         if (!res.ok || !data.emails) {
           console.warn("⚠️ Invalid response from getAllTlcEmails API");
@@ -489,11 +484,11 @@ export default function TlcCustomerReporting(props) {
         }
 
         const normalizedEmails = data.emails.map((e) => e.trim().toLowerCase());
-        console.log("normalizedEmails", normalizedEmails)
+        // console.log("normalizedEmails", normalizedEmails)
         const hasAccess = normalizedEmails.includes(userEmail);
 
         setIsAllowed(hasAccess);
-        console.log(`🔐 Access check for ${userEmail}:`, hasAccess);
+        // console.log(`Access check for ${userEmail}:`, hasAccess);
       } catch (err) {
         console.error("❌ Error verifying access:", err);
         setIsAllowed(false);
@@ -527,8 +522,8 @@ export default function TlcCustomerReporting(props) {
 
     setSaving(true);
     try {
-      console.log("📤 Saving analysis data to database for tab:", activeTab);
-      console.log("analysisData", analysisData)
+      // console.log("📤 Saving analysis data to database for tab:", activeTab);
+      // console.log("analysisData", analysisData)
       const enrichedAnalysis = {
         pages: analysisData?.pages,
         scorecard: analysisData?.scorecard,
@@ -542,10 +537,10 @@ export default function TlcCustomerReporting(props) {
         },
       };
 
-      console.log("enrichedAnalysis", enrichedAnalysis)
+      // console.log("enrichedAnalysis", enrichedAnalysis)
       const markdownReport = activeTabData.aiReport || activeTabData.analysisData?.report_md || "";
 
-      console.log("markdown in save history", markdownReport)
+      // console.log("markdown in save history", markdownReport)
       const response = await fetch(
         "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/save",
         {
@@ -566,7 +561,7 @@ export default function TlcCustomerReporting(props) {
         return;
       }
 
-      console.log("✅ Save response:", result);
+      console.log("Save response:", result);
       alert("✅ Analysis data saved successfully!");
       // ✅ Optional: Mark as saved to prevent double-save
       updateTab({ isFromHistory: true });
@@ -594,7 +589,7 @@ export default function TlcCustomerReporting(props) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to delete history.");
 
-      console.log("✅ Deleted successfully:", data);
+      // console.log("Deleted successfully:", data);
       setHistoryList((prev) => prev.filter((item) => item.id !== selectedHistoryId));
       setShowDeleteModal(false);
       alert("✅ Deleted successfully!");
@@ -640,7 +635,7 @@ export default function TlcCustomerReporting(props) {
       activeTabData.analysisData?.payload ||
       [];
 
-    console.log("📦 AI Payload ready to send:", aiPayload);
+    // console.log("AI Payload ready to send:", aiPayload);
 
     if (!aiPayload || aiPayload.length === 0) {
       alert("No valid payload available for AI Analysis.");
@@ -651,7 +646,7 @@ export default function TlcCustomerReporting(props) {
       // ✅ Step 2: Start loading
       updateTab({ aiLoading: true, aiReport: null });
 
-      console.log("🚀 Sending full payload to AI Analysis API...");
+      console.log("Sending full payload to AI Analysis API...");
 
       // ✅ Step 3: Send directly (no re-wrapping or redeclaration)
       const res = await fetch(
@@ -664,7 +659,6 @@ export default function TlcCustomerReporting(props) {
       );
 
       const data = await res.json();
-      console.log("✅ AI Analysis Response:", data);
 
       if (!res.ok || !data.ok) {
         throw new Error(data.error || "AI Analysis failed");
@@ -696,7 +690,6 @@ export default function TlcCustomerReporting(props) {
   // -------------------- HISTORY CLICK --------------------
   const handleHistoryClick = async (item) => {
     try {
-      console.log("📥 Fetching full analysis for:", item.id);
 
       const res = await fetch(
         `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/getById/${item.id}`
@@ -709,8 +702,6 @@ export default function TlcCustomerReporting(props) {
 
 
       if (!res.ok) throw new Error(data.error || "Failed to fetch analysis");
-
-      console.log("✅ Loaded analysis data:", data.data);
 
       // ✅ Update tab with analysis data
       updateTab({
