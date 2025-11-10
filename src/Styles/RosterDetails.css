@@ -5,6 +5,7 @@
 
 /* ===== Layout ===== */
 .roster-layout {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -70,8 +71,8 @@
 .roster-staff-cards {
   display: grid;
   grid-template-columns: 32% 32% 32%;
-column-gap: 2%;
-row-gap: 0.6%;
+  column-gap: 2%;
+  row-gap: 0.6%;
   justify-content: center;
 }
 
@@ -201,10 +202,10 @@ row-gap: 0.6%;
   background: #f9f7ff;
   border-radius: 12px;
   padding: 20px;
-  max-height: 300px; 
+  max-height: 300px;
   overflow-y: auto;
-  scrollbar-width: thin; 
-  scrollbar-color: #cfc5f9 #f4f0fa; 
+  scrollbar-width: thin;
+  scrollbar-color: #cfc5f9 #f4f0fa;
 }
 
 .roster-history::-webkit-scrollbar {
@@ -228,7 +229,7 @@ row-gap: 0.6%;
 
 .roster-back-btn {
   position: absolute;
-  top: 24px;
+  top: -47px;
   display: flex;
   align-items: center;
   gap: 6px;
