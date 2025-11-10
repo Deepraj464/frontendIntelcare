@@ -194,7 +194,7 @@ const SmartRostering = (props) => {
 
             const response = await axios.post(
                 `${API_BASE}/run-smart-rostering?user=${user}&key=${key}&secret=${secret}`,
-                { inputs },
+                { inputs, userEmail: userEmail },
                 { headers: { "Content-Type": "application/json" } }
             );
 
@@ -238,7 +238,7 @@ const SmartRostering = (props) => {
 
             const response = await axios.post(
                 `${API_BASE}/run-manifest-filler?user=${user}&key=${key}&secret=${secret}`,
-                { prompt: query },
+                { prompt: query, userEmail: userEmail },
                 { headers: { "Content-Type": "application/json" } }
             );
 
@@ -328,12 +328,12 @@ const SmartRostering = (props) => {
                     <div className="rostering-stats-row">
                         <div className="rostering-stat-card">
                             <p>Shift Coverage %</p>
-                            <span className="rostering-circle rostering-green">{rosteringMetrics?.shift_coverage ?? rosteringMetrics?.shift_coverage }</span>
+                            <span className="rostering-circle rostering-green">{rosteringMetrics?.shift_coverage ?? rosteringMetrics?.shift_coverage}</span>
                         </div>
 
                         <div className="rostering-stat-card">
                             <p>At-Risk Shifts</p>
-                            <span className="rostering-circle rostering-orange">{rosteringMetrics?.Unallocated_shift ?? rosteringMetrics?.Unallocated_shift }</span>
+                            <span className="rostering-circle rostering-orange">{rosteringMetrics?.Unallocated_shift ?? rosteringMetrics?.Unallocated_shift}</span>
                         </div>
 
                         <div className="rostering-stat-card">
@@ -390,7 +390,7 @@ const SmartRostering = (props) => {
                                 fontWeight: "600",
                                 marginBottom: "20px",
                                 textAlign: "center",
-                                fontSize:"24px"
+                                fontSize: "24px"
                             }}
                         >
                             Unallocated Shifts
