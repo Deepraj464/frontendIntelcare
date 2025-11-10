@@ -7,7 +7,9 @@ import { GoHistory, GoArrowLeft } from "react-icons/go";
 import axios from "axios";
 import clockCircleIcon from "../../../Images/clock circle.png"
 import clickHandIcon from "../../../Images/clock hand.png"
+import star_icon from "../../../Images/rostering_star.png"
 const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient, visualCareCreds }) => {
+    // console.log("rostering response", rosteringResponse)
     const [selected, setSelected] = useState([]);
     const [showSuccess, setShowSuccess] = useState(false);
     const [broadcasting, setBroadcasting] = useState(false);
@@ -184,14 +186,14 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
             />
         </div>
     );
-
+   console.log("timesheetHistory",timesheetHistory)
     return (
         <div className="roster-page">
             {/* Layout wrapper */}
             <div className="roster-layout">
                 <div
                     className="roster-back-btn"
-                    onClick={() => setScreen(1)} 
+                    onClick={() => setScreen(1)}
                 >
                     <GoArrowLeft size={22} color="#6C4CDC" />
                     <span>Back</span>
@@ -264,9 +266,9 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                                             </span>
                                         </p>
                                         <p className="staff-details">
-                                            <strong>Carer ID:</strong>{' '}
+                                            <strong>Worker Name:</strong>{' '}
                                             <span style={{ color: 'black' }}>
-                                                {item.CarerId ?? 'N/A'}
+                                                {item.WorkerName ?? 'N/A'}
                                             </span>
                                         </p>
                                         <p className="staff-details">
@@ -310,12 +312,29 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                                     onClick={() => handleSelect(index)}
                                 >
                                     {/* Header with Rank & Name */}
-                                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px", position: "relative" }}>
                                         <div className="roster-staff-number">{index + 1}</div>
-                                        <div style={{ fontSize: "15px", fontWeight: "600", color: "black" }}>
-                                            {staff.name || "Unknown"}
+
+                                        <div style={{ display: "flex", alignItems: "center", gap: "22px" }}>
+                                            <div style={{ fontSize: "15px", fontWeight: "600", color: "black" }}>
+                                                {staff.name || "Unknown"}
+                                            </div>
+
+                                            {staff.preferred === "true" && (
+                                                <img
+                                                    src={star_icon}
+                                                    alt="Preferred"
+                                                    style={{
+                                                        width: "18px",
+                                                        height: "18px",
+                                                        objectFit: "contain",
+                                                        marginLeft: "50px",
+                                                    }}
+                                                />
+                                            )}
                                         </div>
                                     </div>
+
                                     {/* Overtime and Elimination Info */}
                                     {(staff.overtime_hours > 0 || staff.eliminated_reason?.[0]) && (
                                         <div
