@@ -186,7 +186,6 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
             />
         </div>
     );
-   console.log("timesheetHistory",timesheetHistory)
     return (
         <div className="roster-page">
             {/* Layout wrapper */}
