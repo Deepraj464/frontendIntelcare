@@ -38,182 +38,137 @@ const IncidentAuditing = (props) => {
     const [endMonth, setEndMonth] = useState("");
     const [currentTask, setCurrentTask] = useState(TASK_QUEUE[0]);
     const [expandedSources, setExpandedSources] = useState([]);
-
-
     const isButtonDisabled = incidentAuditingFiles.length === 0;
-
-
-    const dummyResponseData = {
-        reportable_incidents: 23,
-        total_incidents: 13,
-        overall_compliance: 100,
-        type_of_incident: [
-            { type: "Medication", count: 5 },
-            { type: "Behaviour", count: 2 },
-            { type: "Injury", count: 3 },
-            { type: "Workplace Safety", count: 1 },
-            { type: "Documentation", count: 2 },
-        ],
-        incidents: [
-            {
-                client_name: "Aziza Seror",
-                severity: "Moderate",
-                incident_number: "INC-001",
-                type: "Medication",
-                date_reported: "2025-03-24",
-                reported_by: "Phybian Chyin",
-                reportable: false,
-                summary:
-                    "Client declined medication when staff attempted to administer it in the morning.",
-                behavioural_analysis:
-                    "Medication refusal might indicate non-compliance with regimen. Regular follow-up advised.",
-                sources: [
-                    {
-                        title: "Incident Management - SEROR Aziza (50)",
-                        description:
-                            "Aziza entered the office asking for work phone...",
-                    },
-                    {
-                        title: "Incident Report Data.xlsx",
-                        description:
-                            'To, Actions taken, Service manager comments, General manager comments, CEO comments, HR comments, Documents reviewed, Interviews undertaken, "Other (photos, sketches, previous incidents, personal observations)"',
-                    },
-                ],
-            },
-            {
-                client_name: "Daniel Green",
-                severity: "High",
-                incident_number: "INC-002",
-                type: "Behaviour",
-                date_reported: "2025-03-22",
-                reported_by: "Maya Ross",
-                reportable: true,
-                summary:
-                    "Client became verbally aggressive towards staff during a scheduled activity.",
-                behavioural_analysis:
-                    "Aggression triggered by environmental noise. Reduce sensory stressors.",
-                sources: [
-                    {
-                        title: "Incident Summary.docx",
-                        description:
-                            "Incident summary of verbal aggression recorded by staff.",
-                    },
-                    {
-                        title: "Staff Report Form",
-                        description:
-                            "Detailed notes by on-duty staff describing incident sequence and actions taken.",
-                    },
-                ],
-            },
-            {
-                client_name: "Linda Thomas",
-                severity: "Low",
-                incident_number: "INC-003",
-                type: "Injury",
-                date_reported: "2025-03-20",
-                reported_by: "James Cole",
-                reportable: false,
-                summary:
-                    "Minor bruise noticed on right arm during care routine.",
-                behavioural_analysis:
-                    "Likely accidental contact. Continue monitoring for changes.",
-                sources: [
-                    {
-                        title: "Incident Report Data.xlsx",
-                        description:
-                            "Incident form showing injury details and follow-up recommendations.",
-                    },
-                ],
-            },
-            {
-                client_name: "Mark Smith",
-                severity: "Moderate",
-                incident_number: "INC-004",
-                type: "Workplace Safety",
-                date_reported: "2025-03-18",
-                reported_by: "Clara Johnson",
-                reportable: true,
-                summary:
-                    "Spilled liquid found near entrance, possible slip hazard identified.",
-                behavioural_analysis:
-                    "Environmental hazard—ensure routine safety checks.",
-                sources: [
-                    {
-                        title: "Safety Log 2025",
-                        description:
-                            "Entry noting safety hazard and immediate cleanup actions taken.",
-                    },
-                    {
-                        title: "Incident Report Data.xlsx",
-                        description:
-                            "Record of environmental hazards and preventive measures logged.",
-                    },
-                ],
-            },
-        ],
-    };
-
-
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filterReportable, setFilterReportable] = useState("ALL");
+    const [filterType, setFilterType] = useState("ALL");
 
     const handleAnalyse = async () => {
         if (incidentAuditingFiles.length === 0) return;
-        setIsIncidentAuditingProcessing(true);
-        setIncidentAuditingProgress(2);
 
+        setIsIncidentAuditingProcessing(true);
+        setIncidentAuditingProgress(5);
 
         let taskIndex = 0;
-        setCurrentTask(TASK_QUEUE[taskIndex]);
 
-        const taskInterval = setInterval(() => {
-            taskIndex++;
-            if (taskIndex < TASK_QUEUE.length) {
-                setCurrentTask(TASK_QUEUE[taskIndex]);
-            }
-        }, 20000); // every 30 sec update task
 
-        // Fake progress: increment 2% every 15ms up to 95%
+        // const taskInterval = setInterval(() => {
+        //     taskIndex++;
+        //     if (taskIndex < TASK_QUEUE.length) {
+        //         setCurrentTask(TASK_QUEUE[taskIndex]);
+        //     }
+        // }, 20000);
+
+        // fake progress
         let progressValue = 0;
-        const interval = setInterval(() => {
-            progressValue += 0.15; // smooth & slow
-            if (progressValue >= 95) progressValue = 70; // oscillate between 80–95%
+        const progressInterval = setInterval(() => {
+            progressValue += 0.15;
+            if (progressValue >= 95) progressValue = 70;
             setIncidentAuditingProgress(progressValue);
         }, 80);
 
         try {
+            // Prepare FormData
             const formData = new FormData();
             incidentAuditingFiles.forEach(file => formData.append("files", file));
 
-            const response = await axios.post(
-                "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/ndis/incidents_reporting/process",
-                formData,
+            // 🔥 --- SSE STREAM FETCH() ---
+            const response = await fetch(
+                "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/incidentAuditing",
                 {
-                    headers: { "Content-Type": "multipart/form-data" },
+                    method: "POST",
+                    body: formData
                 }
             );
 
-            console.log(response);
-            setResponseData(response.data);
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+
+            let buffer = "";
+            let finalResult = null;
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+
+                // Split into SSE lines
+                let lines = buffer.split("\n");
+                buffer = lines.pop();
+
+                for (let line of lines) {
+                    line = line.trim();
+                    if (!line.startsWith("data:")) continue;
+
+                    const jsonStr = line.replace("data:", "").trim();
+
+                    try {
+                        const data = JSON.parse(jsonStr);
+                        if (data.message) {
+                            setCurrentTask(data.message)
+                        }
+
+                        // 🔵 When backend sends result
+                        if (
+                            data.reportable_incidents !== undefined &&
+                            data.type_of_incident !== undefined &&
+                            data.incidents !== undefined
+                        ) {
+                            setResponseData(data);
+                        }
+                    } catch (err) {
+                        console.warn("Non-JSON SSE", jsonStr);
+                    }
+                }
+            }
         } catch (error) {
-            console.error("Error analysing files:", error);
+            console.error("SSE stream error", error);
             alert("Something went wrong while processing files.");
         } finally {
-            clearInterval(interval);
-            clearInterval(taskInterval);
-            // Smoothly finish progress to 100%
-            let progress = incidentAuditingProgress;
-            const finishInterval = setInterval(() => {
-                progress += 1;
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(finishInterval);
-                }
-                setIncidentAuditingProgress(progress);
-            }, 20);
+            clearInterval(progressInterval);
+            // clearInterval(taskInterval);
 
-            setTimeout(() => setIsIncidentAuditingProcessing(false), 300); // small delay for UX
+            setIncidentAuditingProgress(100);
+
+            setTimeout(() => {
+                setIsIncidentAuditingProcessing(false);
+            }, 500);
         }
     };
 
+    // 🔥 PUT FILTER LOGIC HERE
+    let filteredIncidents = responseData?.incidents || [];
+
+    if (responseData?.incidents) {
+        filteredIncidents = responseData.incidents.filter((item) => {
+
+            // SEARCH
+            if (searchTerm.trim() !== "") {
+                const text = searchTerm.toLowerCase();
+                const matches =
+                    item.client_name.toLowerCase().includes(text) ||
+                    item.summary.toLowerCase().includes(text);
+                if (!matches) return false;
+            }
+
+            // REPORTABLE FILTER
+            if (filterReportable !== "ALL") {
+                const isReportable = item.reportable === true;
+                if (filterReportable === "YES" && !isReportable) return false;
+                if (filterReportable === "NO" && isReportable) return false;
+            }
+
+            // TYPE FILTER
+            if (filterType !== "ALL") {
+                if (item.type.toLowerCase() !== filterType.toLowerCase()) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+    }
 
 
     return (
@@ -224,7 +179,7 @@ const IncidentAuditing = (props) => {
                     {/* Replace with your custom loader if you have one */}
                     <PulsatingLoader currentTask={currentTask} progress={incidentAuditingProgress} />
                 </div>
-            ) : dummyResponseData ? (
+            ) : responseData ? (
                 /* ✅ Show response reports after processing finishes */
                 <>
                     {/* Header */}
@@ -235,40 +190,49 @@ const IncidentAuditing = (props) => {
                                 type="text"
                                 placeholder="Search Client or Description..."
                                 className="incident-dashboard-search"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                             />
-                            <select className="incident-dashboard-select">
+
+                            <select
+                                className="incident-dashboard-select"
+                                value={filterReportable}
+                                onChange={(e) => setFilterReportable(e.target.value)}
+                            >
                                 <option value="ALL">All</option>
                                 <option value="YES">Reportable</option>
                                 <option value="NO">Non Reportable</option>
                             </select>
-                            <select className="incident-dashboard-select">
+
+                            <select
+                                className="incident-dashboard-select"
+                                value={filterType}
+                                onChange={(e) => setFilterType(e.target.value)}
+                            >
                                 <option value="ALL">All Types</option>
                                 <option value="injury">Injury</option>
                                 <option value="medication">Medication</option>
                                 <option value="behaviour">Behaviour</option>
-                                <option value="absconding">Absconding</option>
-                                <option value="abuse_or_neglect">Abuse / Neglect</option>
-                                <option value="restrictive_practice">Restrictive Practice</option>
                                 <option value="near_miss">Near Miss</option>
-                                <option value="property_damage">Property Damage</option>
                                 <option value="other">Other</option>
                             </select>
                         </div>
+
                     </div>
 
                     {/* Summary Cards */}
                     <div className="incident-dashboard-summary">
                         <div className="incident-dashboard-card">
                             <p>Reportable Incidents</p>
-                            <h3>{dummyResponseData.reportable_incidents}</h3>
+                            <h3>{responseData.reportable_incidents}</h3>
                         </div>
                         <div className="incident-dashboard-card">
                             <p>Total Incidents</p>
-                            <h3>{dummyResponseData.total_incidents}</h3>
+                            <h3>{responseData.total_incidents}</h3>
                         </div>
                         <div className="incident-dashboard-card">
                             <p>Overall Compliance</p>
-                            <h3>{dummyResponseData.overall_compliance}%</h3>
+                            <h3>{responseData.overall_compliance}%</h3>
                         </div>
                     </div>
 
@@ -282,7 +246,7 @@ const IncidentAuditing = (props) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {dummyResponseData.type_of_incident.map((row, idx) => (
+                                {responseData.type_of_incident.map((row, idx) => (
                                     <tr key={idx}>
                                         <td>{row.type}</td>
                                         <td>{row.count}</td>
@@ -295,7 +259,7 @@ const IncidentAuditing = (props) => {
                     {/* Incident Cards */}
                     <h3 className="incident-dashboard-section-title">Incidents</h3>
                     <div className="incident-dashboard-cards">
-                        {dummyResponseData.incidents.map((incident, idx) => (
+                        {filteredIncidents.map((incident, idx) => (
                             <div className="incident-dashboard-card-item" key={idx}>
                                 <div className="incident-dashboard-card-header">
                                     <h4>{incident.client_name}</h4>
