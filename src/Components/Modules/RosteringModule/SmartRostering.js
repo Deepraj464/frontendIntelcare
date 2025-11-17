@@ -101,7 +101,6 @@ const SmartRostering = (props) => {
                 const key = visualCareCreds?.key;
                 const secret = visualCareCreds?.secret;
                 const days = 3;
-                console.log("userEmail before fetching un assigned shifts",userEmail)
                 const res = await axios.get(
                     `${API_BASE}/getUnallocatedShifts`,
                     {
@@ -113,15 +112,15 @@ const SmartRostering = (props) => {
                 const grouped = res.data.grouped || {};
                 const allClients = Object.entries(grouped).flatMap(([label, shifts]) =>
                     shifts.map((shift) => ({
-                        dateOfService: shift.date_of_service || "-", // ✅ correct field
-                        clientId: shift.client_id || "-",            // ✅ renamed
+                        dateOfService: shift.date_of_service || "-", 
+                        clientId: shift.client_id || "-",            
                         name: shift.client_name || "Unknown",
                         sex: shift.sex || "-",
                         phone: shift.phone || "-",
                         email: shift.email?.trim() || "-",
                         address: shift.address || "-",
-                        startTime: shift.start_time || "-",          // ✅ time only now
-                        minutes: shift.minutes ? `${shift.minutes} min` : "-", // ✅ consistent display
+                        startTime: shift.start_time || "-",          
+                        minutes: shift.minutes ? `${shift.minutes} min` : "-",
                         label, // today / tomorrow / day after
                     }))
                 );
