@@ -101,11 +101,11 @@ const SmartRostering = (props) => {
                 const key = visualCareCreds?.key;
                 const secret = visualCareCreds?.secret;
                 const days = 3;
-
+                console.log("userEmail before fetching un assigned shifts",userEmail)
                 const res = await axios.get(
                     `${API_BASE}/getUnallocatedShifts`,
                     {
-                        params: { user, key, secret },
+                        params: { user, key, secret,userEmail },
                     }
                 );
 
