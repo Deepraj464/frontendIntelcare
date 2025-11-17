@@ -41,6 +41,7 @@ import rehypeRaw from "rehype-raw";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
 import incrementAnalysisCount from "./Modules/FinancialModule/TLcAnalysisCount";
+import TlcClientProfitability from "./Modules/FinancialModule/TlcClientProfitability";
 
 const HomePage = () => {
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -64,7 +65,7 @@ const HomePage = () => {
   const [showUploadedReport, setShowUploadReport] = useState(false);
   const [loadingUser, setLoadingUser] = useState(true);
   console.log("user", user)
-  const isTlcPage = selectedRole === "TLC Payroll Custom";
+  const isTlcPage = selectedRole === "TLC Payroll Custom" || "TLC Clients Profitability";
   const handleModalOpen = () => setModalVisible(true);
   const handleModalClose = () => setModalVisible(false);
 
@@ -275,6 +276,10 @@ const HomePage = () => {
                 <div style={{ display: selectedRole === "TLC Payroll Custom" ? "block" : "none" }}>
                   {/* <CustomReporting selectedRole="Custom Reporting" handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} /> */}
                   <TlcCustomerReporting user={user} setTlcAskAiPayload={setTlcAskAiPayload} tlcAskAiPayload={tlcAskAiPayload} setTlcAskAiHistoryPayload={setTlcAskAiHistoryPayload} tlcAskAiHistoryPayload={tlcAskAiHistoryPayload} />
+                </div>
+
+                <div style={{display:selectedRole==='TLC Clients Profitability'?"block":"none"}}>
+                  <TlcClientProfitability/>
                 </div>
 
                 <div style={{ display: selectedRole === "Smart Onboarding (Staff)" ? "block" : "none" }}>
