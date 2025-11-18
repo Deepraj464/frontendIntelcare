@@ -122,11 +122,13 @@ const SmartRostering = (props) => {
                         startTime: shift.start_time || "-",          
                         minutes: shift.minutes ? `${shift.minutes} min` : "-",
                         label, // today / tomorrow / day after
+                        prefSkillsDescription:shift?.prefSkillsDescription
                     }))
                 );
 
 
                 setUnallocatedClients(allClients);
+                console.log(allClients);
             } catch (error) {
                 console.error("Error fetching unallocated shifts:", error);
             } finally {
