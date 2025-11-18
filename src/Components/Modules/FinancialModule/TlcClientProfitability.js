@@ -1,0 +1,597 @@
+import React, { useState } from "react";
+import '../../../Styles/TlcClientProfitability.css';
+import TlcLogo from '../../../Images/TLCLogo.png';
+import UploadTlcIcon from '../../../Images/UploadTlcIcon.png';
+import star from '../../../Images/star.png';
+import Select from "react-select";
+import JsonTableCard from "./TlcClientTableJsonCard";
+import { useRef, useEffect } from "react";
+import ClientProfitabilityAIAnalysisReportViewer from "./TlcClientProfitibilityReport";
+const TlcClientProfitability = (props) => {
+    const onPrepareAiPayload = props.onPrepareAiPayload;
+    const [startMonth, setStartMonth] = useState("");
+    const [endMonth, setEndMonth] = useState("");
+    const [files, setFiles] = useState([]);
+    const [isTlcClientProfitabilityLoading, setTlcClientProfitabilityLoading] = useState(false);
+    const [responseData, setResponseData] = useState(null);
+    const [documentIds, setDocumentIds] = useState([]);
+    const [selectedFiles, setSelectedFiles] = useState([]);
+    const [activeTab, setActiveTab] = useState("direct"); // "direct" or "plan"
+    const [aiSummary, setAiSummary] = useState("");
+    const [aiLoading, setAiLoading] = useState(false);
+    const [aiQuestion, setAiQuestion] = useState("");
+    const [aiReply, setAiReply] = useState("");
+    const [showAiPanel, setShowAiPanel] = useState(false);
+    const [directFinalTable, setDirectFinalTable] = useState(null);
+
+    const BASE_URL = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net";
+
+    const handleUpload = async () => {
+        try {
+            const formData = new FormData();
+            for (let file of selectedFiles) formData.append("files", file);
+
+            const uploadRes = await fetch(`${BASE_URL}/tlcClientProfitibility/upload-profitibility`, {
+                method: "POST",
+                body: formData
+            });
+
+            const uploadData = await uploadRes.json();
+            console.log("UPLOAD RESPONSE", uploadData);
+
+            const ids = uploadData.files?.map(f => f.documentId) || [];
+            setDocumentIds(ids);
+
+            return uploadData;
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
+    };
+
+
+    const handleFinalAnalysis = async () => {
+        try {
+            console.log("🔄 Starting final analysis request...");
+            const analyzeRes = await fetch(`${BASE_URL}/tlcClientProfitibility/analyze-from-files`);
+
+            if (!analyzeRes.ok) {
+                throw new Error(`HTTP error! status: ${analyzeRes.status}`);
+            }
+
+            const analyzeData = await analyzeRes.json();
+            console.log("✅ FINAL ANALYSIS RESPONSE:", analyzeData);
+            setResponseData(analyzeData);
+            return analyzeData;
+        } catch (error) {
+            console.error("❌ Final analysis error:", error);
+            throw error; // Re-throw to handle in calling function
+        }
+    };
+
+    const handleFileChange = (e) => {
+        const fileList = Array.from(e.target.files);
+        setSelectedFiles(fileList);
+        setFiles(fileList.map((file) => file.name));
+    };
+
+    const removeFile = (index) => {
+        setFiles((prev) => prev.filter((_, i) => i !== index));
+        setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const handleAnalyse = async () => {
+        try {
+            if (!startMonth || !endMonth) {
+                alert("Please select both start and end months");
+                return;
+            }
+
+            setTlcClientProfitabilityLoading(true);
+
+            let sessionId = null;
+
+            // Upload → get sessionId
+            if (selectedFiles.length > 0) {
+                const uploadData = await handleUpload();
+                sessionId = uploadData?.sessionId || null;
+
+                console.log("🆔 SESSION FROM UPLOAD:", sessionId);
+            } else {
+                console.log("📝 No upload → prepare without sessionId");
+            }
+
+            // 🚫 Pass undefined if null → so query string omits sessionId
+            const safeSessionId = sessionId ? sessionId : undefined;
+
+            // Prepare analysis
+            const prepareData = await handlePrepareAnalysis(safeSessionId);
+            console.log("PREPARE DATA:", prepareData);
+
+            if (!prepareData?.ok) {
+                alert("Prepare failed");
+                return;
+            }
+
+            // Save AI payload
+            if (prepareData.payload && onPrepareAiPayload) {
+                onPrepareAiPayload(prepareData.payload);
+            }
+
+            // Final server analysis
+            await handleFinalAnalysis();
+
+        } catch (err) {
+            console.error("❌ ERROR IN handleAnalyse:", err);
+            alert("Analysis failed: " + err.message);
+        } finally {
+            setTlcClientProfitabilityLoading(false);
+        }
+    };
+
+
+
+    const handlePrepareAnalysis = async (sessionId) => {
+        try {
+            const from = `2025-${startMonth}`;
+            const to = `2025-${endMonth}`;
+
+            console.log("📊 Preparing analysis with:", { from, to, sessionId });
+
+            // BASE URL
+            let url = `${BASE_URL}/tlcClientProfitibility/prepare-analysis-data?from=${from}&to=${to}`;
+
+            // 🚫 If sessionId null OR undefined → DO NOT append
+            if (sessionId && sessionId !== "null") {
+                url += `&sessionId=${sessionId}`;
+            }
+
+            console.log("➡️ FINAL PREPARE URL:", url);
+
+            const prepareRes = await fetch(url, { method: "GET" });
+
+            const text = await prepareRes.text();
+
+            // 🔥 Fix for HTML parsing issue
+            try {
+                return JSON.parse(text);
+            } catch (parseErr) {
+                console.error("❌ Server returned HTML instead of JSON:", text.slice(0, 200));
+                return { ok: false, message: "Server returned invalid JSON" };
+            }
+
+        } catch (error) {
+            console.error("Prepare analysis error:", error);
+            return { ok: false, message: error.message };
+        }
+    };
+
+
+
+    const prepareAiPayload = async (payload) => {
+        try {
+            const res = await fetch(
+                `${BASE_URL}/tlcClientProfitibility/prepare_ai_payload`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ payload })
+                }
+            );
+            const data = await res.json();
+            console.log("AI PREPARE:", data);
+            return data;
+        } catch (err) {
+            console.error("AI prepare error:", err);
+        }
+    };
+
+    const fetchAiSummary = async () => {
+        try {
+            const res = await fetch(
+                `${BASE_URL}/tlcClientProfitibility/ask_ai_summary`
+            );
+
+            const data = await res.json();
+            console.log("AI SUMMARY:", data);
+
+            setAiSummary(data.summary_md || data.report_md || "");
+        } catch (err) {
+            console.error("AI summary error:", err);
+        }
+    };
+
+
+    // Convert API HTML safely into React elements + execute script tags
+    const RenderHtmlFigure = ({ htmlString, className = "" }) => {
+        const containerRef = useRef(null);
+
+        useEffect(() => {
+            if (!htmlString || !containerRef.current) return;
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlString, "text/html");
+
+            // Extract and remove script tags
+            const scripts = [];
+            doc.querySelectorAll("script").forEach((scr) => {
+                scripts.push(scr.innerHTML);
+                scr.remove();
+            });
+
+            // Set container content
+            containerRef.current.innerHTML = doc.body.innerHTML;
+
+            // Execute scripts
+            scripts.forEach((code) => {
+                try {
+                    const fn = new Function(code);
+                    fn();
+                } catch (err) {
+                    console.error("Script execution failed:", err);
+                }
+            });
+
+            // Optional: Force resize charts if they have resize methods
+            setTimeout(() => {
+                if (window.Chart && typeof window.Chart.instances !== 'undefined') {
+                    Object.values(window.Chart.instances).forEach(chart => {
+                        chart.resize();
+                    });
+                }
+            }, 100);
+
+        }, [htmlString]);
+
+        return (
+            <div
+                ref={containerRef}
+                className={`chart-container ${className}`}
+                style={{ width: '100%', minHeight: '300px' }}
+            />
+        );
+    };
+    useEffect(() => {
+        if (!responseData?.direct_service) return;
+
+        const summary = responseData.direct_service.tables.by_reference;
+        const details = responseData.direct_service.tables.detail;
+
+        const summaryCols = summary.columns || [];
+        const summaryRows = summary.rows || [];
+        const detailCols = details.columns || [];
+        const detailRows = details.rows || [];
+
+        const normalizeObjKeys = (obj) => {
+            const n = {};
+            Object.keys(obj || {}).forEach(k => {
+                const key = k?.toString()?.toLowerCase()?.trim();
+                if (key) n[key] = obj[k];
+            });
+            return n;
+        };
+
+        const findIndexCI = (cols, keywords) =>
+            cols.findIndex(c => keywords.some(k =>
+                c?.toString?.().toLowerCase().includes(k.toLowerCase())
+            ));
+
+        const refColIndex = findIndexCI(summaryCols, ["ndis", "reference"]);
+        const detailRefIndex = findIndexCI(detailCols, ["ndis", "reference"]);
+        const regionColIndex = findIndexCI(detailCols, ["region"]);
+        const deptColIndex = findIndexCI(detailCols, ["department", "dept"]);
+
+        const toRowArray = (obj, cols) => {
+            const normalized = normalizeObjKeys(obj);
+            return cols.map(c => normalized[c?.toLowerCase()] || "");
+        };
+
+        const detailMap = {};
+
+        detailRows.forEach(dr => {
+            const norm = normalizeObjKeys(dr);
+            const refColName = detailCols[detailRefIndex]?.toLowerCase();
+            const refValue = norm[refColName];
+            if (!detailMap[refValue]) detailMap[refValue] = [];
+            detailMap[refValue].push(toRowArray(dr, detailCols));
+        });
+
+        const finalRows = summaryRows.map(sr => {
+            const parent = toRowArray(sr, summaryCols);
+            const refValue = parent[refColIndex];
+            return {
+                parent,
+                children: detailMap[refValue] || [],
+                ndisReference: refValue
+            };
+        });
+
+        const regions = new Set();
+        const departments = new Set();
+
+        detailRows.forEach(dr => {
+            const norm = normalizeObjKeys(dr);
+            if (regionColIndex >= 0) {
+                const r = norm[detailCols[regionColIndex]?.toLowerCase()];
+                if (r) regions.add(r);
+            }
+            if (deptColIndex >= 0) {
+                const d = norm[detailCols[deptColIndex]?.toLowerCase()];
+                if (d) departments.add(d);
+            }
+        });
+
+        setDirectFinalTable({
+            columns: summaryCols,
+            rows: finalRows,
+            detailCols,
+            regions: [...regions],
+            departments: [...departments]
+        });
+    }, [responseData]);
+
+    return (
+        <div className="page-containersss">
+            <div className="left-headerss">
+                <img src={TlcLogo} alt="Logo" className="tlclogo" />
+            </div>
+
+            {!responseData ? (
+                <div>
+                    <div className="date-section" style={{ gap: '8%' }}>
+                        <div className="date-picker" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+                            <label style={{ fontSize: "14px", fontWeight: "500", fontFamily: "Inter", }}>
+                                Select Start Month
+                            </label>
+                            <div className="date-inputs">
+                                <select value={startMonth} onChange={(e) => setStartMonth(e.target.value)}>
+                                    <option value="">MM</option>
+                                    {Array.from({ length: 12 }, (_, i) => {
+                                        const monthValue = (i + 1).toString().padStart(2, "0");
+                                        const monthName = new Date(0, i).toLocaleString("en-US", { month: "short" });
+                                        return <option key={monthValue} value={monthValue}>{monthName}</option>;
+                                    })}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="date-picker" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+                            <label style={{ fontSize: "14px", fontWeight: "500", fontFamily: "Inter" }}>
+                                Select End Month
+                            </label>
+                            <div className="date-inputs">
+                                <select value={endMonth} onChange={(e) => setEndMonth(e.target.value)}>
+                                    <option value="">MM</option>
+                                    {Array.from({ length: 12 }, (_, i) => {
+                                        const monthValue = (i + 1).toString().padStart(2, "0");
+                                        const monthName = new Date(0, i).toLocaleString("en-US", { month: "short" });
+                                        return <option key={monthValue} value={monthValue}>{monthName}</option>;
+                                    })}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '30px' }}>
+                        <div style={{ marginBottom: "16px", width: '40%' }}>
+                            <div style={{ textAlign: "left", fontSize: "14px", fontFamily: "Inter", fontWeight: 500, marginBottom: '6px', textAlign: 'center' }}>
+                                Upload Receivables, Payables and Profitables Data
+                            </div>
+
+                            <div className="upload-boxes" style={{ cursor: "pointer", padding: '40px 14px' }} onClick={() => document.getElementById("payroll-file-input").click()}>
+                                <input id="payroll-file-input" type="file" multiple accept=".xlsx,.xls" onChange={handleFileChange} style={{ display: "none" }} />
+
+                                <div className="uploadss-iconss">
+                                    <img src={UploadTlcIcon} alt="uploadIcon" style={{ height: "48px", width: "48px" }} />
+                                </div>
+
+                                <p style={{ fontSize: "14px", color: "#444", fontFamily: "Inter" }}>
+                                    {files.length === 0 ? (
+                                        <>
+                                            Click to upload <span style={{ color: "#6C4CDC" }}>Receivables, Payables and Profitables Data</span>
+                                            <br />
+                                            <small>.XLSX, .XLS</small>
+                                        </>
+                                    ) : "Uploaded files:"}
+                                </p>
+
+                                {files.length > 0 && (
+                                    <div style={{ marginTop: "8px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                                        {files.map((fileName, idx) => (
+                                            <div key={idx} onClick={(e) => e.stopPropagation()} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#DADADA", padding: "4px 8px", borderRadius: "6px", fontSize: "14px", fontFamily: "Inter" }}>
+                                                <span title={fileName}>{fileName.length > 30 ? fileName.slice(0, 30) + "..." : fileName}</span>
+                                                <span onClick={(e) => { e.stopPropagation(); removeFile(idx); }} style={{ cursor: "pointer", color: "#6C4CDC", fontWeight: "bold" }}>×</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <button className="analyse-btn" disabled={isTlcClientProfitabilityLoading} style={{ backgroundColor: '#000', marginTop: '20px' }} onClick={handleAnalyse}>
+                        {isTlcClientProfitabilityLoading ? `Analysing...` : <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>Analyse<img src={star} alt='img' style={{ width: '20px', height: '20px' }} /></div>}
+                    </button>
+                </div>
+            ) : (
+                <>
+                    {/* header + tabs */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left', marginTop: '20px', marginBottom: '20px' }}>
+                        <div>
+                            <div style={{ fontSize: '24px', fontWeight: '600', fontFamily: 'Inter', marginBottom: '10px' }}>
+                                Participant Profitability Overview
+                            </div>
+                            <div style={{ fontFamily: 'Inter', fontSize: '14px', fontWeight: '500', color: '#928F8F' }}>
+                                Scorecards and charts at the top, detailed per-participant table with filters at the bottom.
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                <button onClick={() => setActiveTab("plan")} className={`tab-btn ${activeTab === "plan" ? "active" : ""}`}>Plan Managed </button>
+                                <button onClick={() => setActiveTab("direct")} className={`tab-btn ${activeTab === "direct" ? "active" : ""}`}>Direct Services</button>
+                            </div>
+
+                            <button
+                                onClick={async () => {
+                                    if (onPrepareAiPayload) {
+                                        console.log("Rebuilding JSON files before Summary...");
+                                        await prepareAiPayload(props.tlcClientProfitabilityPayload);
+                                    }
+
+                                    setShowAiPanel(true);
+                                    await fetchAiSummary();
+                                }}
+                                style={{
+                                    border: 'none',
+                                    borderRadius: '30px',
+                                    fontFamily: 'Inter',
+                                    padding: '14px 32px',
+                                    fontSize: '16px',
+                                    fontWeight: '500',
+                                    color: 'white',
+                                    outline: 'none',
+                                    cursor: 'pointer',
+                                    backgroundColor: '#6c4cdc'
+                                }}
+                            >
+                                AI Analyse
+                            </button>
+
+
+                        </div>
+                    </div>
+                    {/* AI Panel */}
+                    {showAiPanel && (
+                        <ClientProfitabilityAIAnalysisReportViewer
+                            reportText={aiSummary}
+                            loading={!aiSummary}
+                        />
+                    )}
+
+                    {/* common scorecards (showing direct or plan depending on activeTab) */}
+                    <div className="tlcClient-dashboard-summary">
+                        {activeTab === "direct" && responseData?.direct_service && (
+                            <>
+                                <div className="tlcClient-dashboard-card">
+                                    <p>Total Revenue</p>
+                                    <h3>${responseData.direct_service.scorecards.total_revenue.toLocaleString()}</h3>
+                                    <p>All months, All Participants</p>
+                                </div>
+                                <div className="tlcClient-dashboard-card">
+                                    <p>Total Expense</p>
+                                    <h3>${responseData.direct_service.scorecards.total_expense.toLocaleString()}</h3>
+                                    <p>Allocated expense</p>
+                                </div>
+                                <div className="tlcClient-dashboard-card">
+                                    <p>Total Profit</p>
+                                    <h3>${responseData.direct_service.scorecards.total_profit.toLocaleString()}</h3>
+                                    <p>Revenue minus expense</p>
+                                </div>
+                                <div className="tlcClient-dashboard-card">
+                                    <p>Overall Margin</p>
+                                    <h3>{(responseData.direct_service.scorecards.total_margin * 100).toFixed(2)}%</h3>
+                                    <p>Profit / Revenue</p>
+                                </div>
+                            </>
+                        )}
+
+                        {activeTab === "plan" && responseData?.plan_managed && (
+                            <>
+                                <div className="tlcClient-dashboard-card">
+                                    <p>Total Revenue</p>
+                                    <h3>${responseData.plan_managed.scorecards.total_revenue.toLocaleString()}</h3>
+                                    <p>All Plan Managed participants</p>
+                                </div>
+                                <div className="tlcClient-dashboard-card">
+                                    <p>Total Expense</p>
+                                    <h3>${responseData.plan_managed.scorecards.total_expense.toLocaleString()}</h3>
+                                    <p>Invoice-linked expenses</p>
+                                </div>
+                                <div className="tlcClient-dashboard-card">
+                                    <p>Total Profit</p>
+                                    <h3>${responseData.plan_managed.scorecards.total_profit.toLocaleString()}</h3>
+                                    <p>Revenue minus expense</p>
+                                </div>
+                                <div className="tlcClient-dashboard-card">
+                                    <p>Overall Margin</p>
+                                    <h3>{(responseData.plan_managed.scorecards.total_margin * 100).toFixed(2)}%</h3>
+                                    <p>Profit / Revenue</p>
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    {/* charts */}
+                    <div className="client-profitability-graph">
+                        {activeTab === "direct" && responseData?.direct_service && (
+                            <>
+                                <div className="chart-box" style={{ marginBottom: "30px" }}>
+                                    <RenderHtmlFigure htmlString={responseData.direct_service.graphs.department_profit} />
+                                </div>
+
+                                <div className="chart-box" style={{ marginBottom: "30px" }}>
+                                    <RenderHtmlFigure htmlString={responseData.direct_service.graphs.department_revenue_expense} />
+                                </div>
+
+                                <div className="chart-box" style={{ marginBottom: "30px" }}>
+                                    <RenderHtmlFigure htmlString={responseData.direct_service.graphs.region_profit} />
+                                </div>
+
+                                <div className="chart-box" style={{ marginBottom: "30px" }}>
+                                    <RenderHtmlFigure htmlString={responseData.direct_service.graphs.region_revenue_expense} />
+                                </div>
+                            </>
+                        )}
+
+                        {activeTab === "plan" && responseData?.plan_managed && (
+                            <>
+                                <div className="chart-box" style={{ marginBottom: "30px" }}>
+                                    <RenderHtmlFigure htmlString={responseData.plan_managed.graphs.profit_by_region} />
+                                </div>
+
+                                <div className="chart-box" style={{ marginBottom: "30px" }}>
+                                    <RenderHtmlFigure htmlString={responseData.plan_managed.graphs.revenue_expense_by_region} />
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    {/* summary tables */}
+                    <div className="table-box" style={{ marginTop: "40px" }}>
+                        {activeTab === "direct" && (
+                            <RenderHtmlFigure htmlString={responseData.direct_service.summary_tables.by_region_department} />
+                        )}
+
+                        {activeTab === "plan" && (
+                            <RenderHtmlFigure htmlString={responseData.plan_managed.summary_tables.by_region_department} />
+                        )}
+                    </div>
+
+                    {/* Detailed Json tables - show tables relevant to active tab */}
+                    <div style={{ marginTop: "40px" }}>
+                        {activeTab === "direct" && directFinalTable && (
+                            <JsonTableCard
+                                title="Direct Services – NDIS Reference (click + to see detail)"
+                                data={directFinalTable}
+                                isSummaryDetailMode={true}
+                                availableRegions={directFinalTable.regions}
+                                availableDepartments={directFinalTable.departments}
+                            />
+                        )}
+
+                        {activeTab === "plan" && (
+                            <>
+                                {responseData?.plan_managed?.tables?.detail && (
+                                    <JsonTableCard title="Plan Managed — Detailed Table" data={responseData.plan_managed.tables.detail} />
+                                )}
+                            </>
+                        )}
+                    </div>
+                </>
+            )}
+        </div>
+    );
+};
+
+export default TlcClientProfitability;

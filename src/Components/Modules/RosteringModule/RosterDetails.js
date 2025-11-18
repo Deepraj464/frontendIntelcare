@@ -23,6 +23,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
         ? rosteringResponse?.filler?.match?.matched_record || {}
         : rosteringResponse?.data?.client || {};
 
+        // console.log('Client',selectedClient.prefSkillsDescription);
     const rankedStaff = isFillerResponse
         ? rosteringResponse?.rostering_summary?.final_ranked || []
         : rosteringResponse?.data?.final_ranked || [];
@@ -103,6 +104,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
         }
         return selectedClient?.address || 'N/A';
     };
+    // console.log(selectedClient)
     useEffect(() => {
         const fetchTimesheetHistory = async () => {
             if (!selectedClient || !visualCareCreds) return;
@@ -230,10 +232,16 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                             <p>Plan Start Date: <span style={{ color: 'black' }}>
                                 {client.ServiceStart || client.plan_start_date || request.shift_date || selectedClient?.date || 'N/A'}
                             </span></p>
+                            
                         </div>
-                        <div style={{ display: 'flex', paddingLeft: '54px', gap: '42px', paddingTop: '20px', paddingBottom: '20px', borderBottom: '1px solid #E4E4E4' }}>
-                            <p>Address: <span style={{ color: 'black' }}>
+                        <div style={{ display: 'flex',flexWrap:'wrap', paddingLeft: '54px', gap: '42px', paddingTop: '20px', paddingBottom: '20px', borderBottom: '1px solid #E4E4E4' }}>
+                        <p>Address: <span style={{ color: 'black' }}>
                                 {formatAddress()}
+                            </span></p>
+                        </div>
+                        <div style={{ display: 'flex',flexWrap:'wrap', paddingLeft: '54px', gap: '42px', paddingTop: '20px', paddingBottom: '20px', borderBottom: '1px solid #E4E4E4',textAlign:'left'}}>
+                            <p>Skills: <span style={{ color: 'black' }}>
+                            {selectedClient.prefSkillsDescription?.join(', ')}
                             </span></p>
                         </div>
                     </div>
