@@ -10,20 +10,12 @@ export default function ClientProfitabilityAIAnalysisReportViewer({ reportText, 
     const [isOpen, setIsOpen] = useState(true);
 
     if (loading) {
-        return (
-            <div>
-                Generating AI insights...
-            </div>
-        );
+        console.log("loading summary report....")
     }
 
 
     if (!reportText) {
-        return (
-            <div className="text-gray-500 text-center py-6 font-inter">
-                Click “AI Analysis” to generate the report.
-            </div>
-        );
+        console.log(" Click “AI Analysis” to generate the report.")
     }
 
     return (
