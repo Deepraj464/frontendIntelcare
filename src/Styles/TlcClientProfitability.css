@@ -64,3 +64,65 @@
 .filter-search-input:focus {
     border-color: #6c4cdc;
 }
+.json-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: Inter;
+    font-size: 14px;
+}
+
+.json-table th {
+    background: #f4f4f4;
+    padding: 10px;
+    border: 1px solid #ccc;
+    font-weight: 600;
+}
+
+.json-table td {
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+}
+
+.json-table tr:hover {
+    background: #f9f6ff;
+}
+.drill-toggle-btn {
+  border: none;
+  background: #e5e7eb;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  margin-right: 6px;
+}
+.tab-btn {
+    padding: 10px 22px;
+    font-size: 14px;
+    font-family: Inter, sans-serif;
+    font-weight: 500;
+    border: 1.5px solid #d3d3d3;
+    border-radius: 8px;
+    background: #f7f7f7;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    color: #444;
+}
+
+.tab-btn:hover {
+    background: #ececec;
+}
+
+.tab-btn.active {
+    background: #6C4CDC;
+    border-color: #6C4CDC;
+    color: white;
+    box-shadow: 0px 4px 10px rgba(108, 76, 220, 0.3);
+    transform: translateY(-1px);
+}
+
+.tab-btn:not(.active):hover {
+    border-color: #bfbfbf;
+}
+
+
