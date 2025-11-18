@@ -64,107 +64,181 @@ const HomePage = () => {
   const [showFinalZipReport, setShowFinalZipReport] = useState(false);
   const [showUploadedReport, setShowUploadReport] = useState(false);
   const [loadingUser, setLoadingUser] = useState(true);
-  console.log("user", user)
-  const isTlcPage = selectedRole === "TLC Payroll Custom" || "TLC Clients Profitability";
+  const [mainfestData, setManifestData] = useState();
+  const isTlcPage = selectedRole === "Payroll Custom";
+  const isSmartRosteringPage = selectedRole === 'Smart Rostering'
+  const [Suggestions, setSuggestions] = useState([]);
   const handleModalOpen = () => setModalVisible(true);
   const handleModalClose = () => setModalVisible(false);
 
-  const Suggestions = [
-    "What is NDIS?",
-    "What is Aged Care?",
-    "How Does this module works?",
-    "Do you offer support?"
-  ];
 
-  useEffect(() => {
-    getCount();
-  }, []);
+  const moduleSuggestions = {
+    tlc: [
+      "Which 10 employees in NDIS have the highest overtime hours and overtime $ as a percentage of their total hours and pay?",
+      "Which employees had negative amounts in any pay-related column (e.g. reversals/adjustments), and what were those values?",
+      "By Cost Centre, what is the total Gross, Net, Tax and Super for this pay run, and which centres are the most expensive?",
+      "Top 5 Departments with the highest Gross for this pay run"
+    ],
+
+    smart: [
+      "How many workers are available today?",
+      "How many rosters are having Carer as -1?"
+    ],
+
+    default: []
+  };
+
+
 
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
 
-  console.log('Tlc', tlcAskAiPayload);
-
-  const handleSend = async () => {
-    if (!input.trim()) return;
-
-    setMessages((prev) => [...prev, { sender: "user", text: input }]);
-    const tempBotMessage = { sender: "bot", text: "Generating response...", temp: true };
-    setMessages((prev) => [...prev, tempBotMessage]);
-
-    const userInput = input;
-    setInput("");
-
-    const isTlcPage = selectedRole === "TLC Payroll Custom";
-    let payload = {};
-
+  const fetchManifest = async () => {
     try {
-      // 🟢 CASE 1: If TLC page and tlcAskAiPayload already exists (ready-to-use data)
-      if (isTlcPage && tlcAskAiPayload && tlcAskAiPayload.length > 0) {
-        payload = {
-          objects: Array.isArray(tlcAskAiPayload)
-            ? tlcAskAiPayload
-            : [tlcAskAiPayload],
-          query: userInput,
-        };
+      if (!user?.email) {
+        console.error("User email not found");
+        return;
       }
 
-      // 🟢 CASE 2: If TLC page and tlcAskAiHistoryPayload exists (filters only → fetch filtered data)
-      else if (isTlcPage && tlcAskAiHistoryPayload) {
-        const { start, end } = tlcAskAiHistoryPayload.filters;
+      const email = 'utkarsh@curki.ai'
 
+      const response = await fetch(
+        `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/getManifestByEmail/${user?.email}`
+      );
+
+      const result = await response.json();
+
+      if (!result.success) {
+        console.error("Failed to fetch manifest:", result.message);
+        return;
+      }
+
+      const manifest = result.data;
+      console.log("Fetched Manifest:", manifest[0]);
+      setManifestData(manifest[0]);
+
+
+    } catch (err) {
+      console.error("Error fetching manifest:", err);
+    }
+  };
+
+
+
+
+
+  const handleSend = async (customText) => {
+    const finalQuery = (customText ?? input).trim();
+    if (!finalQuery) return;
+  
+    // show user message and temp bot message
+    setMessages((prev) => [...prev, { sender: "user", text: finalQuery }]);
+    const tempBotMessage = { sender: "bot", text: "Generating response...", temp: true };
+    setMessages((prev) => [...prev, tempBotMessage]);
+  
+    // clear input only when the user typed (not when suggestion clicked)
+    if (!customText) setInput("");
+  
+    let payload = {};
+  
+    try {
+      // 🟢 SMART ROSTERING MODE (early return)
+      if (isSmartRosteringPage) {
+        payload = {
+          manifest: mainfestData, // using your state name
+          question: finalQuery,
+        };
+  
+        console.log("🟡 Smart Rostering Payload:", payload);
+  
+        try {
+          const response = await axios.post(
+            "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/smart-rostering/qa",
+            payload
+          );
+  
+          console.log("Smart Rostering response:", response);
+  
+          const botReply = response.data?.answer || "No response";
+  
+          setMessages((prev) =>
+            prev.map((msg) => (msg.temp ? { sender: "bot", text: botReply } : msg))
+          );
+  
+          return; // stop here for smart rostering
+        } catch (err) {
+          console.error("Smart Rostering Error:", err);
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.temp ? { sender: "bot", text: "Smart Rostering request failed." } : msg
+            )
+          );
+          return;
+        }
+      }
+  
+      // 🟢 TLC PAYROLL MODE
+      if (isTlcPage && tlcAskAiPayload && tlcAskAiPayload.length > 0) {
+        payload = {
+          objects: Array.isArray(tlcAskAiPayload) ? tlcAskAiPayload : [tlcAskAiPayload],
+          query: finalQuery,
+        };
+      } else if (isTlcPage && tlcAskAiHistoryPayload) {
+        const { start, end } = tlcAskAiHistoryPayload.filters;
+  
         const query = new URLSearchParams({
           start: new Date(start).toISOString().split("T")[0],
           end: new Date(end).toISOString().split("T")[0],
         });
-
+  
         const filterApiResponse = await axios.get(
           `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/filter?${query}`
         );
-
+  
         console.log("filter api response in ask ai", filterApiResponse);
-
+  
         const filteredPayload = filterApiResponse.data?.payload || [];
-
+  
         payload = {
           objects: filteredPayload,
-          query: userInput,
+          query: finalQuery,
         };
       }
-
-      // 🟢 CASE 3: Non-TLC pages
+      // 🟢 DEFAULT ASK AI MODE
       else {
-        payload = { query: userInput };
+        payload = { query: finalQuery };
         if (documentString) payload.document = documentString;
       }
-
+  
       console.log("🟡 Final payload in ask ai:", payload);
-
+  
       const baseURL =
         "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io";
       const apiURL = isTlcPage
         ? `${baseURL}/tlc/payroll/payroll_askai`
         : `${baseURL}/askai`;
-
-      console.log("Payload sending to API:", payload);
+  
+      console.log("Payload sending to API:", apiURL, payload);
       const response = await axios.post(apiURL, payload);
-
+  
       console.log("response from ask ai", response);
-
+  
       const botReply = isTlcPage
         ? response.data?.answer || "No response"
         : response.data?.response?.text || response.data?.response || "No response";
-
+  
       setMessages((prev) =>
         prev.map((msg) => (msg.temp ? { sender: "bot", text: botReply } : msg))
       );
+  
+      // count usage only for TLC
       if (isTlcPage && user?.email) {
-      try {
-        const email = user.email.trim().toLowerCase();
-        await incrementAnalysisCount(email, "tlc-askai",response?.data?.ai_analysis_cost);
-      } catch (err) {
-        console.error("❌ Failed to increment TLC AskAI count:", err.message);
+        try {
+          const email = user.email.trim().toLowerCase();
+          await incrementAnalysisCount(email, "tlc-askai", response?.data?.ai_analysis_cost);
+        } catch (err) {
+          console.error("❌ Failed to increment TLC AskAI count:", err.message);
+        }
       }
-    }
     } catch (error) {
       console.error("Error calling API:", error);
       setMessages((prev) =>
@@ -174,8 +248,7 @@ const HomePage = () => {
       );
     }
   };
-
-
+  
   const handleClick = async () => {
     await incrementCount();
   };
@@ -188,6 +261,34 @@ const HomePage = () => {
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    getCount();
+  }, []);
+
+  useEffect(() => {
+    if (user?.email) {
+      fetchManifest();
+    }
+  }, [user]);
+
+
+
+  useEffect(() => {
+    if (isTlcPage) {
+      setSuggestions(moduleSuggestions.tlc);
+    } else if (isSmartRosteringPage) {
+      setSuggestions(moduleSuggestions.smart);
+    } else {
+      setSuggestions(moduleSuggestions.default);
+    }
+  }, [selectedRole]);
+
+  useEffect(() => {
+    // Reset chat when module changes
+    setMessages([]);
+    setInput("");
+  }, [selectedRole]);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -273,13 +374,13 @@ const HomePage = () => {
                   <IncidentManagement selectedRole="Custom Incident Management" handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} />
                 </div>
 
-                <div style={{ display: selectedRole === "TLC Payroll Custom" ? "block" : "none" }}>
+                <div style={{ display: selectedRole === "Payroll Custom" ? "block" : "none" }}>
                   {/* <CustomReporting selectedRole="Custom Reporting" handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} /> */}
                   <TlcCustomerReporting user={user} setTlcAskAiPayload={setTlcAskAiPayload} tlcAskAiPayload={tlcAskAiPayload} setTlcAskAiHistoryPayload={setTlcAskAiHistoryPayload} tlcAskAiHistoryPayload={tlcAskAiHistoryPayload} />
                 </div>
 
-                <div style={{display:selectedRole==='TLC Clients Profitability'?"block":"none"}}>
-                  <TlcClientProfitability/>
+                <div style={{ display: selectedRole === 'Clients Profitability' ? "block" : "none" }}>
+                  <TlcClientProfitability />
                 </div>
 
                 <div style={{ display: selectedRole === "Smart Onboarding (Staff)" ? "block" : "none" }}>
@@ -299,7 +400,7 @@ const HomePage = () => {
                 </div>
 
                 <div style={{ display: selectedRole === "Smart Rostering" ? "block" : "none" }}>
-                  <RosteringDashboard user={user}/>
+                  <RosteringDashboard user={user} />
                 </div>
               </>
 
@@ -358,7 +459,7 @@ const HomePage = () => {
                                 textAlign: "left",
                                 color: "black",
                                 fontFamily: "Inter",
-                                border:'1px solid #6c4cdc'
+                                border: '1px solid #6c4cdc'
                               }}
                               className="ask-ai-res-div"
                             >
@@ -383,16 +484,18 @@ const HomePage = () => {
 
                   </div>
                   <div>
-                    {/* {messages.length === 0 &&
+                    {messages.length === 0 &&
                       <div>
-                        <div style={{ textAlign: 'left', marginBottom: '14px', fontSize: '14px', fontWeight: '500', fontFamily: 'Inter' }}>
-                          Suggestions
-                        </div>
+                        {Suggestions.length !== 0 &&
+                          <div style={{ textAlign: 'left', marginBottom: '14px', fontSize: '14px', fontWeight: '500', fontFamily: 'Inter' }}>
+                            Suggestions
+                          </div>
+                        }
                         <div style={{ display: "flex", flexDirection: 'column', width: '45%' }}>
                           {Suggestions.map((q, i) => (
                             <button
                               key={i}
-                              onClick={() => { }}
+                              onClick={() => handleSend(q)}
                               style={{ padding: "10px", borderRadius: "8px", background: "#F9F8FF", border: "1px solid #6c4cdc", cursor: "pointer", marginBottom: '10px', textAlign: 'left' }}
                             >
                               {q}
@@ -400,7 +503,7 @@ const HomePage = () => {
                           ))}
                         </div>
                       </div>
-                    } */}
+                    }
 
                     <div style={{ position: "relative", marginTop: "10px", marginBottom: "16px", width: "100%", display: "flex", alignSelf: "center" }}>
                       <input
