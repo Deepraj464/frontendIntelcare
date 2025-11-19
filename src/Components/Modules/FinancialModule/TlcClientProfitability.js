@@ -9,6 +9,9 @@ import { useRef, useEffect } from "react";
 import ClientProfitabilityAIAnalysisReportViewer from "./TlcClientProfitibilityReport";
 const TlcClientProfitability = (props) => {
     const onPrepareAiPayload = props.onPrepareAiPayload;
+    const user = props.user
+    console.log("user in client profitibility",user)
+    const userEmail = user?.email
     const [startMonth, setStartMonth] = useState("");
     const [endMonth, setEndMonth] = useState("");
     const [files, setFiles] = useState([]);
@@ -53,7 +56,7 @@ const TlcClientProfitability = (props) => {
     const handleFinalAnalysis = async () => {
         try {
             console.log("🔄 Starting final analysis request...");
-            const analyzeRes = await fetch(`${BASE_URL}/tlcClientProfitibility/analyze-from-files`);
+            const analyzeRes = await fetch(`${BASE_URL}/tlcClientProfitibility/analyze-from-files?userEmail=${userEmail}`);
 
             if (!analyzeRes.ok) {
                 throw new Error(`HTTP error! status: ${analyzeRes.status}`);
@@ -189,7 +192,7 @@ const TlcClientProfitability = (props) => {
     const fetchAiSummary = async () => {
         try {
             const res = await fetch(
-                `${BASE_URL}/tlcClientProfitibility/ask_ai_summary`
+                `${BASE_URL}/tlcClientProfitibility/ask_ai_summary?userEmail=${userEmail}`
             );
 
             const data = await res.json();
