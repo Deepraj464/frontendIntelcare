@@ -193,8 +193,9 @@ const HomePage = () => {
         );
 
         // Step 2: Ask AI
+        const userEmail = user?.email
         const response = await axios.post(
-          `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/tlcClientProfitibility/ask_ai`,
+          `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/tlcClientProfitibility/ask_ai?userEmail=${userEmail}`,
           { question: finalQuery }
         );
 
@@ -235,9 +236,9 @@ const HomePage = () => {
             start: new Date(start).toISOString().split("T")[0],
             end: new Date(end).toISOString().split("T")[0],
           });
-
+          const userEmail = user?.email
           const filterApiResponse = await axios.get(
-            `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/filter?${query}`
+            `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/filter?${query}&${userEmail}`
           );
 
           console.log("filter api response in ask ai", filterApiResponse);
@@ -256,6 +257,11 @@ const HomePage = () => {
         const apiURL = `${baseURL}/tlc/payroll/payroll_askai`;
 
         console.log("Payload sending to TLC Payroll API:", apiURL, payload);
+        const userEmail = user?.email
+        // const userEmail = "kris@curki.ai" 
+        if (userEmail === "kris@curki.ai") {
+          payload.env = "sandbox";   // exactly payload = { ..., env: "sandbox" }
+        }
         const response = await axios.post(apiURL, payload);
 
         console.log("response from TLC Payroll ask ai", response);
@@ -444,6 +450,7 @@ const HomePage = () => {
                   <TlcClientProfitability
                     onPrepareAiPayload={(payload) => setTlcClientProfitabilityPayload(payload)}
                     tlcClientProfitabilityPayload={tlcClientProfitabilityPayload}
+                    user={user}
                   />
                 </div>
 
@@ -507,7 +514,7 @@ const HomePage = () => {
                         }}
                       >
                         <div style={{ display: "flex", flexDirection: "column", alignItems: msg.sender === "user" ? "flex-end" : "flex-start", position: "relative" }}>
-                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '4px',maxWidth:'75%' }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '4px', maxWidth: '75%' }}>
                             <img
                               src={aksAiPurpleStar}
                               alt="user icon"
@@ -524,7 +531,7 @@ const HomePage = () => {
                                 color: "black",
                                 fontFamily: "Inter",
                                 border: '1px solid #6c4cdc',
-                                overflow:'auto'
+                                overflow: 'auto'
                               }}
                               className="ask-ai-res-div"
                             >
