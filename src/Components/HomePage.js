@@ -162,6 +162,10 @@ const HomePage = () => {
         };
 
         console.log("🟡 Smart Rostering Payload:", payload);
+        const userEmail = user?.email?.trim()?.toLowerCase();
+        if (userEmail === "kris@curki.ai") {
+          payload.env = "sandbox";
+        }
 
         const response = await axios.post(
           "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/smart-rostering/qa",
