@@ -38,7 +38,7 @@ export default function ClientProfitabilityAIAnalysisReportViewer({ reportText, 
                         gap: "10px",
                     }}
                 >
-                    
+                    ⏳ Generating AI insights...
                 </div>
             </div>
         );
