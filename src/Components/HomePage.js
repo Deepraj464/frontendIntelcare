@@ -507,7 +507,7 @@ const HomePage = () => {
                         }}
                       >
                         <div style={{ display: "flex", flexDirection: "column", alignItems: msg.sender === "user" ? "flex-end" : "flex-start", position: "relative" }}>
-                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '4px' }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '4px',maxWidth:'75%' }}>
                             <img
                               src={aksAiPurpleStar}
                               alt="user icon"
@@ -518,12 +518,13 @@ const HomePage = () => {
                                 backgroundColor: "#F9F8FF",
                                 padding: "10px",
                                 borderRadius: "10px",
-                                maxWidth: "75%",
+                                maxWidth: "100%",
                                 fontSize: "14px",
                                 textAlign: "left",
                                 color: "black",
                                 fontFamily: "Inter",
-                                border: '1px solid #6c4cdc'
+                                border: '1px solid #6c4cdc',
+                                overflow:'auto'
                               }}
                               className="ask-ai-res-div"
                             >

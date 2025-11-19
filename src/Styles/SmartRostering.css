@@ -16,22 +16,21 @@
   
   .rostering-stats-row {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+    grid-template-columns: 32% 32% 32%;
+    gap: 2%;
     margin-bottom: 40px;
-    margin-left: 80px;
     margin-top: 33px;
   }
   
   .rostering-stat-card {
     background: #F0EDF6;
-    padding: 20px;
+    padding: 40px 20px;
     border-radius: 8px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 300px;
+    width: 100%;
   }
   
   .rostering-stat-card p {
@@ -46,12 +45,12 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 46px;
-    height: 46px;
+    width: 54px;
+    height: 54px;
     border-radius: 50%;
     color: #000000;
-    font-weight: 500;
-    font-size: 18px;
+    font-weight: 600;
+    font-size: 16px;
   }
   
   .rostering-green {
