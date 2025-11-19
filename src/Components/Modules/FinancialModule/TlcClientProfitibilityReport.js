@@ -10,12 +10,47 @@ export default function ClientProfitabilityAIAnalysisReportViewer({ reportText, 
     const [isOpen, setIsOpen] = useState(true);
 
     if (loading) {
-        console.log("loading summary report....")
+        return (
+            <div
+                style={{
+                    position: "fixed",
+                    inset: 0,
+                    background: "rgba(255,255,255,0.6)",
+                    backdropFilter: "blur(5px)",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    zIndex: 9999,
+                }}
+            >
+                <div
+                    style={{
+                        background: "white",
+                        padding: "20px 30px",
+                        borderRadius: "14px",
+                        boxShadow: "0 6px 25px rgba(0,0,0,0.12)",
+                        fontSize: "18px",
+                        fontFamily: "Inter",
+                        color: "#6c4cdc",
+                        fontWeight: 600,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                    }}
+                >
+                    ⏳ Generating AI insights...
+                </div>
+            </div>
+        );
     }
 
 
     if (!reportText) {
-        console.log(" Click “AI Analysis” to generate the report.")
+        return (
+            <div className="text-gray-500 text-center py-6 font-inter">
+                Click “AI Analysis” to generate the report.
+            </div>
+        );
     }
 
     return (
