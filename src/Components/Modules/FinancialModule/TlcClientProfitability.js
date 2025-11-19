@@ -10,7 +10,7 @@ import ClientProfitabilityAIAnalysisReportViewer from "./TlcClientProfitibilityR
 const TlcClientProfitability = (props) => {
     const onPrepareAiPayload = props.onPrepareAiPayload;
     const user = props.user
-    console.log("user in client profitibility",user)
+    console.log("user in client profitibility", user)
     const userEmail = user?.email
     const [startMonth, setStartMonth] = useState("");
     const [endMonth, setEndMonth] = useState("");
@@ -254,84 +254,126 @@ const TlcClientProfitability = (props) => {
             />
         );
     };
-    useEffect(() => {
-        if (!responseData?.direct_service) return;
+useEffect(() => {
+    if (!responseData?.direct_service) return;
 
-        const summary = responseData.direct_service.tables.by_reference;
-        const details = responseData.direct_service.tables.detail;
+    const summary = responseData.direct_service.tables.by_reference;
+    const details = responseData.direct_service.tables.detail;
 
-        const summaryCols = summary.columns || [];
-        const summaryRows = summary.rows || [];
-        const detailCols = details.columns || [];
-        const detailRows = details.rows || [];
+    const summaryCols = summary.columns || [];
+    const summaryRows = summary.rows || [];
+    const detailCols = details.columns || [];
+    const detailRows = details.rows || [];
 
-        const normalizeObjKeys = (obj) => {
-            const n = {};
-            Object.keys(obj || {}).forEach(k => {
-                const key = k?.toString()?.toLowerCase()?.trim();
-                if (key) n[key] = obj[k];
-            });
-            return n;
-        };
+    // Normalize keys so "Participant" → "participant"
+    const normalizeObjKeys = (obj) => {
+        const normalized = {};
+        Object.keys(obj || {}).forEach(k => {
+            const key = k?.toString()?.trim().toLowerCase();
+            normalized[key] = obj[k];
+        });
+        return normalized;
+    };
 
-        const findIndexCI = (cols, keywords) =>
-            cols.findIndex(c => keywords.some(k =>
+    // Find a column index using case-insensitive matching
+    const findIndex = (cols, keywords) =>
+        cols.findIndex(c =>
+            keywords.some(k =>
                 c?.toString?.().toLowerCase().includes(k.toLowerCase())
-            ));
+            )
+        );
 
-        const refColIndex = findIndexCI(summaryCols, ["ndis", "reference"]);
-        const detailRefIndex = findIndexCI(detailCols, ["ndis", "reference"]);
-        const regionColIndex = findIndexCI(detailCols, ["region"]);
-        const deptColIndex = findIndexCI(detailCols, ["department", "dept"]);
+    // Find required columns
+    const sNdisIndex   = findIndex(summaryCols, ["ndis", "reference"]);
+    const sPartIndex   = findIndex(summaryCols, ["participant"]);
 
-        const toRowArray = (obj, cols) => {
-            const normalized = normalizeObjKeys(obj);
-            return cols.map(c => normalized[c?.toLowerCase()] || "");
+    const dNdisIndex   = findIndex(detailCols, ["ndis", "reference"]);
+    const dPartIndex   = findIndex(detailCols, ["participant"]);
+
+    if (sNdisIndex < 0 || sPartIndex < 0 || dNdisIndex < 0 || dPartIndex < 0) {
+        console.error("🏳️ Required key columns missing.");
+        return;
+    }
+
+    // Convert row-object into array aligned to column order
+    const toRowArray = (obj, cols) => {
+        const norm = normalizeObjKeys(obj);
+        return cols.map(c => norm[c.toLowerCase()] ?? "");
+    };
+
+    // ------------------------------
+    // BUILD DETAIL MAP (JOIN KEY = NDIS + Participant)
+    // ------------------------------
+    const detailMap = {};
+
+    detailRows.forEach(dr => {
+        const norm = normalizeObjKeys(dr);
+
+        const ndis = norm[detailCols[dNdisIndex].toLowerCase()] || "";
+        const part = norm[detailCols[dPartIndex].toLowerCase()] || "";
+
+        const key = `${ndis}___${part}`;
+
+        if (!detailMap[key]) detailMap[key] = [];
+        detailMap[key].push(toRowArray(dr, detailCols));
+    });
+
+    // ------------------------------
+    // MERGE SUMMARY + DETAIL ROWS
+    // ------------------------------
+    const finalRows = summaryRows.map(sr => {
+        const parent = toRowArray(sr, summaryCols);
+
+        const sNdis = parent[sNdisIndex];
+        const sPart = parent[sPartIndex];
+
+        const key = `${sNdis}___${sPart}`;
+
+        return {
+            parent,
+            children: detailMap[key] || [],
+            participant: sPart,
+            ndis: sNdis
         };
+    });
 
-        const detailMap = {};
+    // ------------------------------
+    // EXTRACT REGIONS + DEPARTMENTS (for filters)
+    // ------------------------------
+    const regions = new Set();
+    const depts = new Set();
 
-        detailRows.forEach(dr => {
-            const norm = normalizeObjKeys(dr);
-            const refColName = detailCols[detailRefIndex]?.toLowerCase();
-            const refValue = norm[refColName];
-            if (!detailMap[refValue]) detailMap[refValue] = [];
-            detailMap[refValue].push(toRowArray(dr, detailCols));
-        });
+    const regionIdx = findIndex(detailCols, ["region"]);
+    const deptIdx   = findIndex(detailCols, ["department", "dept"]);
 
-        const finalRows = summaryRows.map(sr => {
-            const parent = toRowArray(sr, summaryCols);
-            const refValue = parent[refColIndex];
-            return {
-                parent,
-                children: detailMap[refValue] || [],
-                ndisReference: refValue
-            };
-        });
+    detailRows.forEach(dr => {
+        const n = normalizeObjKeys(dr);
 
-        const regions = new Set();
-        const departments = new Set();
+        if (regionIdx >= 0) {
+            const r = n[detailCols[regionIdx].toLowerCase()];
+            if (r) regions.add(r);
+        }
 
-        detailRows.forEach(dr => {
-            const norm = normalizeObjKeys(dr);
-            if (regionColIndex >= 0) {
-                const r = norm[detailCols[regionColIndex]?.toLowerCase()];
-                if (r) regions.add(r);
-            }
-            if (deptColIndex >= 0) {
-                const d = norm[detailCols[deptColIndex]?.toLowerCase()];
-                if (d) departments.add(d);
-            }
-        });
+        if (deptIdx >= 0) {
+            const d = n[detailCols[deptIdx].toLowerCase()];
+            if (d) depts.add(d);
+        }
+    });
 
-        setDirectFinalTable({
-            columns: summaryCols,
-            rows: finalRows,
-            detailCols,
-            regions: [...regions],
-            departments: [...departments]
-        });
-    }, [responseData]);
+    // ------------------------------
+    // FINAL OUTPUT
+    // ------------------------------
+    setDirectFinalTable({
+        columns: summaryCols,
+        rows: finalRows,
+        detailCols,
+        regions: [...regions],
+        departments: [...depts]
+    });
+
+}, [responseData]);
+
+
 
     return (
         <div className="page-containersss">
