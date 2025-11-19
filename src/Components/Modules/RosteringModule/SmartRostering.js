@@ -13,6 +13,7 @@ const API_BASE = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azur
 const SmartRostering = (props) => {
     // console.log("props in smart rostering", props)
     const userEmail = props?.user?.email
+    // const userEmail = "kris@curki.ai"
     const [screen, setScreen] = useState(1);
     const [query, setQuery] = useState("");
     const [selectedFile, setSelectedFile] = useState([]);
@@ -32,6 +33,20 @@ const SmartRostering = (props) => {
     const visibleCount = 3;
     const [visualCareCreds, setVisualCareCreds] = useState(null);
     const [unauthorized, setUnauthorized] = useState(false);
+    const maskClientForKris = (client) => {
+        if (!client) return client;
+
+        const maskedName = `Client_${Math.floor(1000 + Math.random() * 9000)}`;
+
+        return {
+            ...client,
+            name: maskedName,
+            phone: "04XX XXX XXX",
+            email: `${maskedName.toLowerCase()}@mail.com`,
+            address: "Australia",
+            sex: client.sex || "N/A",
+        };
+    };
 
     useEffect(() => {
         const fetchVisualCareCreds = async () => {
@@ -104,7 +119,7 @@ const SmartRostering = (props) => {
                 const res = await axios.get(
                     `${API_BASE}/getUnallocatedShifts`,
                     {
-                        params: { user, key, secret,userEmail },
+                        params: { user, key, secret, userEmail },
                     }
                 );
 
@@ -112,18 +127,22 @@ const SmartRostering = (props) => {
                 const grouped = res.data.grouped || {};
                 const allClients = Object.entries(grouped).flatMap(([label, shifts]) =>
                     shifts.map((shift) => ({
-                        dateOfService: shift.date_of_service || "-", 
-                        clientId: shift.client_id || "-",            
+                        dateOfService: shift.date_of_service || "-",
+                        clientId: shift.client_id || "-",
                         name: shift.client_name || "Unknown",
                         sex: shift.sex || "-",
                         phone: shift.phone || "-",
                         email: shift.email?.trim() || "-",
                         address: shift.address || "-",
-                        startTime: shift.start_time || "-",          
+                        startTime: shift.start_time || "-",
                         minutes: shift.minutes ? `${shift.minutes} min` : "-",
-                        label, // today / tomorrow / day after
-                        prefSkillsDescription:shift?.prefSkillsDescription
+                        label,
+                        prefSkillsDescription: shift?.prefSkillsDescription,
+
+                        // ⭐ IMPORTANT → STORE REAL DATA
+                        _real: shift._real || null
                     }))
+
                 );
 
 
@@ -185,12 +204,20 @@ const SmartRostering = (props) => {
             const key = visualCareCreds?.key;
             const secret = visualCareCreds?.secret;
 
-            const inputs = {
+            const real = client._real ? {
+                client_id: client._real.client_id,
+                shift_date: client._real.date_of_service,
+                shift_start: client._real.start_time,
+                shift_minutes: client._real.minutes
+            } : {
                 client_id: client.clientId,
                 shift_date: client.dateOfService,
                 shift_start: client.startTime,
                 shift_minutes: client.minutes?.replace(" min", "") || 0,
             };
+
+            const inputs = real;
+
 
 
             const response = await axios.post(
@@ -254,7 +281,7 @@ const SmartRostering = (props) => {
 
                 // ✅ Extract client info from filler.llm.inputs
                 const fillerInputs = response.data?.filler?.llm?.inputs || {};
-                const selectedClientData = {
+                let selectedClientData = {
                     name: fillerInputs.client_name || "Unknown",
                     dateOfService: fillerInputs.shift_date || "-",
                     startTime: fillerInputs.shift_start || "-",
@@ -262,6 +289,12 @@ const SmartRostering = (props) => {
                         ? `${fillerInputs.shift_minutes} min`
                         : "-",
                 };
+
+                // ⭐ Mask client ONLY when prompt-based & Kris user
+                if (userEmail === "kris@curki.ai") {
+                    selectedClientData = maskClientForKris(selectedClientData);
+                }
+
 
                 setSelectedClient(selectedClientData);
                 setScreen(2); // move to details view

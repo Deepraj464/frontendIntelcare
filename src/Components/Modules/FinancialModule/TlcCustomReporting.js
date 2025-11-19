@@ -356,7 +356,9 @@ export default function TlcCustomerReporting(props) {
       if (selectedRole.length)
         query.append("role", selectedRole.map((r) => r.value).join(","));
 
-      const url = `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/filter?${query.toString()}`;
+      const userEmail = props?.user?.email?.trim()?.toLowerCase();
+      // const userEmail = "kris@curki.ai"
+      const url = `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/filter?${query.toString()}&${userEmail}`;
 
       const analyzeRes = await fetch(url);
       const analyzeData = await analyzeRes.json();
@@ -647,7 +649,12 @@ export default function TlcCustomerReporting(props) {
       updateTab({ aiLoading: true, aiReport: null });
 
       console.log("Sending full payload to AI Analysis API...");
-
+      const userEmail = props?.user?.email?.trim()?.toLowerCase();
+      // const userEmail = "kris@curki.ai"
+      if (userEmail === "kris@curki.ai") {
+        aiPayload.env = "sandbox";   // exactly payload = { ..., env: "sandbox" }
+      }
+      console.log("ai payload",aiPayload)
       // ✅ Step 3: Send directly (no re-wrapping or redeclaration)
       const res = await fetch(
         "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io/tlc/payroll/ai-analysis-report",
@@ -673,7 +680,7 @@ export default function TlcCustomerReporting(props) {
       try {
         const userEmail = props?.user?.email?.trim()?.toLowerCase();
         if (userEmail) {
-          await incrementAnalysisCount(userEmail, "tlc-ai-analysis",data?.ai_analysis_cost);
+          await incrementAnalysisCount(userEmail, "tlc-ai-analysis", data?.ai_analysis_cost);
         }
       } catch (err) {
         console.error("Error incrementing AI analysis count:", err);
