@@ -65,7 +65,7 @@ const HomePage = () => {
   const [showUploadedReport, setShowUploadReport] = useState(false);
   const [loadingUser, setLoadingUser] = useState(true);
   const [mainfestData, setManifestData] = useState();
-  const isTlcPage = selectedRole === "Payroll Custom";
+  const isTlcPage = selectedRole === "Payroll Analysis";
   const isSmartRosteringPage = selectedRole === 'Smart Rostering'
   const isTlcClientProfitabilityPage = selectedRole === "Clients Profitability";
   const [tlcClientProfitabilityPayload, setTlcClientProfitabilityPayload] = useState(null);
@@ -445,7 +445,7 @@ const HomePage = () => {
                   <IncidentManagement selectedRole="Custom Incident Management" handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} />
                 </div>
 
-                <div style={{ display: selectedRole === "Payroll Custom" ? "block" : "none" }}>
+                <div style={{ display: selectedRole === "Payroll Analysis" ? "block" : "none" }}>
                   {/* <CustomReporting selectedRole="Custom Reporting" handleClick={handleClick} setShowFeedbackPopup={setShowFeedbackPopup} /> */}
                   <TlcCustomerReporting user={user} setTlcAskAiPayload={setTlcAskAiPayload} tlcAskAiPayload={tlcAskAiPayload} setTlcAskAiHistoryPayload={setTlcAskAiHistoryPayload} tlcAskAiHistoryPayload={tlcAskAiHistoryPayload} />
                 </div>

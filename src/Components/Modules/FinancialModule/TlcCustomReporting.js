@@ -949,7 +949,7 @@ export default function TlcCustomerReporting(props) {
     <div className="page-containersss">
       <div className="headerss">
         <div className="left-headerss">
-          <img src={TLCLogo} alt="Logo" className="tlclogo" />
+        {activeTabData.analysisData &&  <img src={TLCLogo} alt="Logo" className="tlclogo" />} 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: "flex", alignItems: "center" }}>
               <div className="date-text">{formatDateRange()}</div>

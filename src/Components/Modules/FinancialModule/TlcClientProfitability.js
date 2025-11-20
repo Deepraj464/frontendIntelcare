@@ -6,6 +6,11 @@ import star from '../../../Images/star.png';
 import Select from "react-select";
 import JsonTableCard from "./TlcClientTableJsonCard";
 import { useRef, useEffect } from "react";
+import Toggle from "react-toggle";
+import Tippy from '@tippyjs/react';
+import 'tippy.js/dist/tippy.css';
+import { IoMdInformationCircleOutline } from "react-icons/io";
+import TooltipPlaceholder from '../../../Images/TooltipPlaceholder.png';
 import ClientProfitabilityAIAnalysisReportViewer from "./TlcClientProfitibilityReport";
 const TlcClientProfitability = (props) => {
     const onPrepareAiPayload = props.onPrepareAiPayload;
@@ -26,6 +31,8 @@ const TlcClientProfitability = (props) => {
     const [aiReply, setAiReply] = useState("");
     const [showAiPanel, setShowAiPanel] = useState(false);
     const [directFinalTable, setDirectFinalTable] = useState(null);
+    const [selectedActor, setSelectedActor] = useState("NDIS");
+    const [syncEnabled, setSyncEnabled] = useState(false);
 
     const BASE_URL = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net";
 
@@ -378,7 +385,141 @@ useEffect(() => {
     return (
         <div className="page-containersss">
             <div className="left-headerss">
-                <img src={TlcLogo} alt="Logo" className="tlclogo" />
+              {responseData && <img src={TlcLogo} alt="Logo" className="tlclogo" />}  
+            </div>
+            <div className="financial-header">
+                <div className="role-selector">
+                    <div
+                        style={{
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            fontFamily: "Inter",
+                        }}
+                    >
+                        Who are you?
+                    </div>
+                    <div className="role-toggle-container">
+                        <div
+                            onClick={() => setSelectedActor("NDIS")}
+                            style={{
+                                backgroundColor:
+                                    selectedActor === "NDIS" ? "#6C4CDC" : "#FFFFFF",
+                                color: selectedActor === "NDIS" ? "white" : "#6C4CDC",
+                                borderTopLeftRadius: "4px",
+                                borderBottomLeftRadius: "4px",
+                                cursor: "pointer",
+                                padding: "6px 12px",
+                                fontSize: "14px",
+                                fontFamily: "Inter",
+                                fontWeight: "500",
+                            }}
+                            className="role-toggle"
+                        >
+                            NDIS
+                        </div>
+                        <div
+                            onClick={() => setSelectedActor("aged-care")}
+                            style={{
+                                backgroundColor:
+                                    selectedActor === "aged-care" ? "#6C4CDC" : "#FFFFFF",
+                                color: selectedActor === "aged-care" ? "white" : "#6C4CDC",
+                                borderTopRightRadius: "4px",
+                                borderBottomRightRadius: "4px",
+                                cursor: "pointer",
+                                padding: "6px 12px",
+                                fontSize: "14px",
+                                fontFamily: "Inter",
+                                fontWeight: "500",
+                            }}
+                            className="role-toggle"
+                        >
+                            Aged Care
+                        </div>
+                    </div>
+                </div>
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'center' }}>
+                    <h1 className="titless">CLIENTS PROFITABILITY</h1>
+                    {/* <Tippy
+                        content={
+                            <div style={{ width: '450px', height: 'auto', padding: '4px', fontSize: '15px', fontWeight: '600' }}>
+                                <img src={TooltipPlaceholder} alt="tooltip" style={{ width: '100%' }} />
+                                Each individual row of the Excel/CSV sheet should represent  a single clients information
+                            </div>
+                        }
+                        trigger="mouseenter focus click"
+                        interactive={true}
+                        placement="bottom"
+                        theme="custom"
+                    >
+                        <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                            <IoMdInformationCircleOutline size={22} color="#5B36E1" />
+                        </div>
+                    </Tippy> */}
+                </div>
+                <div className="sync-toggle">
+                    <div
+                        style={{
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            fontFamily: "Inter",
+                        }}
+                    >
+                        Sync With Your System
+                    </div>
+                    <Toggle
+                        checked={syncEnabled}
+                        onChange={() => setSyncEnabled(!syncEnabled)}
+                        className="custom-toggle"
+                        icons={false} // ✅ No icons
+                    />
+                </div>
+            </div>
+            <div className="info-table">
+                <div className="table-headerss">
+                    <span>If You Upload This...</span>
+                    <span>Our AI Will Instantly...</span>
+                </div>
+                <div className="table-rowss">
+                    <div>Finance System - Client Revenue & Cost Allocation Report</div>
+                    <ul>
+                        <li>Client Margin Forecasts – Predict low-profit clients ahead of time.</li>
+                        <li>
+                            Claim Leakage Alerts – Detect missed or under-billed services.
+                        </li>
+                    </ul>
+                </div>
+                <div className="table-rowss">
+                    <div>Care Management System - Client Funding Utilisation & Service Delivery Report</div>
+                    <ul>
+                        <li>Roster Optimisation – Recommend cost-efficient shift allocations.</li>
+                        <li>Funding Utilisation – Track and lift package use to 95%+.</li>
+                    </ul>
+                </div>
+                <div className="table-rowss">
+                    <div>Rostering System - Roster vs Actual Labour Cost Report</div>
+                    <ul>
+                        <li>Workforce Productivity – Identify high and low performers by billed hours.</li>
+                        <li>
+                            Overtime Risk Warnings – Flag and prevent high-cost shifts.
+                        </li>
+                    </ul>
+                </div>
+                <div className="table-rowss">
+                    <div>HR System - Timesheet Accuracy & Workforce Utilisation Report</div>
+                    <ul>
+                        <li>Service Line Profitability – Show which service types drive margin.</li>
+                        <li>Client Mix Optimisation – Recommend the most profitable client ratios.</li>
+                    </ul>
+                </div>
+                <div className="table-rowss">
+                    <div>Claims/Billing System - Claim Leakage & Rejection Summary Report</div>
+                    <ul>
+                        <li>Cost Variance Analysis – Expose clients with abnormal cost patterns.</li>
+                        <li>
+                            Cashflow Forecasting – Predict liquidity impact from claims/wages.
+                        </li>
+                    </ul>
+                </div>
             </div>
 
             {!responseData ? (
@@ -419,7 +560,7 @@ useEffect(() => {
 
                     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '30px' }}>
                         <div style={{ marginBottom: "16px", width: '40%' }}>
-                            <div style={{ textAlign: "left", fontSize: "14px", fontFamily: "Inter", fontWeight: 500, marginBottom: '6px', textAlign: 'center' }}>
+                            <div style={{ fontSize: "14px", fontFamily: "Inter", fontWeight: 500, marginBottom: '6px', }}>
                                 Upload Receivables, Payables and Profitables Data
                             </div>
 

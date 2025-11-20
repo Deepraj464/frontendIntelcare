@@ -423,7 +423,7 @@ const SummaryReport = ({
             </div>
           )}
         </>
-      ) : selectedRole === "Payroll Custom" ? (
+      ) : selectedRole === "Payroll Analysis" ? (
         <>
           <div
             style={{
