@@ -68,7 +68,9 @@ const Sidebar = ({
   ]
   const roles = [
     "Financial Health",
-    "Client Profitability & Service",
+    "Payroll Analysis",
+    "Clients Profitability",
+    // "Client Profitability & Service",
   ];
   const AiAutomationButtons = [
     "Smart Rostering",
@@ -82,8 +84,6 @@ const Sidebar = ({
     "Quality and Risk Reporting",
     "SIRS Analysis",
     "Incident Report",
-    "Payroll Custom",
-    "Clients Profitability",
     "Custom Incident Management",
     "Quarterly Financial Reporting",
     "Annual Financial Reporting",
@@ -95,7 +95,7 @@ const Sidebar = ({
     "Quarterly Financial Reporting": { white: whiteQfr, purple: purpleQfr },
     "Annual Financial Reporting": { white: whiteAnnual, purple: purpleAnnual },
     "Custom Incident Management": { white: whiteIncidentManagement, purple: purpleIncidentManagement },
-    "Payroll Custom": { white: whitecustom, purple: purpleCustom },
+    "Payroll Analysis": { white: whitecustom, purple: purpleCustom },
     "Clients Profitability":{white:whiteCareplan,purple:purpleCareplan},
     "Client Profitability & Service": { white: whiteCareplan, purple: purpleCareplan },
     "Incident Report": { white: whiteIncidentReport, purple: purpleIncidentReport },
