@@ -63,7 +63,15 @@ const TlcClientProfitability = (props) => {
     const handleFinalAnalysis = async () => {
         try {
             console.log("🔄 Starting final analysis request...");
-            const analyzeRes = await fetch(`${BASE_URL}/tlcClientProfitibility/analyze-from-files?userEmail=${userEmail}`);
+            const analyzeRes = await fetch(
+                `${BASE_URL}/tlcClientProfitibility/analyze-from-files?userEmail=${userEmail}`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ payload: props.tlcClientProfitabilityPayload })
+                }
+            );
+
 
             if (!analyzeRes.ok) {
                 throw new Error(`HTTP error! status: ${analyzeRes.status}`);
@@ -199,8 +207,14 @@ const TlcClientProfitability = (props) => {
     const fetchAiSummary = async () => {
         try {
             const res = await fetch(
-                `${BASE_URL}/tlcClientProfitibility/ask_ai_summary?userEmail=${userEmail}`
+                `${BASE_URL}/tlcClientProfitibility/ask_ai_summary?userEmail=${userEmail}`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ payload: props.tlcClientProfitabilityPayload })
+                }
             );
+
 
             const data = await res.json();
             console.log("AI SUMMARY:", data);
@@ -261,131 +275,131 @@ const TlcClientProfitability = (props) => {
             />
         );
     };
-useEffect(() => {
-    if (!responseData?.direct_service) return;
+    useEffect(() => {
+        if (!responseData?.direct_service) return;
 
-    const summary = responseData.direct_service.tables.by_reference;
-    const details = responseData.direct_service.tables.detail;
+        const summary = responseData.direct_service.tables.by_reference;
+        const details = responseData.direct_service.tables.detail;
 
-    const summaryCols = summary.columns || [];
-    const summaryRows = summary.rows || [];
-    const detailCols = details.columns || [];
-    const detailRows = details.rows || [];
+        const summaryCols = summary.columns || [];
+        const summaryRows = summary.rows || [];
+        const detailCols = details.columns || [];
+        const detailRows = details.rows || [];
 
-    // Normalize keys so "Participant" → "participant"
-    const normalizeObjKeys = (obj) => {
-        const normalized = {};
-        Object.keys(obj || {}).forEach(k => {
-            const key = k?.toString()?.trim().toLowerCase();
-            normalized[key] = obj[k];
-        });
-        return normalized;
-    };
-
-    // Find a column index using case-insensitive matching
-    const findIndex = (cols, keywords) =>
-        cols.findIndex(c =>
-            keywords.some(k =>
-                c?.toString?.().toLowerCase().includes(k.toLowerCase())
-            )
-        );
-
-    // Find required columns
-    const sNdisIndex   = findIndex(summaryCols, ["ndis", "reference"]);
-    const sPartIndex   = findIndex(summaryCols, ["participant"]);
-
-    const dNdisIndex   = findIndex(detailCols, ["ndis", "reference"]);
-    const dPartIndex   = findIndex(detailCols, ["participant"]);
-
-    if (sNdisIndex < 0 || sPartIndex < 0 || dNdisIndex < 0 || dPartIndex < 0) {
-        console.error("🏳️ Required key columns missing.");
-        return;
-    }
-
-    // Convert row-object into array aligned to column order
-    const toRowArray = (obj, cols) => {
-        const norm = normalizeObjKeys(obj);
-        return cols.map(c => norm[c.toLowerCase()] ?? "");
-    };
-
-    // ------------------------------
-    // BUILD DETAIL MAP (JOIN KEY = NDIS + Participant)
-    // ------------------------------
-    const detailMap = {};
-
-    detailRows.forEach(dr => {
-        const norm = normalizeObjKeys(dr);
-
-        const ndis = norm[detailCols[dNdisIndex].toLowerCase()] || "";
-        const part = norm[detailCols[dPartIndex].toLowerCase()] || "";
-
-        const key = `${ndis}___${part}`;
-
-        if (!detailMap[key]) detailMap[key] = [];
-        detailMap[key].push(toRowArray(dr, detailCols));
-    });
-
-    // ------------------------------
-    // MERGE SUMMARY + DETAIL ROWS
-    // ------------------------------
-    const finalRows = summaryRows.map(sr => {
-        const parent = toRowArray(sr, summaryCols);
-
-        const sNdis = parent[sNdisIndex];
-        const sPart = parent[sPartIndex];
-
-        const key = `${sNdis}___${sPart}`;
-
-        return {
-            parent,
-            children: detailMap[key] || [],
-            participant: sPart,
-            ndis: sNdis
+        // Normalize keys so "Participant" → "participant"
+        const normalizeObjKeys = (obj) => {
+            const normalized = {};
+            Object.keys(obj || {}).forEach(k => {
+                const key = k?.toString()?.trim().toLowerCase();
+                normalized[key] = obj[k];
+            });
+            return normalized;
         };
-    });
 
-    // ------------------------------
-    // EXTRACT REGIONS + DEPARTMENTS (for filters)
-    // ------------------------------
-    const regions = new Set();
-    const depts = new Set();
+        // Find a column index using case-insensitive matching
+        const findIndex = (cols, keywords) =>
+            cols.findIndex(c =>
+                keywords.some(k =>
+                    c?.toString?.().toLowerCase().includes(k.toLowerCase())
+                )
+            );
 
-    const regionIdx = findIndex(detailCols, ["region"]);
-    const deptIdx   = findIndex(detailCols, ["department", "dept"]);
+        // Find required columns
+        const sNdisIndex = findIndex(summaryCols, ["ndis", "reference"]);
+        const sPartIndex = findIndex(summaryCols, ["participant"]);
 
-    detailRows.forEach(dr => {
-        const n = normalizeObjKeys(dr);
+        const dNdisIndex = findIndex(detailCols, ["ndis", "reference"]);
+        const dPartIndex = findIndex(detailCols, ["participant"]);
 
-        if (regionIdx >= 0) {
-            const r = n[detailCols[regionIdx].toLowerCase()];
-            if (r) regions.add(r);
+        if (sNdisIndex < 0 || sPartIndex < 0 || dNdisIndex < 0 || dPartIndex < 0) {
+            console.error("🏳️ Required key columns missing.");
+            return;
         }
 
-        if (deptIdx >= 0) {
-            const d = n[detailCols[deptIdx].toLowerCase()];
-            if (d) depts.add(d);
-        }
-    });
+        // Convert row-object into array aligned to column order
+        const toRowArray = (obj, cols) => {
+            const norm = normalizeObjKeys(obj);
+            return cols.map(c => norm[c.toLowerCase()] ?? "");
+        };
 
-    // ------------------------------
-    // FINAL OUTPUT
-    // ------------------------------
-    setDirectFinalTable({
-        columns: summaryCols,
-        rows: finalRows,
-        detailCols,
-        regions: [...regions],
-        departments: [...depts]
-    });
+        // ------------------------------
+        // BUILD DETAIL MAP (JOIN KEY = NDIS + Participant)
+        // ------------------------------
+        const detailMap = {};
 
-}, [responseData]);
+        detailRows.forEach(dr => {
+            const norm = normalizeObjKeys(dr);
+
+            const ndis = norm[detailCols[dNdisIndex].toLowerCase()] || "";
+            const part = norm[detailCols[dPartIndex].toLowerCase()] || "";
+
+            const key = `${ndis}___${part}`;
+
+            if (!detailMap[key]) detailMap[key] = [];
+            detailMap[key].push(toRowArray(dr, detailCols));
+        });
+
+        // ------------------------------
+        // MERGE SUMMARY + DETAIL ROWS
+        // ------------------------------
+        const finalRows = summaryRows.map(sr => {
+            const parent = toRowArray(sr, summaryCols);
+
+            const sNdis = parent[sNdisIndex];
+            const sPart = parent[sPartIndex];
+
+            const key = `${sNdis}___${sPart}`;
+
+            return {
+                parent,
+                children: detailMap[key] || [],
+                participant: sPart,
+                ndis: sNdis
+            };
+        });
+
+        // ------------------------------
+        // EXTRACT REGIONS + DEPARTMENTS (for filters)
+        // ------------------------------
+        const regions = new Set();
+        const depts = new Set();
+
+        const regionIdx = findIndex(detailCols, ["region"]);
+        const deptIdx = findIndex(detailCols, ["department", "dept"]);
+
+        detailRows.forEach(dr => {
+            const n = normalizeObjKeys(dr);
+
+            if (regionIdx >= 0) {
+                const r = n[detailCols[regionIdx].toLowerCase()];
+                if (r) regions.add(r);
+            }
+
+            if (deptIdx >= 0) {
+                const d = n[detailCols[deptIdx].toLowerCase()];
+                if (d) depts.add(d);
+            }
+        });
+
+        // ------------------------------
+        // FINAL OUTPUT
+        // ------------------------------
+        setDirectFinalTable({
+            columns: summaryCols,
+            rows: finalRows,
+            detailCols,
+            regions: [...regions],
+            departments: [...depts]
+        });
+
+    }, [responseData]);
 
 
 
     return (
         <div className="page-containersss">
             <div className="left-headerss">
-              {responseData && <img src={TlcLogo} alt="Logo" className="tlclogo" />}  
+                {responseData && <img src={TlcLogo} alt="Logo" className="tlclogo" />}
             </div>
             <div className="financial-header">
                 <div className="role-selector">
@@ -622,7 +636,7 @@ useEffect(() => {
                                 onClick={async () => {
                                     if (onPrepareAiPayload) {
                                         console.log("Rebuilding JSON files before Summary...");
-                                        await prepareAiPayload(props.tlcClientProfitabilityPayload);
+                                        // await prepareAiPayload(props.tlcClientProfitabilityPayload);
                                     }
 
                                     setShowAiPanel(true);
