@@ -20,68 +20,6 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
     // Handle both response structures (direct rostering vs filler+rostering)
     const isFillerResponse = rosteringResponse?.filler;
     const clashingList = rosteringResponse?.preffered_worker_clashing_roster || [];
-    // const clashingList = [
-    //     {
-    //         worker_name: "John Miller",
-    //         id: "12",
-    //         worker_id: "98",
-    //         client_id: "77",
-    //         start: "2025-11-20T09:00:00",
-    //         end: "2025-11-20T11:00:00",
-    //         status: "Active",
-    //         Minutes: 120
-    //     },
-    //     {
-    //         worker_name: "Emily Carter",
-    //         id: "45",
-    //         worker_id: "21",
-    //         client_id: "55",
-    //         start: "2025-11-21T14:00:00",
-    //         end: "2025-11-21T16:00:00",
-    //         status: "Active",
-    //         Minutes: 120
-    //     },
-    //     {
-    //         worker_name: "Michael Brown",
-    //         id: "78",
-    //         worker_id: "33",
-    //         client_id: "77",
-    //         start: "2025-11-22T10:30:00",
-    //         end: "2025-11-22T12:30:00",
-    //         status: "Active",
-    //         Minutes: 120
-    //     },
-    //     {
-    //         worker_name: "Michael Brown",
-    //         id: "78",
-    //         worker_id: "33",
-    //         client_id: "77",
-    //         start: "2025-11-22T10:30:00",
-    //         end: "2025-11-22T12:30:00",
-    //         status: "Active",
-    //         Minutes: 120
-    //     },
-    //     {
-    //         worker_name: "Michael Brown",
-    //         id: "78",
-    //         worker_id: "33",
-    //         client_id: "77",
-    //         start: "2025-11-22T10:30:00",
-    //         end: "2025-11-22T12:30:00",
-    //         status: "Active",
-    //         Minutes: 120
-    //     },
-    //     {
-    //         worker_name: "Michael Brown",
-    //         id: "78",
-    //         worker_id: "33",
-    //         client_id: "77",
-    //         start: "2025-11-22T10:30:00",
-    //         end: "2025-11-22T12:30:00",
-    //         status: "Active",
-    //         Minutes: 120
-    //     }
-    // ]
     const formatDateTime = (isoString) => {
         if (!isoString) return "N/A";
 
