@@ -187,21 +187,25 @@ const HomePage = () => {
         console.log("🟡 TLC Client Profitability Ask AI triggered");
 
         // Step 1: Rebuild JSON files for AI
-        const payloadCreateRes = await fetch(
-          `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/tlcClientProfitibility/prepare_ai_payload`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ payload: tlcClientProfitabilityPayload })
-          }
-        );
+        // const payloadCreateRes = await fetch(
+        //   `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/tlcClientProfitibility/prepare_ai_payload`,
+        //   {
+        //     method: "POST",
+        //     headers: { "Content-Type": "application/json" },
+        //     body: JSON.stringify({ payload: tlcClientProfitabilityPayload })
+        //   }
+        // );
 
         // Step 2: Ask AI
         const userEmail = user?.email
-        const response = await axios.post(
-          `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/tlcClientProfitibility/ask_ai?userEmail=${userEmail}`,
-          { question: finalQuery }
-        );
+        const response = axios.post(
+          `/tlcClientProfitibility/ask_ai?userEmail=${userEmail}`,
+          {
+            question: finalQuery,
+            payload: tlcClientProfitabilityPayload
+          }
+        )
+
 
         const botReply =
           response.data?.ai_answer ||
