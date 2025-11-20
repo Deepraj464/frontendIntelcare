@@ -15,15 +15,33 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
     const [broadcasting, setBroadcasting] = useState(false);
     const [timesheetHistory, setTimesheetHistory] = useState([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
+    const [showClashing, setShowClashing] = useState(false);
     // console.log("rosteringResponse",rosteringResponse) 
     // Handle both response structures (direct rostering vs filler+rostering)
     const isFillerResponse = rosteringResponse?.filler;
+    const clashingList = rosteringResponse?.preffered_worker_clashing_roster || [];
+    const formatDateTime = (isoString) => {
+        if (!isoString) return "N/A";
+
+        const date = new Date(isoString);
+
+        const options = {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true
+        };
+
+        return date.toLocaleString("en-AU", options);
+    };
 
     const client = isFillerResponse
         ? rosteringResponse?.filler?.match?.matched_record || {}
         : rosteringResponse?.data?.client || {};
 
-        // console.log('Client',selectedClient.prefSkillsDescription);
+    // console.log('Client',selectedClient.prefSkillsDescription);
     const rankedStaff = isFillerResponse
         ? rosteringResponse?.rostering_summary?.final_ranked || []
         : rosteringResponse?.data?.final_ranked || [];
@@ -232,16 +250,16 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                             <p>Plan Start Date: <span style={{ color: 'black' }}>
                                 {client.ServiceStart || client.plan_start_date || request.shift_date || selectedClient?.date || 'N/A'}
                             </span></p>
-                            
+
                         </div>
-                        <div style={{ display: 'flex',flexWrap:'wrap', paddingLeft: '54px', gap: '42px', paddingTop: '20px', paddingBottom: '20px', borderBottom: '1px solid #E4E4E4' }}>
-                        <p>Address: <span style={{ color: 'black' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', paddingLeft: '54px', gap: '42px', paddingTop: '20px', paddingBottom: '20px', borderBottom: '1px solid #E4E4E4' }}>
+                            <p>Address: <span style={{ color: 'black' }}>
                                 {formatAddress()}
                             </span></p>
                         </div>
-                        <div style={{ display: 'flex',flexWrap:'wrap', paddingLeft: '54px', gap: '42px', paddingTop: '20px', paddingBottom: '20px', borderBottom: '1px solid #E4E4E4',textAlign:'left'}}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', paddingLeft: '54px', gap: '42px', paddingTop: '20px', paddingBottom: '20px', borderBottom: '1px solid #E4E4E4', textAlign: 'left' }}>
                             <p>Skills: <span style={{ color: 'black' }}>
-                            {selectedClient.prefSkillsDescription?.join(', ')}
+                                {selectedClient.prefSkillsDescription?.join(', ')}
                             </span></p>
                         </div>
                     </div>
@@ -455,6 +473,53 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                     )}
                 </div>
             </div>
+            {/* Preferred Worker Clashing Roster */}
+            {clashingList.length > 0 && (
+                <div className="clashing-container">
+
+                    {/* Header Row */}
+                    <div
+                        className="clashing-header"
+                        onClick={() => setShowClashing(!showClashing)}
+                    >
+                        <h3 className="clashing-title">
+                            Preferred Worker – Clashing Roster
+                        </h3>
+
+                        <span className="clashing-toggle">
+                            {showClashing ? "−" : "+"}
+                        </span>
+                    </div>
+
+                    {/* Expandable List */}
+                    {showClashing && (
+                        <div className="clashing-list">
+                            {clashingList.map((item, index) => (
+                                <div className="clashing-item" key={index}>
+                                    <p className="clashing-text">
+                                        <strong>Worker:</strong> {item.worker_name}
+                                    </p>
+                                    <p className="clashing-text">
+                                        <strong>Client ID:</strong> {item.client_id}
+                                    </p>
+                                    <p className="clashing-text">
+                                        <strong>Start:</strong> {formatDateTime(item.start)}
+                                    </p>
+                                    <p className="clashing-text">
+                                        <strong>End:</strong> {formatDateTime(item.end)}
+                                    </p>
+                                    <p className="clashing-text">
+                                        <strong>Status:</strong> {item.status}
+                                    </p>
+                                    <p className="clashing-text">
+                                        <strong>Minutes:</strong> {item.Minutes}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Broadcast Button */}
             <button

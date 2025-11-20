@@ -244,3 +244,58 @@
   color: #4b2cc0;
   transform: translateX(-2px);
 }
+
+/* ==== CLASHING ROSTER BLOCK ==== */
+
+.clashing-container {
+  margin-top: -46px;
+  margin-bottom: 41px;
+  padding: 16px;
+  background: #F7F5FF;
+  border-radius: 10px;
+  border: 1px solid #DDD;
+  /* text-align: center; */
+}
+
+.clashing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.clashing-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #000;
+}
+
+.clashing-toggle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #000;
+}
+
+.clashing-list {
+  margin-top: 14px;
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 24% 24% 24% 24%;
+  column-gap: 1.34%;
+}
+
+.clashing-item {
+  padding: 10px;
+  background: #fff;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #6C4CDC;
+  text-align: left;
+}
+
+.clashing-text {
+  margin: 0;
+  font-size: 14px;
+  color: #000;
+}
