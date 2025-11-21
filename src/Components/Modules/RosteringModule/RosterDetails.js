@@ -439,13 +439,13 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                                     </p>
 
                                     {/* Skill Descriptions */}
-                                    {staff.skill_descriptions && staff.skill_descriptions.length > 0 && (
+                                    {staff?.skills && staff?.skills.length > 0 && (
                                         <div style={{ marginTop: "10px" }}>
                                             <p className="staff-details" style={{ fontWeight: "600", marginBottom: "6px" }}>
                                                 Skills:
                                             </p>
                                             <ul style={{ paddingLeft: "20px", fontSize: "12px", color: "#555", margin: "0" }}>
-                                                {staff.skill_descriptions.map((skill, idx) => (
+                                                {staff?.skills.map((skill, idx) => (
                                                     <li key={idx} style={{ marginBottom: "4px" }}>{skill}</li>
                                                 ))}
                                             </ul>
