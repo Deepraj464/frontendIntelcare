@@ -124,26 +124,20 @@ const SmartRostering = (props) => {
                 );
 
 
-                const grouped = res.data.grouped || {};
-                const allClients = Object.entries(grouped).flatMap(([label, shifts]) =>
-                    shifts.map((shift) => ({
-                        dateOfService: shift.date_of_service || "-",
-                        clientId: shift.client_id || "-",
-                        name: shift.client_name || "Unknown",
-                        sex: shift.sex || "-",
-                        phone: shift.phone || "-",
-                        email: shift.email?.trim() || "-",
-                        address: shift.address || "-",
-                        startTime: shift.start_time || "-",
-                        minutes: shift.minutes ? `${shift.minutes} min` : "-",
-                        label,
-                        prefSkillsDescription: shift?.prefSkillsDescription,
+                const grouped = res.data || {};
+                const allClients = grouped?.grouped.map((shift) => ({
+                    dateOfService: shift.date_of_service || "-",
+                    clientId: shift.client_id || "-",
+                    name: shift.client_name || "Unknown",
+                    sex: shift.sex || "-",
+                    phone: shift.phone || "-",
+                    email: shift.email?.trim() || "-",
+                    address: shift.address || "-",
+                    startTime: shift.start_time || "-",
+                    minutes: shift.minutes ? `${shift.minutes} min` : "-",
+                    prefSkillsDescription: shift?.prefSkillsDescription || []
+                }));
 
-                        // ⭐ IMPORTANT → STORE REAL DATA
-                        _real: shift._real || null
-                    }))
-
-                );
 
 
                 setUnallocatedClients(allClients);
@@ -288,7 +282,7 @@ const SmartRostering = (props) => {
                     minutes: fillerInputs.shift_minutes
                         ? `${fillerInputs.shift_minutes} min`
                         : "-",
-                    prefSkillsDescription:response?.data?.preferred_skill_descriptions
+                    prefSkillsDescription: response?.data?.preferred_skill_descriptions
                 };
 
                 // ⭐ Mask client ONLY when prompt-based & Kris user
