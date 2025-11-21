@@ -270,7 +270,7 @@ const SmartRostering = (props) => {
                 { headers: { "Content-Type": "application/json" } }
             );
 
-            // console.log("Combined Filler + Smart Rostering Response:", response.data);
+            console.log("Combined Filler + Smart Rostering Response:", response.data);
 
             // Corrected access path for ranked staff
             const rankedStaff = response.data?.rostering_summary?.final_ranked || [];
@@ -288,6 +288,7 @@ const SmartRostering = (props) => {
                     minutes: fillerInputs.shift_minutes
                         ? `${fillerInputs.shift_minutes} min`
                         : "-",
+                    prefSkillsDescription:response?.data?.preferred_skill_descriptions
                 };
 
                 // ⭐ Mask client ONLY when prompt-based & Kris user
