@@ -362,7 +362,7 @@ const SmartRostering = (props) => {
 
                         <div className="rostering-stat-card">
                             <p>At-Risk Shifts</p>
-                            <span className="rostering-circle rostering-orange">{rosteringMetrics?.Unallocated_shift ?? rosteringMetrics?.Unallocated_shift}</span>
+                            <span className="rostering-circle rostering-orange">{unallocatedClients.length}</span>
                         </div>
 
                         <div className="rostering-stat-card">
