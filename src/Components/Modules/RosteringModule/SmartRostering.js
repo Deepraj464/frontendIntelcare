@@ -147,7 +147,7 @@ const SmartRostering = (props) => {
 
 
                 setUnallocatedClients(allClients);
-                console.log(allClients);
+                // console.log(allClients);
             } catch (error) {
                 console.error("Error fetching unallocated shifts:", error);
             } finally {
@@ -270,7 +270,7 @@ const SmartRostering = (props) => {
                 { headers: { "Content-Type": "application/json" } }
             );
 
-            console.log("Combined Filler + Smart Rostering Response:", response.data);
+            // console.log("Combined Filler + Smart Rostering Response:", response.data);
 
             // Corrected access path for ranked staff
             const rankedStaff = response.data?.rostering_summary?.final_ranked || [];
