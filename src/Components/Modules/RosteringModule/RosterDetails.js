@@ -120,7 +120,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                 staffList: selectedStaff.map(s => ({
                     staffId: s.id || s.staffId,
                     name: s.name,
-                    phone: "+917020737478",
+                    phone: "+61419015351",
                     email: s.email,
                     gender: s.gender || s.sex,
                     location: s.location,
@@ -136,7 +136,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                 rosteringManagers: [
                     {
                         name: "Kris",
-                        phone: "+918618562951",
+                        phone: "+61419015351",
                         role: "RM"
                     }
                 ]
