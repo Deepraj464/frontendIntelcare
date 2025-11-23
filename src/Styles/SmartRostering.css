@@ -4,14 +4,16 @@
     font-family: 'Inter';
     background: #FFFFFF;
     color: #222;
+    margin: 8px 5% 40px 5%
   }
   
   .rostering-date {
     font-size: 24px;
-    margin-bottom: 20px;
+    /* margin-bottom: 20px; */
     font-family: 'Inter';
     color: black;
-    margin-top: 24px;
+    /* margin-top: 24px; */
+    font-weight: 600;
   }
   
   .rostering-stats-row {

@@ -12,6 +12,7 @@
     "axios": "^1.8.3",
     "chart.js": "^4.5.0",
     "date-fns": "^2.30.0",
+    "dayjs": "^1.11.19",
     "docx": "^9.5.1",
     "echarts": "^5.6.0",
     "echarts-for-react": "^3.0.2",

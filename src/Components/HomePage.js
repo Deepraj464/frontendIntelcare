@@ -415,7 +415,7 @@ const HomePage = () => {
               </div>
             </div>
 
-            <div className={isTlcPage ? "tlc-custom-main-content" : "main-content"}>
+            <div className={isTlcPage ? "tlc-custom-main-content" : isSmartRosteringPage ? "smart-rostering-main-content" : "main-content"}>
               {showFeedbackPopup && <FeedbackModal userEmail={user?.email} />}
 
               <>
