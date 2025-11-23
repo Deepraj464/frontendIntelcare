@@ -105,21 +105,21 @@ const RosterHistory = (props) => {
         }
     ];
 
-    const messages = [
-        { id: 1, text: "Hi, are you available for Fiona Lamond on date at shift-time? Reply Y to accept or N to reject", time: "9:30 AM", sender: "other" },
-        // { id: 2, text: "Are you coming?", time: "9:32 AM", sender: "me" },
-        // { id: 3, text: "I will be there in 10 mins.", time: "9:33 AM", sender: "other" },
-        // { id: 4, text: "Okay, waiting!", time: "9:34 AM", sender: "me" },
-        // { id: 5, text: "Traffic is heavy today.", time: "9:36 AM", sender: "other" },
-        // { id: 6, text: "No problem", time: "9:37 AM", sender: "me" },
-        // { id: 7, text: "Almost reached", time: "9:40 AM", sender: "other" },
-        // { id: 8, text: "Traffic is heavy today.", time: "9:36 AM", sender: "other" },
-        // { id: 9, text: "No problem", time: "9:37 AM", sender: "me" },
-        // { id: 10, text: "Almost reached", time: "9:40 AM", sender: "other" },
-        // { id: 11, text: "Traffic is heavy today.", time: "9:36 AM", sender: "other" },
-        // { id: 12, text: "No problem", time: "9:37 AM", sender: "me" },
-        // { id: 13, text: "Almost reached", time: "9:40 AM", sender: "other" }
-    ];
+    // const messages = [
+    //     { id: 1, text: "Hi, are you available for Fiona Lamond on date at shift-time? Reply Y to accept or N to reject", time: "9:30 AM", sender: "other" },
+    //     { id: 2, text: "Are you coming?", time: "9:32 AM", sender: "me" },
+    //     { id: 3, text: "I will be there in 10 mins.", time: "9:33 AM", sender: "other" },
+    //     { id: 4, text: "Okay, waiting!", time: "9:34 AM", sender: "me" },
+    //     { id: 5, text: "Traffic is heavy today.", time: "9:36 AM", sender: "other" },
+    //     { id: 6, text: "No problem", time: "9:37 AM", sender: "me" },
+    //     { id: 7, text: "Almost reached", time: "9:40 AM", sender: "other" },
+    //     { id: 8, text: "Traffic is heavy today.", time: "9:36 AM", sender: "other" },
+    //     { id: 9, text: "No problem", time: "9:37 AM", sender: "me" },
+    //     { id: 10, text: "Almost reached", time: "9:40 AM", sender: "other" },
+    //     { id: 11, text: "Traffic is heavy today.", time: "9:36 AM", sender: "other" },
+    //     { id: 12, text: "No problem", time: "9:37 AM", sender: "me" },
+    //     { id: 13, text: "Almost reached", time: "9:40 AM", sender: "other" }
+    // ];
 
     const sendMessage = () => {
         if (!inputValue.trim()) return;
