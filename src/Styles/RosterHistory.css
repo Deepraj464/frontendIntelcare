@@ -316,8 +316,8 @@
   border-radius: 14px;
   font-size: 15px;
 }
-.left { background: #f1f5f9; border-radius: 12px 12px 12px 0;}
-.right { background: #6c4cdc; color: white; border-radius: 12px 12px 0 12px; margin-left: auto; }
+.left { background: #f1f5f9; border-radius: 12px 12px 12px 0;text-align: left;}
+.right { background: #6c4cdc; color: white; border-radius: 12px 12px 0 12px; margin-left: auto;text-align: left; }
 
 .msg-time {
   font-size: 11px;

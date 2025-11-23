@@ -15,6 +15,8 @@ const RosterHistory = (props) => {
     const [year, setYear] = useState(today.getFullYear());
     const [openPanel, setOpenPanel] = useState(false);
     const [selectedAssignment, setSelectedAssignment] = useState(null);
+    const [chatMessages, setChatMessages] = useState([]);
+    const [inputValue, setInputValue] = useState("");
     const [open, setOpen] = useState(false);
     const messageEndRef = useRef(null);
 
@@ -46,14 +48,14 @@ const RosterHistory = (props) => {
             date: "2025-11-26",
             carer: "Natalie john",
             time: "8:00AM - 10:00AM",
-            status: "accepted"
+            status: "waiting"
         },
         {
             clientId: 1,
             date: "2025-11-26",
             carer: "Alex",
             time: "10:00AM - 1:00PM",
-            status: "rejected"
+            status: "waiting"
         },
         {
             clientId: 1,
@@ -67,21 +69,14 @@ const RosterHistory = (props) => {
             date: "2025-11-26",
             carer: "Jacob Marks",
             time: "3:00PM - 5:00PM",
-            status: "accepted"
-        },
-        {
-            clientId: 1,
-            date: "2025-11-26",
-            carer: "Emily Roberts",
-            time: "5:00PM - 7:00PM",
-            status: "accepted"
+            status: "waiting"
         },
         {
             clientId: 1,
             date: "2025-11-26",
             carer: "Chris Evans",
             time: "6:00PM - 8:00PM",
-            status: "rejected"
+            status: "waiting"
         },
 
         {
@@ -111,20 +106,36 @@ const RosterHistory = (props) => {
     ];
 
     const messages = [
-        { id: 1, text: "Hello", time: "9:30 AM", sender: "other" },
-        { id: 2, text: "Are you coming?", time: "9:32 AM", sender: "me" },
-        { id: 3, text: "I will be there in 10 mins.", time: "9:33 AM", sender: "other" },
-        { id: 4, text: "Okay, waiting!", time: "9:34 AM", sender: "me" },
-        { id: 5, text: "Traffic is heavy today.", time: "9:36 AM", sender: "other" },
-        { id: 6, text: "No problem", time: "9:37 AM", sender: "me" },
-        { id: 7, text: "Almost reached", time: "9:40 AM", sender: "other" },
-        { id: 8, text: "Traffic is heavy today.", time: "9:36 AM", sender: "other" },
-        { id: 9, text: "No problem", time: "9:37 AM", sender: "me" },
-        { id: 10, text: "Almost reached", time: "9:40 AM", sender: "other" },
-        { id: 11, text: "Traffic is heavy today.", time: "9:36 AM", sender: "other" },
-        { id: 12, text: "No problem", time: "9:37 AM", sender: "me" },
-        { id: 13, text: "Almost reached", time: "9:40 AM", sender: "other" }
+        { id: 1, text: "Hi, are you available for Fiona Lamond on date at shift-time? Reply Y to accept or N to reject", time: "9:30 AM", sender: "other" },
+        // { id: 2, text: "Are you coming?", time: "9:32 AM", sender: "me" },
+        // { id: 3, text: "I will be there in 10 mins.", time: "9:33 AM", sender: "other" },
+        // { id: 4, text: "Okay, waiting!", time: "9:34 AM", sender: "me" },
+        // { id: 5, text: "Traffic is heavy today.", time: "9:36 AM", sender: "other" },
+        // { id: 6, text: "No problem", time: "9:37 AM", sender: "me" },
+        // { id: 7, text: "Almost reached", time: "9:40 AM", sender: "other" },
+        // { id: 8, text: "Traffic is heavy today.", time: "9:36 AM", sender: "other" },
+        // { id: 9, text: "No problem", time: "9:37 AM", sender: "me" },
+        // { id: 10, text: "Almost reached", time: "9:40 AM", sender: "other" },
+        // { id: 11, text: "Traffic is heavy today.", time: "9:36 AM", sender: "other" },
+        // { id: 12, text: "No problem", time: "9:37 AM", sender: "me" },
+        // { id: 13, text: "Almost reached", time: "9:40 AM", sender: "other" }
     ];
+
+    const sendMessage = () => {
+        if (!inputValue.trim()) return;
+
+        setChatMessages(prev => [
+            ...prev,
+            {
+                id: prev.length + 1,
+                text: inputValue,
+                time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                sender: "me"
+            }
+        ]);
+
+        setInputValue("");
+    };
 
 
 
@@ -281,6 +292,16 @@ const RosterHistory = (props) => {
                                                 d.assignments.map((a, i) => (
                                                     <div key={i} className={`roster-status-card status-${a.status}`}
                                                         onClick={() => {
+                                                            const formattedDate = `${d.dayName}, ${d.date} ${monthName}`;
+
+                                                            const firstMessage = {
+                                                                id: 1,
+                                                                text: `Hi, are you available for ${selected?.name} on ${formattedDate} at ${a.time}? Reply Y to accept or N to reject`,
+                                                                time: "9:30 AM",
+                                                                sender: "other"
+                                                            };
+
+                                                            setChatMessages([firstMessage]);     // sets default message first time
                                                             setSelectedAssignment({
                                                                 ...a,
                                                                 dayName: d.dayName,
@@ -288,7 +309,8 @@ const RosterHistory = (props) => {
                                                                 monthName: monthName,
                                                             });
                                                             setOpenPanel(true);
-                                                        }}>
+                                                        }}
+                                                    >
                                                         <div style={{ fontSize: '14px', fontWeight: '500', fontFamily: 'Inter', marginBottom: '8px', textAlign: 'left' }}>{a.carer}</div>
                                                         <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-start', gap: '4px', marginBottom: '4px' }}>
                                                             <AiFillClockCircle color="white" />
@@ -384,7 +406,7 @@ const RosterHistory = (props) => {
                                     {/* ===== CHAT SECTION ===== */}
                                     <div style={{ fontSize: '16px', fontWeight: '500', fontFamily: 'Inter', textAlign: 'left', margin: '8px 14px' }}>Messages</div>
                                     <div className="messages-section">
-                                        {messages.map((m) => (
+                                        {chatMessages.map((m) => (
                                             <div key={m.id} className={`msg ${m.sender === "me" ? "you" : ""}`}>
                                                 <div className={`msg-bubble ${m.sender === "me" ? "right" : "left"}`}>
                                                     {m.text}
@@ -394,16 +416,24 @@ const RosterHistory = (props) => {
                                                 </div>
                                             </div>
                                         ))}
-
                                         <div ref={messageEndRef}></div>
+
                                     </div>
 
 
                                     {/* input */}
                                     {selectedAssignment.status !== "rejected" &&
                                         <div className="msg-input-container">
-                                            <input placeholder="Message..." className="msg-input" />
-                                            <button className="send-btn">➤</button>
+                                            <input
+                                                value={inputValue}
+                                                onChange={(e) => setInputValue(e.target.value)}
+                                                placeholder="Message..."
+                                                className="msg-input"
+                                            />
+
+                                            <button className="send-btn" onClick={sendMessage}>
+                                                ➤
+                                            </button>
                                         </div>
                                     }
 
