@@ -70,46 +70,55 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
     };
 
     // Controller 2: Broadcast shift to selected staff
-    const handleBroadcast = async () => {
-        if (selected.length === 0) {
-            alert("Please select at least one staff to broadcast.");
-            return;
-        }
+const handleBroadcast = async () => {
+    if (selected.length === 0) {
+        alert("Please select at least one staff to broadcast.");
+        return;
+    }
 
-        setBroadcasting(true);
-        try {
-            // ✅ FIXED: Use rankedStaff (displayed staff) instead of staffList
-            const selectedStaff = selected.map(index => rankedStaff[index]);
+    setBroadcasting(true);
 
-            // Call broadcast endpoint
-            const response = await axios.post(`${API_BASE}/broadcast`, {
-                clientData: {
-                    ClientId: client.ClientId || client.id || selectedClient?.clientId,
-                    PreferredName: client.PreferredName || client.FirstName || selectedClient?.name
-                },
-                staffList: selected.map(index => ({
-                    name: rankedStaff[index].name,
-                    phone: "+61419015351",
-                    role: "SW"
-                })),
-                rosteringManagers: [
-                    {
-                        name: "Kris",
-                        phone: "+61419015351", // hardcoded RM number
-                        role: "RM"
-                    }
-                ]
-            });
+    try {
+        // Get selected staff from rankedStaff
+        const selectedStaff = selected.map(index => rankedStaff[index]);
 
-            // console.log("Broadcast response:", response.data);
-            setShowSuccess(true);
-        } catch (error) {
-            console.error("Error broadcasting:", error);
-            alert("Failed to broadcast messages. Try again.");
-        } finally {
-            setBroadcasting(false);
-        }
-    };
+        const payload = {
+            clientData: {
+                ClientId: client.ClientId || client.id || selectedClient?.clientId,
+                PreferredName: client.PreferredName || client.FirstName || selectedClient?.name,
+                startTime: request.shift_start_time || request.shift_start || request.startTime,  
+                minutes: request.minutes || request.duration || selectedClient?.minutes || 60
+            },
+
+            staffList: selectedStaff.map(s => ({
+                name: s.name,
+                phone: "7020737478",     // using real phone
+                role: "SW"
+            })),
+
+            rosteringManagers: [
+                {
+                    name: "Kris",
+                    phone: "8618562951",
+                    role: "RM"
+                }
+            ]
+        };
+
+        console.log("📤 Broadcast Payload:", payload);
+
+        const response = await axios.post(`${API_BASE}/sampleBroadcast`, payload);
+
+        setShowSuccess(true);
+
+    } catch (error) {
+        console.error("Error broadcasting:", error);
+        alert("Failed to broadcast messages. Try again.");
+    } finally {
+        setBroadcasting(false);
+    }
+};
+
 
     // Helper function to format address
     const formatAddress = () => {

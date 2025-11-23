@@ -6,6 +6,7 @@ import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
 import { AiFillClockCircle } from "react-icons/ai";
 import { LuBriefcaseBusiness } from "react-icons/lu";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import axios from "axios";
 
 
 const RosterHistory = (props) => {
@@ -19,8 +20,23 @@ const RosterHistory = (props) => {
     const [inputValue, setInputValue] = useState("");
     const [open, setOpen] = useState(false);
     const messageEndRef = useRef(null);
+    const [clients, setClients] = useState([]);
 
     const scrollRef = useRef(null);
+
+    useEffect(() => {
+        const fetchClients = async () => {
+            try {
+                const res = await axios.get(`https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/getClientHistory`);
+                console.log("res in client history",res)
+                setClients(res.data.clients);
+            } catch (err) {
+                console.error("Failed to load clients:", err);
+            }
+        };
+
+        fetchClients();
+    }, []);
 
     const dummyClients = [
         { id: 1, name: "Fiona Lamond", address: "Building B Apartment, Solent, NSW, 2153", phone: "+61 407 272 103" },
