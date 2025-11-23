@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo, useEffect } from "react";
-import '../../../Styles/RosterHistory.css';
+import "../../../Styles/RosterHistory.css";
 import { FiUser, FiMapPin, FiPhone } from "react-icons/fi";
 import { GoArrowLeft } from "react-icons/go";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
@@ -8,153 +8,274 @@ import { LuBriefcaseBusiness } from "react-icons/lu";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import axios from "axios";
 
+const API_BASE = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net";
 
 const RosterHistory = (props) => {
+    const userEmail = props?.userEmail
+    // === state kept as original
     const [selected, setSelected] = useState(null);
     const today = new Date();
     const [month, setMonth] = useState(today.getMonth() + 1);
     const [year, setYear] = useState(today.getFullYear());
     const [openPanel, setOpenPanel] = useState(false);
     const [selectedAssignment, setSelectedAssignment] = useState(null);
-    const [chatMessages, setChatMessages] = useState([]);
-    const [inputValue, setInputValue] = useState("");
     const [open, setOpen] = useState(false);
     const messageEndRef = useRef(null);
-    const [clients, setClients] = useState([]);
 
     const scrollRef = useRef(null);
+
+    // we keep the same variable names as original *but* fill them dynamically
+    const [dummyClients, setDummyClients] = useState([]); // will hold clients in old shape
+    const [assignmentsData, setAssignmentsData] = useState([]); // will hold assignment objects in old shape
+    const [messages, setMessages] = useState([]); // chat messages in old shape
+
+    // === Load clients from API and map to old structure (id, name, address, phone)
+    const maskDetailsIfKris = (value, type) => {
+        const isKris = userEmail?.toLowerCase() === "kris@curki.ai";
+        if (!isKris) return value;
+
+        if (type === "name") {
+            return "Client User";
+        }
+
+        if (type === "address") {
+            return "Address Hidden";
+        }
+
+        if (type === "phone") {
+            return "Hidden";
+        }
+
+        if (type === "email") {
+            return "hidden@domain.com";
+        }
+
+        return value;
+    };
+
 
     useEffect(() => {
         const fetchClients = async () => {
             try {
-                const res = await axios.get(`https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/getClientHistory`);
-                console.log("res in client history",res)
-                setClients(res.data.clients);
+                const res = await axios.get(`${API_BASE}/api/getAllClientsHistory`);
+                const clients = res.data.clients || [];
+
+                // Map API clients -> old dummyClients shape
+                const mapped = clients.map(c => ({
+                    id: c.clientId,
+                    name: c.clientName,
+                    address: (() => {
+                        const addr = c.clientAddress;
+                        if (!addr || typeof addr !== "object") return "N/A";
+
+                        const parts = [
+                            addr.address1,
+                            addr.address2,
+                            addr.suburb,
+                            addr.state,
+                            addr.postcode
+                        ].filter(Boolean);
+
+                        return parts.length ? parts.join(", ") : "N/A";
+                    })(),
+
+                    phone: c.clientPhone || "N/A",
+                    // keep original for future use
+                    __raw: c
+                }));
+                console.log("mapped", mapped)
+                setDummyClients(mapped);
             } catch (err) {
-                console.error("Failed to load clients:", err);
+                console.error("Failed to fetch clients:", err);
             }
         };
 
         fetchClients();
     }, []);
 
-    const dummyClients = [
-        { id: 1, name: "Fiona Lamond", address: "Building B Apartment, Solent, NSW, 2153", phone: "+61 407 272 103" },
-        { id: 2, name: "Noah Williams", address: "88 George St, Brisbane, QLD, 4000", phone: "+61 422 678 900" },
-        { id: 3, name: "Amelia Johnson", address: "19 Riverway, Melbourne, VIC, 3000", phone: "+61 499 784 112" },
-        { id: 4, name: "Lucas Brown", address: "3 Beach Ave, Gold Coast, QLD, 4217", phone: "+61 433 980 556" },
-        // { id: 5, name: "Charlotte Davis", address: "55 Market Rd, Perth, WA, 6000", phone: "+61 478 331 244" },
-        // { id: 6, name: "Henry Miller", address: "22 Oakwood Dr, Adelaide, SA, 5000", phone: "+61 466 772 911" },
-        // { id: 7, name: "Sophia Wilson", address: "10 Queen Way, Hobart, TAS, 7000", phone: "+61 457 993 221" },
-        // { id: 8, name: "Jack Anderson", address: "2 Mountain Rd, Canberra, ACT, 2600", phone: "+61 413 884 002" },
-        // { id: 9, name: "Mia Taylor", address: "45 Hillcrest, Darwin, NT, 0800", phone: "+61 499 661 770" },
-        // { id: 10, name: "William Thompson", address: "98 Sunset Blvd, Adelaide, SA, 5000", phone: "+61 433 583 721" },
-    ];
-
-    const assignmentsData = [
-        {
-            clientId: 1,
-            date: "2025-11-26",
-            carer: "Oluchi ",
-            time: "8:00AM - 10:00AM",
-            status: "waiting"
-        },
-        {
-            clientId: 1,
-            date: "2025-11-26",
-            carer: "Natalie john",
-            time: "8:00AM - 10:00AM",
-            status: "waiting"
-        },
-        {
-            clientId: 1,
-            date: "2025-11-26",
-            carer: "Alex",
-            time: "10:00AM - 1:00PM",
-            status: "waiting"
-        },
-        {
-            clientId: 1,
-            date: "2025-11-26",
-            carer: "Alex Johnson",
-            time: "1:00PM - 3:00PM",
-            status: "waiting"
-        },
-        {
-            clientId: 1,
-            date: "2025-11-26",
-            carer: "Jacob Marks",
-            time: "3:00PM - 5:00PM",
-            status: "waiting"
-        },
-        {
-            clientId: 1,
-            date: "2025-11-26",
-            carer: "Chris Evans",
-            time: "6:00PM - 8:00PM",
-            status: "waiting"
-        },
-
-        {
-            clientId: 2,
-            date: "2025-11-20",
-            carer: "John Smith 2",
-            time: "7:00AM - 9:00AM",
-            status: "accepted"
-        }
-    ];
-    const staffInfoList = [
-        { label: "Score", value: 98 },
-        { label: "Gender", value: "Male" },
-        { label: "Email", value: "ounchk@gmail.com" },
-        { label: "Languages", value: "English, Spanish, Hindi" },
-        { label: "Experience", value: "12+" },
-        { label: "Award", value: "Social, Community" },
-        { label: "Location", value: "Kiwong Street, Yowie Bay, NSW, 2228" },
-        {
-            label: "Why",
-            value: {
-                title: "Why this staff?",
-                description:
-                    "Top skills match with client preferred skills, strong skill set including Aspiration Management, Complex Bowel Care, Enteral Feeding, Seizure Management, Urinary Catheter Changing, Ventilator Management, Hoist transfers, Client Specific Training, Maintenance of Skin Integrity, and proximity likely within 10km (Yowie Bay, NSW). Preferred worker."
+    // === helper: format time range similar to earlier logic
+    const formatTimeRange = (record) => {
+        try {
+            const baseDate = record.createdAt ? record.createdAt.split("T")[0] : new Date().toISOString().split("T")[0];
+            let start;
+            if (record.startTime && record.startTime.length <= 5) { // "08:00"
+                start = new Date(`${baseDate}T${record.startTime}:00`);
+            } else if (record.startTime) {
+                // fallback if startTime is already ISO-ish
+                start = new Date(record.startTime);
+            } else {
+                start = new Date(record.createdAt || Date.now());
             }
+
+            const minutes = Number(record.minutes) || 0;
+            const end = minutes > 0 ? new Date(start.getTime() + minutes * 60000) : null;
+
+            const fmt = d => d ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "TBD";
+            return end ? `${fmt(start)} - ${fmt(end)}` : fmt(start);
+        } catch (e) {
+            return "TBD";
         }
-    ];
+    };
 
-    // const messages = [
-    //     { id: 1, text: "Hi, are you available for Fiona Lamond on date at shift-time? Reply Y to accept or N to reject", time: "9:30 AM", sender: "other" },
-    //     { id: 2, text: "Are you coming?", time: "9:32 AM", sender: "me" },
-    //     { id: 3, text: "I will be there in 10 mins.", time: "9:33 AM", sender: "other" },
-    //     { id: 4, text: "Okay, waiting!", time: "9:34 AM", sender: "me" },
-    //     { id: 5, text: "Traffic is heavy today.", time: "9:36 AM", sender: "other" },
-    //     { id: 6, text: "No problem", time: "9:37 AM", sender: "me" },
-    //     { id: 7, text: "Almost reached", time: "9:40 AM", sender: "other" },
-    //     { id: 8, text: "Traffic is heavy today.", time: "9:36 AM", sender: "other" },
-    //     { id: 9, text: "No problem", time: "9:37 AM", sender: "me" },
-    //     { id: 10, text: "Almost reached", time: "9:40 AM", sender: "other" },
-    //     { id: 11, text: "Traffic is heavy today.", time: "9:36 AM", sender: "other" },
-    //     { id: 12, text: "No problem", time: "9:37 AM", sender: "me" },
-    //     { id: 13, text: "Almost reached", time: "9:40 AM", sender: "other" }
-    // ];
+    // === When a client is selected: fetch their full history and build assignmentsData exactly like old structure
+    const fetchClientHistory = async (clientId) => {
+        try {
+            const res = await axios.get(`${API_BASE}/api/getClientHistory/${clientId}`);
+            const history = res.data.history || [];
+            console.log("history", history)
+            // Build assignments array in old shape
+            const built = [];
+            history.forEach(record => {
+                const baseDate = record.createdAt ? record.createdAt.split("T")[0] : new Date().toISOString().split("T")[0];
+                const timeStr = formatTimeRange(record);
 
-    const sendMessage = () => {
-        if (!inputValue.trim()) return;
+                (record.staffMembers || []).forEach(staff => {
+                    let status = (staff.status || "pending").toLowerCase();
+                    if (status === "pending") status = "waiting";
 
-        setChatMessages(prev => [
-            ...prev,
-            {
-                id: prev.length + 1,
+                    // compute day/dayName/monthName as old UI expects these to appear
+                    const d = new Date(baseDate);
+                    const dayName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()];
+                    const monthName = d.toLocaleString("default", { month: "long" });
+
+                    built.push({
+                        clientId: record.clientId,
+                        date: baseDate,
+                        carer: staff.name || "Unknown",
+                        time: timeStr,
+                        status,
+                        // preserve original for details
+                        originalRecord: record,
+                        originalStaffObject: staff,
+                        // old UI date pieces:
+                        dayName,
+                        day: d.getDate(),
+                        monthName
+                    });
+                });
+            });
+
+            setAssignmentsData(built);
+            // Also set messages empty for now — chat loads when user opens assignment
+            setMessages([]);
+        } catch (err) {
+            console.error("Failed to fetch client history:", err);
+        }
+    };
+
+    // === fetch chat messages for chosen assignment and map to old message shape
+    const fetchChatMessages = async (conversationId) => {
+        console.log("conversationId", conversationId)
+        try {
+            const res = await axios.get(`${API_BASE}/api/getChatHistory/${conversationId}`);
+            console.log("res", res)
+            const msgs = (res.data.messages || []).map(m => ({
+                id: m.id || m._rid || Date.now() + Math.random(),
+                text: m.message || "",
+                time: m.time ? new Date(m.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "",
+                sender: (() => {
+                    // 1. Automated system message (broadcast) → LEFT
+                    if (m.id?.includes("broadcast")) return "other";
+
+                    // 2. Staff message → LEFT
+                    if (m.fromRole === "SW") return "other";
+
+                    // 3. RM manual message → RIGHT
+                    if (m.fromRole === "RM") return "me";
+
+                    // fallback → LEFT
+                    return "other";
+                })()
+
+
+            }));
+            setMessages(msgs);
+
+            // scroll into view
+            if (messageEndRef.current) {
+                messageEndRef.current.scrollIntoView({ behavior: "smooth" });
+            }
+        } catch (err) {
+            console.error("Failed to fetch chat messages:", err);
+            setMessages([]);
+        }
+    };
+
+    // === send message (RM) — matches old UI: appends locally after successful POST
+    const sendRMMessage = async () => {
+        if (!inputValue?.trim() || !selectedAssignment) return;
+
+        try {
+            await axios.post(`${API_BASE}/chat/send`, {
+                recordId: selectedAssignment.originalRecord?.id || selectedAssignment.recordId,
+                message: inputValue,
+                staffPhone: selectedAssignment.originalStaffObject?.phone || selectedAssignment.staffPhone
+            });
+
+            const newMsg = {
+                id: Date.now(),
                 text: inputValue,
                 time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
                 sender: "me"
-            }
-        ]);
+            };
 
-        setInputValue("");
+            setMessages(prev => [...prev, newMsg]);
+            setInputValue("");
+            if (messageEndRef.current) messageEndRef.current.scrollIntoView({ behavior: "smooth" });
+        } catch (err) {
+            console.error("Failed to send RM message:", err);
+        }
+    };
+    console.log("selectedAssignment", selectedAssignment)
+    // === approve/reject handlers (call API, update local assignmentsData)
+    const approveStaff = async (recordId, staffPhone) => {
+        try {
+            await axios.post(`${API_BASE}/api/staff/approve`, {
+                recordId,
+                staffId: selectedAssignment.originalStaffObject.staffId
+            });
+
+            setAssignmentsData(prev =>
+                prev.map(a =>
+                    a.originalStaffObject?.staffId === selectedAssignment.originalStaffObject.staffId
+                        ? { ...a, status: "accepted" }
+                        : a
+                )
+            );
+
+            // If the selectedAssignment matches, update it too
+            if (selectedAssignment?.originalStaffObject?.staffId === selectedAssignment.originalStaffObject.staffId) {
+                setSelectedAssignment(prev => ({ ...prev, status: "accepted" }));
+            }
+        } catch (err) {
+            console.error("approveStaff error:", err);
+        }
     };
 
+    const rejectStaff = async (recordId, staffPhone) => {
+        try {
+            await axios.post(`${API_BASE}/api/staff/reject`, {
+                recordId,
+                staffId: selectedAssignment.originalStaffObject.staffId
+            });
 
+            setAssignmentsData(prev =>
+                prev.map(a =>
+                    a.originalStaffObject?.staffId === selectedAssignment.originalStaffObject.staffId
+                        ? { ...a, status: "rejected" }
+                        : a
+                )
+            );
 
+            if (selectedAssignment?.originalStaffObject?.staffId === selectedAssignment.originalStaffObject.staffId) {
+                setSelectedAssignment(prev => ({ ...prev, status: "rejected" }));
+            }
+        } catch (err) {
+            console.error("rejectStaff error:", err);
+        }
+    };
+
+    // === DAYS calculation kept same as old UI
     const days = useMemo(() => {
         const daysInMonth = new Date(year, month, 0).getDate();
 
@@ -163,31 +284,30 @@ const RosterHistory = (props) => {
             const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
             const assignments = assignmentsData.filter(
-                (a) => a.clientId === selected?.id && a.date === dateStr
+                a => a.clientId === selected?.id && a.date === dateStr   // FIX HERE
             );
 
             return {
-                dayName: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][
-                    new Date(year, month - 1, day).getDay()
-                ],
+                dayName: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][new Date(year, month - 1, day).getDay()],
                 date: day,
                 assignments
             };
         });
-    }, [selected, month, year]);
+    }, [selected, month, year, assignmentsData]);
 
-    // 👉 Auto scroll to today's date by default
+
+    // auto-scroll to today (same logic)
     useEffect(() => {
-        const today = new Date();
+        const todayDate = new Date();
         const todayIndex = days.findIndex(
             d =>
-                d.date === today.getDate() &&
-                month === today.getMonth() + 1 &&
-                year === today.getFullYear()
+                d.date === todayDate.getDate() &&
+                month === todayDate.getMonth() + 1 &&
+                year === todayDate.getFullYear()
         );
 
         if (todayIndex !== -1 && scrollRef.current) {
-            const scrollAmount = todayIndex * 130; // approx column width
+            const scrollAmount = todayIndex * 130;
             scrollRef.current.scrollTo({
                 left: scrollAmount,
                 behavior: "smooth",
@@ -195,8 +315,14 @@ const RosterHistory = (props) => {
         }
     }, [days]);
 
+    // when selectedAssignment changes, scroll messages to bottom
+    useEffect(() => {
+        if (messageEndRef.current) {
+            messageEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [selectedAssignment, messages]);
 
-
+    // monthName for header
     const monthName = new Date(year, month - 1).toLocaleString("default", { month: "long" });
 
     const handleMonthChange = (e) => {
@@ -205,11 +331,116 @@ const RosterHistory = (props) => {
         setMonth(Number(m));
     };
 
-    useEffect(() => {
-        if (messageEndRef.current) {
-            messageEndRef.current.scrollIntoView({ behavior: "smooth" });
+    // old UI onClient click behavior preserved
+    const onClientSelect = async (c) => {
+        setSelected(c);
+        await fetchClientHistory(c.id);
+        // reset panel & messages
+        setOpenPanel(false);
+        setSelectedAssignment(null);
+        setMessages([]);
+    };
+
+    // old UI open assignment behavior preserved
+    const onOpenAssignment = async (a) => {
+        setSelectedAssignment(a);
+        setOpenPanel(true);
+        // fetch chat using originalRecord.id if available, else fallback to conversationId-like fields
+        const convId = `${a.originalRecord?.id}-${a.originalStaffObject?.staffId || a.originalStaffObject?.phone}`;
+
+        console.log("convId", convId)
+        if (convId) await fetchChatMessages(convId);
+    };
+
+    // Build staffInfoList in same order & same labels as old static file (but using selectedAssignment.originalStaffObject)
+    const staffInfoList = [
+        {
+            label: "Name",
+            value: maskDetailsIfKris(
+                selectedAssignment?.originalStaffObject?.name,
+                "name"
+            )
+        },
+
+        {
+            label: "Score",
+            value: selectedAssignment?.originalStaffObject?.score ?? 98
+        },
+
+        {
+            label: "Gender",
+            value: selectedAssignment?.originalStaffObject?.gender ?? "Female"
+        },
+
+        {
+            label: "Email",
+            value: maskDetailsIfKris(
+                selectedAssignment?.originalStaffObject?.email,
+                "email"
+            )
+        },
+
+        {
+            label: "Phone",
+            value: maskDetailsIfKris(
+                selectedAssignment?.originalStaffObject?.phone,
+                "phone"
+            )
+        },
+
+        {
+            label: "Languages",
+            value: selectedAssignment?.originalStaffObject?.languages ?? "English"
+        },
+
+        {
+            label: "Experience",
+            value: selectedAssignment?.originalStaffObject?.experience_years ?? "12+"
+        },
+
+        {
+            label: "Award",
+            value: selectedAssignment?.originalStaffObject?.award ?? "N/A"
+        },
+
+        {
+            label: "Location",
+            value: maskDetailsIfKris(
+                (() => {
+                    const loc = selectedAssignment?.originalStaffObject?.location;
+                    if (!loc) return "Address not available";
+
+                    const parts = [
+                        loc.address1,
+                        loc.address2,
+                        loc.suburb,
+                        loc.state,
+                        loc.postcode
+                    ].filter(Boolean);
+
+                    const fullAddress = parts.join(", ");
+                    return fullAddress;
+                })(),
+                "address"
+            )
+        },
+
+        {
+            label: "Why",
+            value: {
+                title: "Why this staff?",
+                description:
+                    selectedAssignment?.originalStaffObject?.reason ??
+                    "Reason not provided"
+            }
         }
-    }, [selectedAssignment]);
+    ];
+
+
+
+    console.log("staffInfoList", staffInfoList)
+    // input value for chat (kept like original)
+    const [inputValue, setInputValue] = useState("");
 
     return (
         <div className="rostering-history-container">
@@ -230,16 +461,16 @@ const RosterHistory = (props) => {
                         <div
                             key={c.id}
                             className={`rostering-client-card ${selected?.id === c.id ? "rostering-active-client" : ""}`}
-                            onClick={() => setSelected(c)}
+                            onClick={() => onClientSelect(c)}
                         >
                             <div style={{ backgroundColor: '#F7FAFF', height: '34px', width: '34px', borderRadius: '6px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                                 <FiUser size={22} color='#6c4cdc' />
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: "column", gap: '8px', marginTop: '6px' }}>
-                                <div className="rostering-client-name">{c.name}</div>
-                                <div className="rostering-client-info"><FiMapPin /> {c.address}</div>
-                                <div className="rostering-client-info"><FiPhone /> {c.phone}</div>
+                                <div className="rostering-client-name">{maskDetailsIfKris(c.name, "name")}</div>
+                                <div className="rostering-client-info"><FiMapPin /> {maskDetailsIfKris(c.address, "address")}</div>
+                                <div className="rostering-client-info"><FiPhone /> {maskDetailsIfKris(c.phone, "phone")}</div>
                             </div>
                         </div>
                     ))}
@@ -306,28 +537,13 @@ const RosterHistory = (props) => {
                                                 <div style={{ fontSize: 12, marginTop: 30, color: "#9CA3AF" }}>No Assignments</div>
                                             ) : (
                                                 d.assignments.map((a, i) => (
-                                                    <div key={i} className={`roster-status-card status-${a.status}`}
-                                                        onClick={() => {
-                                                            const formattedDate = `${d.dayName}, ${d.date} ${monthName}`;
-
-                                                            const firstMessage = {
-                                                                id: 1,
-                                                                text: `Hi, are you available for ${selected?.name} on ${formattedDate} at ${a.time}? Reply Y to accept or N to reject`,
-                                                                time: "9:30 AM",
-                                                                sender: "other"
-                                                            };
-
-                                                            setChatMessages([firstMessage]);     // sets default message first time
-                                                            setSelectedAssignment({
-                                                                ...a,
-                                                                dayName: d.dayName,
-                                                                day: d.date,
-                                                                monthName: monthName,
-                                                            });
-                                                            setOpenPanel(true);
-                                                        }}
+                                                    <div
+                                                        key={i}
+                                                        className={`roster-status-card status-${a.status}`}
+                                                        onClick={() => onOpenAssignment(a)}
                                                     >
-                                                        <div style={{ fontSize: '14px', fontWeight: '500', fontFamily: 'Inter', marginBottom: '8px', textAlign: 'left' }}>{a.carer}</div>
+
+                                                        <div style={{ fontSize: '14px', fontWeight: '500', fontFamily: 'Inter', marginBottom: '8px', textAlign: 'left' }}>{maskDetailsIfKris(a.carer, "name")}</div>
                                                         <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-start', gap: '4px', marginBottom: '4px' }}>
                                                             <AiFillClockCircle color="white" />
                                                             <div style={{ fontSize: '14px', textAlign: 'left' }}>{a.time}</div>
@@ -379,8 +595,8 @@ const RosterHistory = (props) => {
                                     <div style={{ borderBottom: '1px solid #ede8f1', padding: '16px 12px', backgroundColor: '#F8FAFB', }}>
                                         {selectedAssignment.status === "waiting" ? (
                                             <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
-                                                <button style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', fontSize: '13px', cursor: 'pointer', background: '#E63946', color: '#fff' }}>Reject</button>
-                                                <button style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', fontSize: '13px', cursor: 'pointer', background: '#4CAF50', color: '#fff' }}>Accept</button>
+                                                <button style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', fontSize: '13px', cursor: 'pointer', background: '#E63946', color: '#fff' }} onClick={() => rejectStaff(selectedAssignment.originalRecord?.id || selectedAssignment.recordId, selectedAssignment.originalStaffObject?.phone)}>Reject</button>
+                                                <button style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', fontSize: '13px', cursor: 'pointer', background: '#4CAF50', color: '#fff' }} onClick={() => approveStaff(selectedAssignment.originalRecord?.id || selectedAssignment.recordId, selectedAssignment.originalStaffObject?.phone)}>Accept</button>
                                             </div>
                                         ) : selectedAssignment.status === "accepted" ? (
                                             <span style={{ color: '#4CAF50', fontWeight: 600, textAlign: 'center' }}>Staff accepted for this assignment</span>
@@ -422,7 +638,7 @@ const RosterHistory = (props) => {
                                     {/* ===== CHAT SECTION ===== */}
                                     <div style={{ fontSize: '16px', fontWeight: '500', fontFamily: 'Inter', textAlign: 'left', margin: '8px 14px' }}>Messages</div>
                                     <div className="messages-section">
-                                        {chatMessages.map((m) => (
+                                        {messages.map((m) => (
                                             <div key={m.id} className={`msg ${m.sender === "me" ? "you" : ""}`}>
                                                 <div className={`msg-bubble ${m.sender === "me" ? "right" : "left"}`}>
                                                     {m.text}
@@ -432,24 +648,16 @@ const RosterHistory = (props) => {
                                                 </div>
                                             </div>
                                         ))}
-                                        <div ref={messageEndRef}></div>
 
+                                        <div ref={messageEndRef}></div>
                                     </div>
 
 
                                     {/* input */}
                                     {selectedAssignment.status !== "rejected" &&
                                         <div className="msg-input-container">
-                                            <input
-                                                value={inputValue}
-                                                onChange={(e) => setInputValue(e.target.value)}
-                                                placeholder="Message..."
-                                                className="msg-input"
-                                            />
-
-                                            <button className="send-btn" onClick={sendMessage}>
-                                                ➤
-                                            </button>
+                                            <input placeholder="Message..." className="msg-input" value={inputValue} onChange={(e) => setInputValue(e.target.value)} />
+                                            <button className="send-btn" onClick={sendRMMessage}>➤</button>
                                         </div>
                                     }
 

@@ -10,7 +10,7 @@ import clickHandIcon from "../../../Images/clock hand.png"
 import star_icon from "../../../Images/rostering_star.png"
 const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient, visualCareCreds }) => {
     // console.log("rostering response", rosteringResponse)
-    // console.log("selectedClient",selectedClient)
+    console.log("selectedClient", selectedClient)
     const [selected, setSelected] = useState([]);
     const [showSuccess, setShowSuccess] = useState(false);
     const [broadcasting, setBroadcasting] = useState(false);
@@ -70,54 +70,92 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
     };
 
     // Controller 2: Broadcast shift to selected staff
-const handleBroadcast = async () => {
-    if (selected.length === 0) {
-        alert("Please select at least one staff to broadcast.");
-        return;
-    }
+    console.log("client", client)
+    const handleBroadcast = async () => {
+        if (selected.length === 0) {
+            alert("Please select at least one staff to broadcast.");
+            return;
+        }
 
-    setBroadcasting(true);
+        setBroadcasting(true);
 
-    try {
-        // Get selected staff from rankedStaff
-        const selectedStaff = selected.map(index => rankedStaff[index]);
+        try {
+            // Get selected staff from rankedStaff
+            const selectedStaff = selected.map(index => rankedStaff[index]);
+            console.log("selectedStaff", selectedStaff)
+            const payload = {
+                clientData: {
+                    // ✔ Correct client ID
+                    ClientId: selectedClient.clientId,
 
-        const payload = {
-            clientData: {
-                ClientId: client.ClientId || client.id || selectedClient?.clientId,
-                PreferredName: client.PreferredName || client.FirstName || selectedClient?.name,
-                startTime: request.shift_start_time || request.shift_start || request.startTime,  
-                minutes: request.minutes || request.duration || selectedClient?.minutes || 60
-            },
+                    // ✔ Correct name
+                    PreferredName: selectedClient.name,
+                    FirstName: selectedClient.name,
 
-            staffList: selectedStaff.map(s => ({
-                name: s.name,
-                phone: "7020737478",     // using real phone
-                role: "SW"
-            })),
+                    // ✔ Gender
+                    Gender: selectedClient.sex,
 
-            rosteringManagers: [
-                {
-                    name: "Kris",
-                    phone: "8618562951",
-                    role: "RM"
-                }
-            ]
-        };
+                    // ✔ DOB (not available → null)
+                    DateOfBirth: selectedClient.dob || null,
 
-        console.log("📤 Broadcast Payload:", payload);
+                    // ✔ Phone
+                    Phone: selectedClient.phone,
 
-        const response = await axios.post(`${API_BASE}/sampleBroadcast`, payload);
+                    // ✔ Address (auto split)
+                    Address1: selectedClient.address || "",
+                    Address2: "",
 
-        setShowSuccess(true);
+                    Suburb: "",
+                    State: "",
+                    PostCode: "",
 
-    } catch (error) {
-        console.error("Error broadcasting:", error);
-        alert("Failed to broadcast messages. Try again.");
-    } finally {
-        setBroadcasting(false);
-    }
-};
+                    // ✔ Skills
+                    prefSkillsDescription: selectedClient.prefSkillsDescription || [],
+
+                    // ✔ Use selectedClient startTime + minutes
+                    startTime: selectedClient.startTime,
+                    minutes: parseInt(selectedClient.minutes) || request.minutes
+                },
+
+                staffList: selectedStaff.map(s => ({
+                    staffId: s.id || s.staffId,
+                    name: s.name,
+                    phone: "+917020737478",
+                    email: s.email,
+                    gender: s.gender || s.sex,
+                    location: s.location,
+                    skills: s.skills,
+                    award: s.award_desc,
+                    experience_years: s.experience_years,
+                    languages: s.languages,
+                    role_description: s.role_description,
+                    reason: s.reason,
+                    role: "SW"
+                })),
+
+                rosteringManagers: [
+                    {
+                        name: "Kris",
+                        phone: "+918618562951",
+                        role: "RM"
+                    }
+                ]
+            };
+
+
+            console.log("📤 Broadcast Payload:", payload);
+
+            const response = await axios.post(`${API_BASE}/api/sampleBroadcast`, payload);
+
+            setShowSuccess(true);
+
+        } catch (error) {
+            console.error("Error broadcasting:", error);
+            alert("Failed to broadcast messages. Try again.");
+        } finally {
+            setBroadcasting(false);
+        }
+    };
 
 
     // Helper function to format address
