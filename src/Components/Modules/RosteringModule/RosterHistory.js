@@ -21,64 +21,64 @@ const RosterHistory = (props) => {
     const scrollRef = useRef(null);
 
     const dummyClients = [
-        { id: 1, name: "Olivia Martin", address: "12 King St, Sydney, NSW, 2000", phone: "+61 450 123 789" },
+        { id: 1, name: "Fiona Lamond", address: "Building B Apartment, Solent, NSW, 2153", phone: "+61 407 272 103" },
         { id: 2, name: "Noah Williams", address: "88 George St, Brisbane, QLD, 4000", phone: "+61 422 678 900" },
         { id: 3, name: "Amelia Johnson", address: "19 Riverway, Melbourne, VIC, 3000", phone: "+61 499 784 112" },
         { id: 4, name: "Lucas Brown", address: "3 Beach Ave, Gold Coast, QLD, 4217", phone: "+61 433 980 556" },
-        { id: 5, name: "Charlotte Davis", address: "55 Market Rd, Perth, WA, 6000", phone: "+61 478 331 244" },
-        { id: 6, name: "Henry Miller", address: "22 Oakwood Dr, Adelaide, SA, 5000", phone: "+61 466 772 911" },
-        { id: 7, name: "Sophia Wilson", address: "10 Queen Way, Hobart, TAS, 7000", phone: "+61 457 993 221" },
-        { id: 8, name: "Jack Anderson", address: "2 Mountain Rd, Canberra, ACT, 2600", phone: "+61 413 884 002" },
-        { id: 9, name: "Mia Taylor", address: "45 Hillcrest, Darwin, NT, 0800", phone: "+61 499 661 770" },
-        { id: 10, name: "William Thompson", address: "98 Sunset Blvd, Adelaide, SA, 5000", phone: "+61 433 583 721" },
+        // { id: 5, name: "Charlotte Davis", address: "55 Market Rd, Perth, WA, 6000", phone: "+61 478 331 244" },
+        // { id: 6, name: "Henry Miller", address: "22 Oakwood Dr, Adelaide, SA, 5000", phone: "+61 466 772 911" },
+        // { id: 7, name: "Sophia Wilson", address: "10 Queen Way, Hobart, TAS, 7000", phone: "+61 457 993 221" },
+        // { id: 8, name: "Jack Anderson", address: "2 Mountain Rd, Canberra, ACT, 2600", phone: "+61 413 884 002" },
+        // { id: 9, name: "Mia Taylor", address: "45 Hillcrest, Darwin, NT, 0800", phone: "+61 499 661 770" },
+        // { id: 10, name: "William Thompson", address: "98 Sunset Blvd, Adelaide, SA, 5000", phone: "+61 433 583 721" },
     ];
 
     const assignmentsData = [
         {
             clientId: 1,
-            date: "2025-11-23",
-            carer: "Oluchi Nkwocha 1",
+            date: "2025-11-26",
+            carer: "Oluchi ",
             time: "8:00AM - 10:00AM",
             status: "waiting"
         },
         {
             clientId: 1,
-            date: "2025-11-23",
-            carer: "Oluchi Nkwocha 2",
+            date: "2025-11-26",
+            carer: "Natalie john",
             time: "8:00AM - 10:00AM",
             status: "accepted"
         },
         {
             clientId: 1,
-            date: "2025-11-23",
-            carer: "Oluchi Nkwocha 3",
+            date: "2025-11-26",
+            carer: "Alex",
             time: "10:00AM - 1:00PM",
             status: "rejected"
         },
         {
             clientId: 1,
-            date: "2025-11-23",
+            date: "2025-11-26",
             carer: "Alex Johnson",
             time: "1:00PM - 3:00PM",
             status: "waiting"
         },
         {
             clientId: 1,
-            date: "2025-11-23",
+            date: "2025-11-26",
             carer: "Jacob Marks",
             time: "3:00PM - 5:00PM",
             status: "accepted"
         },
         {
             clientId: 1,
-            date: "2025-11-23",
+            date: "2025-11-26",
             carer: "Emily Roberts",
             time: "5:00PM - 7:00PM",
             status: "accepted"
         },
         {
             clientId: 1,
-            date: "2025-11-23",
+            date: "2025-11-26",
             carer: "Chris Evans",
             time: "6:00PM - 8:00PM",
             status: "rejected"
