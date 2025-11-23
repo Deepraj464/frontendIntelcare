@@ -609,6 +609,7 @@ const SmartRostering = (props) => {
             {screen===3 && (
                 <RosterHistory
                     setScreen={setScreen}
+                    userEmail={userEmail}
                 />
             )}
             {loading && (
