@@ -7,6 +7,8 @@ import RosterDetails from "./RosterDetails";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import fileIcon from '../../../Images/FileIcon.png';
 import axios from "axios";
+import { MdOutlineHistory } from "react-icons/md";
+import RosterHistory from "./RosterHistory";
 
 const API_BASE = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net";
 
@@ -351,8 +353,10 @@ const SmartRostering = (props) => {
                             </ul>
                         </div>
                     </div>
-
-                    <h2 className="rostering-date">{formattedDate}</h2>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:'30px'}}>
+                    <div className="rostering-date">{formattedDate}</div>
+                    <button style={{padding:'10px 20px',backgroundColor:'#6c4cdc',border:'none',borderRadius:'4px',outline:'none',color:'white',fontSize:'16px',fontFamily:'Inter',fontWeight:'500',cursor:'pointer',display:'flex',alignItems:'center',gap:'4px'}} onClick={()=>setScreen(3)}>History <MdOutlineHistory size={18} color="white"/></button>
+                    </div>
 
                     <div className="rostering-stats-row">
                         <div className="rostering-stat-card">
@@ -600,6 +604,12 @@ const SmartRostering = (props) => {
                     API_BASE={API_BASE}
                     selectedClient={selectedClient}
                     visualCareCreds={visualCareCreds}
+                />
+            )}
+            {screen===3 && (
+                <RosterHistory
+                    setScreen={setScreen}
+                    userEmail={userEmail}
                 />
             )}
             {loading && (

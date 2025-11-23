@@ -11,7 +11,7 @@ const ClientDetailsPage = ({
   smsBroadcasted,
 }) => {
   console.log(supportWorkers);
-  console.log(client);
+  console.log("client",client);
   if (smsBroadcasted) {
     return <BroadcastSuccess imageSrc={tickImage} message="SMS Broadcasted" />;
   }
