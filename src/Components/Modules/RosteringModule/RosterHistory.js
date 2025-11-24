@@ -164,49 +164,81 @@ const RosterHistory = (props) => {
     };
 
     // === fetch chat messages for chosen assignment and map to old message shape
-    const fetchChatMessages = async (conversationId) => {
-        console.log("conversationId", conversationId)
-        try {
-            const res = await axios.get(`${API_BASE}/api/getChatHistory/${conversationId}`);
-            console.log("res", res)
-            const msgs = (res.data.messages || []).map(m => ({
-                id: m.id || m._rid || Date.now() + Math.random(),
-                text: m.message || "",
-                time: m.time ? new Date(m.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "",
-                sender: (() => {
-                    // 1. Automated system message (broadcast) → LEFT
-                    if (m.id?.includes("broadcast")) return "other";
+const fetchChatMessages = async (conversationIdBase, staffId, phone) => {
+    try {
+        const clean = (p) => (p || "").replace(/\D/g, "").slice(-10);
 
-                    // 2. Staff message → LEFT
-                    if (m.fromRole === "SW") return "other";
+        const recordId = conversationIdBase;
 
-                    // 3. RM manual message → RIGHT
-                    if (m.fromRole === "RM") return "me";
+        // 1) Broadcast conversation (RM → staff)
+        const convBroadcast = `${recordId}-${staffId}`;
 
-                    // fallback → LEFT
-                    return "other";
-                })()
+        // 2) Chat conversation (staff ↔ RM)
+        const convChat = `${recordId}-${clean(phone)}`;
 
+        console.log("Fetching:", convBroadcast, convChat);
 
-            }));
-            setMessages(msgs);
+        // Fetch both
+        const [broadcastRes, chatRes] = await Promise.all([
+            axios.get(`${API_BASE}/api/getChatHistory/${convBroadcast}`),
+            axios.get(`${API_BASE}/api/getChatHistory/${convChat}`)
+        ]);
 
-            // scroll into view
-            if (messageEndRef.current) {
-                messageEndRef.current.scrollIntoView({ behavior: "smooth" });
+        const bMsgs = broadcastRes.data.messages || [];
+        const cMsgs = chatRes.data.messages || [];
+
+        // Merge
+        const combined = [...bMsgs, ...cMsgs];
+        console.log("combine messages",combined)
+        // Sort by timestamp (broadcast always at top if same)
+        combined.sort((a, b) => {
+            const t1 = new Date(a.time).getTime();
+            const t2 = new Date(b.time).getTime();
+            if (t1 === t2) {
+                // Broadcast first if same
+                if (a.id?.includes("broadcast")) return -1;
+                if (b.id?.includes("broadcast")) return 1;
             }
-        } catch (err) {
-            console.error("Failed to fetch chat messages:", err);
-            setMessages([]);
+            return t1 - t2;
+        });
+
+        // Convert to UI format
+        const msgs = combined.map(m => ({
+            id: m.id || m._rid || Date.now() + Math.random(),
+            text: m.message || "",
+            time: m.time
+                ? new Date(m.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                : "",
+            sender: (() => {
+                if (m.id?.includes("broadcast")) return "other";
+                if (m.fromRole === "SW") return "other";
+                if (m.fromRole === "RM") return "me";
+                return "other";
+            })()
+        }));
+
+        setMessages(msgs);
+
+        if (messageEndRef.current) {
+            messageEndRef.current.scrollIntoView({ behavior: "smooth" });
         }
-    };
+
+        return msgs;
+
+    } catch (err) {
+        console.error("Failed to fetch chat messages:", err);
+        setMessages([]);
+        return [];
+    }
+};
+
 
     // === send message (RM) — matches old UI: appends locally after successful POST
     const sendRMMessage = async () => {
         if (!inputValue?.trim() || !selectedAssignment) return;
 
         try {
-            await axios.post(`${API_BASE}/chat/send`, {
+            await axios.post(`${API_BASE}/api/chat/send`, {
                 recordId: selectedAssignment.originalRecord?.id || selectedAssignment.recordId,
                 message: inputValue,
                 staffPhone: selectedAssignment.originalStaffObject?.phone || selectedAssignment.staffPhone
@@ -342,15 +374,17 @@ const RosterHistory = (props) => {
     };
 
     // old UI open assignment behavior preserved
-    const onOpenAssignment = async (a) => {
-        setSelectedAssignment(a);
-        setOpenPanel(true);
-        // fetch chat using originalRecord.id if available, else fallback to conversationId-like fields
-        const convId = `${a.originalRecord?.id}-${a.originalStaffObject?.staffId || a.originalStaffObject?.phone}`;
+const onOpenAssignment = async (a) => {
+    setSelectedAssignment(a);
+    setOpenPanel(true);
 
-        console.log("convId", convId)
-        if (convId) await fetchChatMessages(convId);
-    };
+    const recordId = a.originalRecord?.id;
+    const staffId = a.originalStaffObject?.staffId;
+    const phone = a.originalStaffObject?.phone;
+
+    await fetchChatMessages(recordId, staffId, phone);
+};
+
 
     // Build staffInfoList in same order & same labels as old static file (but using selectedAssignment.originalStaffObject)
     const staffInfoList = [
