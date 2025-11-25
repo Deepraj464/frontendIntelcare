@@ -697,6 +697,7 @@ const SmartRostering = (props) => {
                     API_BASE={API_BASE}
                     selectedClient={selectedClient}
                     visualCareCreds={visualCareCreds}
+                    userEmail={userEmail}
                 />
             )}
             {screen === 3 && (

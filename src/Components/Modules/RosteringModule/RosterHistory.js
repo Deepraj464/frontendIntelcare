@@ -57,7 +57,7 @@ const RosterHistory = (props) => {
     useEffect(() => {
         const fetchClients = async () => {
             try {
-                const res = await axios.get(`${API_BASE}/api/getAllClientsHistory`);
+                const res = await axios.get(`${API_BASE}/api/getAllClientsHistory?rmEmail=${userEmail}`);
                 const clients = res.data.clients || [];
 
                 // Map API clients -> old dummyClients shape
@@ -120,9 +120,9 @@ const RosterHistory = (props) => {
     // === When a client is selected: fetch their full history and build assignmentsData exactly like old structure
     const fetchClientHistory = async (clientId) => {
         try {
-            const res = await axios.get(`${API_BASE}/api/getClientHistory/${clientId}`);
+            const res = await axios.get(`${API_BASE}/api/getClientHistory/${clientId}?rmEmail=${userEmail}`);
             const history = res.data.history || [];
-            console.log("history", history)
+            // console.log("history", history)
             // Build assignments array in old shape
             const built = [];
             history.forEach(record => {
