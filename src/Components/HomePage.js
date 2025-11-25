@@ -70,10 +70,11 @@ const HomePage = () => {
   const isTlcClientProfitabilityPage = selectedRole === "Clients Profitability";
   const [tlcClientProfitabilityPayload, setTlcClientProfitabilityPayload] = useState(null);
   const [Suggestions, setSuggestions] = useState([]);
+  const [manualAskAiFile, setManualAskAiFile] = useState(null);
   const handleModalOpen = () => setModalVisible(true);
   const handleModalClose = () => setModalVisible(false);
 
-
+  console.log("manualAskAiFile in homepage", manualAskAiFile)
   const moduleSuggestions = {
     tlc: [
       "Which 10 employees in NDIS have the highest overtime hours and overtime $ as a percentage of their total hours and pay?",
@@ -156,6 +157,26 @@ const HomePage = () => {
     try {
       // 🟢 SMART ROSTERING MODE
       if (isSmartRosteringPage) {
+        if (manualAskAiFile) {
+          const form = new FormData();
+          form.append("files", manualAskAiFile);
+          form.append("question", finalQuery);
+          const response = await axios.post(
+            "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/api/manualSmartRostering",
+            form,
+            { headers: { "Content-Type": "multipart/form-data" } }
+          );
+          const botReply =
+            response.data?.answer ||
+            response.data?.response ||
+            "No response";
+
+          setMessages(prev =>
+            prev.map(msg => (msg.temp ? { sender: "bot", text: botReply } : msg))
+          );
+
+          return; // Stop here
+        }
         const payload = {
           manifest: mainfestData,
           question: finalQuery,
@@ -249,7 +270,7 @@ const HomePage = () => {
             `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/payroll/filter?${query}&${userEmail}`
           );
 
-          console.log("filter api response in ask ai", filterApiResponse);
+          // console.log("filter api response in ask ai", filterApiResponse);
 
           const filteredPayload = filterApiResponse.data?.payload || [];
 
@@ -259,7 +280,7 @@ const HomePage = () => {
           };
         }
 
-        console.log("🟡 TLC Payroll Payload:", payload);
+        // console.log("🟡 TLC Payroll Payload:", payload);
 
         const baseURL = "https://curki-backend-api-container.yellowflower-c21bea82.australiaeast.azurecontainerapps.io";
         const apiURL = `${baseURL}/tlc/payroll/payroll_askai`;
@@ -479,7 +500,7 @@ const HomePage = () => {
                 </div>
 
                 <div style={{ display: selectedRole === "Smart Rostering" ? "block" : "none" }}>
-                  <RosteringDashboard user={user} />
+                  <RosteringDashboard user={user} setManualAskAiFile={setManualAskAiFile} />
                 </div>
               </>
 

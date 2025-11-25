@@ -18,7 +18,7 @@
   
   .rostering-stats-row {
     display: grid;
-    grid-template-columns: 32% 32% 32%;
+    grid-template-columns: 23.5% 23.5% 23.5% 23.5%;
     gap: 2%;
     margin-bottom: 40px;
     margin-top: 33px;
