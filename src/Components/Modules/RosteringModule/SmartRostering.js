@@ -27,6 +27,7 @@ const SmartRostering = (props) => {
     const [loadingClients, setLoadingClients] = useState(true);
     const [loading, setLoading] = useState(false);
     const [promptLoading, setPromptLoading] = useState(false);
+    const [manualMetrics, setManualMetrics] = useState(null);
 
     const today = new Date();
     const options = { day: "2-digit", month: "short", year: "numeric" };
@@ -50,6 +51,36 @@ const SmartRostering = (props) => {
             sex: client.sex || "N/A",
         };
     };
+    console.log("selectedFile", selectedFile)
+    const runManualMetrics = async () => {
+        try {
+            const form = new FormData();
+            selectedFile.forEach(f => form.append("files", f));
+
+            const res = await axios.post(
+                `${API_BASE}/api/manualMetricsAndHistory`,
+                form // ❌ NO custom headers
+            );
+
+            console.log("res in runManualMetrics", res);
+
+            const m = res.data;
+
+            const mm = {
+                shift_coverage: m?.shift_coverage_percent,
+                Unallocated_shift: m?.at_risk_unallocated_count,
+                staff_utilisation: m?.staff_utilisation_percent,
+            };
+
+            setManualMetrics(mm);
+
+        } catch (err) {
+            console.error("❌ Manual Metrics Error:", err);
+        }
+    };
+
+    console.log("manual metrics", manualMetrics)
+    console.log("rosteringMetrics",rosteringMetrics)
 
     useEffect(() => {
         const fetchVisualCareCreds = async () => {
@@ -81,9 +112,15 @@ const SmartRostering = (props) => {
     }, [userEmail]);
 
     useEffect(() => {
-        const fetchMetrics = async () => {
-            if (!visualCareCreds) return;
+        if (!visualCareCreds) return;
 
+        // If manual metrics exist → do NOT load VC metrics
+        if (manualMetrics) {
+            setRosteringMetrics(manualMetrics);
+            return;
+        }
+
+        const fetchMetrics = async () => {
             const { user, key, secret } = visualCareCreds;
             try {
                 const res = await axios.get(`${API_BASE}/api/getFortnightMetrics`, {
@@ -92,13 +129,12 @@ const SmartRostering = (props) => {
 
                 if (res.data?.success) {
                     const data = res.data.metrics;
-                    // Normalize naming for your UI cards
+
                     setRosteringMetrics({
                         shift_coverage: data.shift_coverage_pct,
                         Unallocated_shift: data.unallocated_shifts,
                         staff_utilisation: data.staff_utilization_pct,
                     });
-
                 }
             } catch (err) {
                 console.error("❌ Error fetching fortnight metrics:", err);
@@ -106,7 +142,8 @@ const SmartRostering = (props) => {
         };
 
         fetchMetrics();
-    }, [visualCareCreds]);
+    }, [visualCareCreds, manualMetrics]);
+
 
     // console.log("rosteringResponse",rosteringMetrics)
     // 🔹 Fetch unallocated shifts from API
@@ -157,15 +194,21 @@ const SmartRostering = (props) => {
 
 
     const handleFileChange = (event) => {
-        const files = Array.from(event.target.files); // take all selected files
+        const files = Array.from(event.target.files);
+
         setSelectedFile((prev) => {
             const combined = [...prev, ...files];
             if (combined.length > 2) {
                 alert("You can only upload a maximum of 2 files");
-                return combined.slice(0, 2); // keep only first 2
+                return combined.slice(0, 2);
             }
             return combined;
         });
+
+        // ADD THIS LINE:
+        if (props.setManualAskAiFile) {
+            props.setManualAskAiFile(files[0]);  // only first file used for manual Ask-AI
+        }
     };
 
     const removeFile = (index) => {
@@ -243,70 +286,100 @@ const SmartRostering = (props) => {
 
 
     const handleSubmit = async () => {
-        // if (selectedFile.length !== 2) {
-        //     alert("Please upload exactly 2 files before sending.");
-        //     return;
-        // }
-
         if (!query.trim()) {
             alert("Please enter a query first.");
             return;
         }
 
         setPromptLoading(true);
+
         try {
+            // USER SELECTED FILES? → RUN MANUAL LOGIC
+            if (selectedFile.length > 0) {
+                const form = new FormData();
+                form.append("prompt", query);
+
+                // attach first file only (manual expects single file)
+                form.append("files", selectedFile[0]);
+
+                const manualResponse = await axios.post(
+                    `${API_BASE}/api/manualSmartRostering`,
+                    form,
+                    { headers: { "Content-Type": "multipart/form-data" } }
+                );
+
+                // console.log("📌 Manual Roster Response:", manualResponse.data);
+
+                // handle manual response
+                const rankedStaff = manualResponse.data?.final_ranked || [];
+                if (rankedStaff.length === 0) {
+                    alert("No staff found.");
+                    return;
+                }
+
+                setRosteringResponse(manualResponse.data);
+
+                // build client for UI
+                const parsedClient = manualResponse.data?.parsed_client_profile || {};
+                const parsedShift = manualResponse.data?.parsed_shift || {};
+
+                setSelectedClient({
+                    name: parsedClient?.client_name || "Unknown",
+                    dateOfService: parsedShift?.date || "-",
+                    startTime: parsedShift?.start_time || "-",
+                    minutes: parsedShift?.duration_minutes
+                        ? `${parsedShift.duration_minutes} min`
+                        : "-",
+                    prefSkillsDescription: parsedClient?.required_skills || []
+                });
+
+                setScreen(2); // go to details view
+                await runManualMetrics();
+                return;
+            }
+
+            // NO FILES? → use old filler + smart logic
             const user = visualCareCreds?.user;
             const key = visualCareCreds?.key;
             const secret = visualCareCreds?.secret;
 
-            // console.log("Sending to Filler + Smart Rostering Controller:", query);
-
             const response = await axios.post(
                 `${API_BASE}/run-manifest-filler?user=${user}&key=${key}&secret=${secret}`,
-                { prompt: query, userEmail: userEmail },
+                { prompt: query, userEmail },
                 { headers: { "Content-Type": "application/json" } }
             );
 
-            // console.log("Combined Filler + Smart Rostering Response:", response.data);
-
-            // Corrected access path for ranked staff
             const rankedStaff = response.data?.rostering_summary?.final_ranked || [];
-
-            if (Array.isArray(rankedStaff) && rankedStaff.length > 0) {
-                // Store entire response for details screen
-                setRosteringResponse(response.data);
-
-                // ✅ Extract client info from filler.llm.inputs
-                const fillerInputs = response.data?.filler?.llm?.inputs || {};
-                let selectedClientData = {
-                    name: fillerInputs.client_name || "Unknown",
-                    dateOfService: fillerInputs.shift_date || "-",
-                    startTime: fillerInputs.shift_start || "-",
-                    minutes: fillerInputs.shift_minutes
-                        ? `${fillerInputs.shift_minutes} min`
-                        : "-",
-                    prefSkillsDescription: response?.data?.preferred_skill_descriptions
-                };
-
-                // ⭐ Mask client ONLY when prompt-based & Kris user
-                if (userEmail === "kris@curki.ai") {
-                    selectedClientData = maskClientForKris(selectedClientData);
-                }
-
-
-                setSelectedClient(selectedClientData);
-                setScreen(2); // move to details view
-            } else {
-                console.warn("⚠️ No ranked staff returned:", rankedStaff);
-                alert("No staff found for this shift.");
+            if (!rankedStaff.length) {
+                alert("No staff found.");
+                return;
             }
+
+            setRosteringResponse(response.data);
+
+            const fillerInputs = response.data?.filler?.llm?.inputs || {};
+            setSelectedClient({
+                name: fillerInputs.client_name,
+                dateOfService: fillerInputs.shift_date,
+                startTime: fillerInputs.shift_start,
+                minutes: fillerInputs.shift_minutes
+                    ? `${fillerInputs.shift_minutes} min`
+                    : "-",
+                prefSkillsDescription: response?.data?.preferred_skill_descriptions
+            });
+            if (userEmail === "kris@curki.ai") {
+                selectedClient = maskClientForKris(selectedClient);
+            }
+            setScreen(2);
+
         } catch (error) {
-            console.error("❌ Error running filler-smart-rostering:", error);
-            alert("Failed to run manifest filler + smart rostering.");
+            console.error("❌ Error:", error);
+            alert("Error running query.");
         } finally {
             setPromptLoading(false);
         }
     };
+
 
     if (unauthorized) {
         return (
@@ -367,7 +440,7 @@ const SmartRostering = (props) => {
 
                         <div className="rostering-stat-card">
                             <p>At-Risk Shifts</p>
-                            <span className="rostering-circle rostering-orange">{unallocatedClients.length}</span>
+                            <span className="rostering-circle rostering-orange">{manualMetrics ? rosteringMetrics?.Unallocated_shift : unallocatedClients.length}</span>
                         </div>
 
                         <div className="rostering-stat-card">
@@ -601,10 +674,14 @@ const SmartRostering = (props) => {
                             </div>
                             <textarea
                                 rows={6}
-                                placeholder="I am looking for..."
+                                placeholder={
+                                    "Required: Client Name, Date, Shift Start Time, Hours\n" +
+                                    "Example: Find staff for Sarah James on 25th Dec at 10 AM for 2 Hours."
+                                }
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                             />
+
                             <button className="rostering-send-btn" onClick={handleSubmit} disabled={promptLoading}>
                                 {promptLoading ? "Sending..." : <BiSend />}
                             </button>

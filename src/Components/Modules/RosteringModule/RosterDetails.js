@@ -9,7 +9,7 @@ import clockCircleIcon from "../../../Images/clock circle.png"
 import clickHandIcon from "../../../Images/clock hand.png"
 import star_icon from "../../../Images/rostering_star.png"
 const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient, visualCareCreds }) => {
-    // console.log("rostering response", rosteringResponse)
+    console.log("rostering response", rosteringResponse)
     console.log("selectedClient", selectedClient)
     const [selected, setSelected] = useState([]);
     const [showSuccess, setShowSuccess] = useState(false);
@@ -19,7 +19,6 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
     const [showClashing, setShowClashing] = useState(false);
     // console.log("rosteringResponse",rosteringResponse) 
     // Handle both response structures (direct rostering vs filler+rostering)
-    const isFillerResponse = rosteringResponse?.filler;
     const clashingList = rosteringResponse?.preffered_worker_clashing_roster || [];
     const formatDateTime = (isoString) => {
         if (!isoString) return "N/A";
@@ -38,22 +37,50 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
         return date.toLocaleString("en-AU", options);
     };
 
-    const client = isFillerResponse
-        ? rosteringResponse?.filler?.match?.matched_record || {}
-        : rosteringResponse?.data?.client || {};
+    const isFillerResponse = rosteringResponse?.filler;
 
-    // console.log('Client',selectedClient.prefSkillsDescription);
-    const rankedStaff = isFillerResponse
-        ? rosteringResponse?.rostering_summary?.final_ranked || []
-        : rosteringResponse?.data?.final_ranked || [];
+    const isManualResponse =
+        rosteringResponse?.parsed_client_profile &&
+        rosteringResponse?.final_ranked &&
+        !rosteringResponse?.data;
 
-    // Extract request details
-    const request = isFillerResponse
-        ? rosteringResponse?.filler?.llm?.inputs || {}
-        : rosteringResponse?.data?.request || {};
+    // CLIENT
+    let client = {};
+    if (isFillerResponse) {
+        client = rosteringResponse?.filler?.match?.matched_record || {};
+    } else if (isManualResponse) {
+        client = {
+            client_name: rosteringResponse?.parsed_client_profile?.client_name || "Unknown",
+            required_skills: rosteringResponse?.parsed_client_profile?.required_skills || [],
+            gender: rosteringResponse?.parsed_client_profile?.preferences?.gender || "any"
+        };
+    } else {
+        client = rosteringResponse?.data?.client || {};
+    }
 
-    const message = rosteringResponse?.message || "";
+    // STAFF
+    let rankedStaff = [];
+    if (isFillerResponse) {
+        rankedStaff = rosteringResponse?.rostering_summary?.final_ranked || [];
+    } else if (isManualResponse) {
+        rankedStaff = rosteringResponse?.final_ranked || [];
+    } else {
+        rankedStaff = rosteringResponse?.data?.final_ranked || [];
+    }
 
+    // REQUEST
+    let request = {};
+    if (isFillerResponse) {
+        request = rosteringResponse?.filler?.llm?.inputs || {};
+    } else if (isManualResponse) {
+        request = {
+            shift_date: rosteringResponse?.parsed_shift?.date || null,
+            start_time: rosteringResponse?.parsed_shift?.start_time || null,
+            duration_minutes: rosteringResponse?.parsed_shift?.duration_minutes || 0
+        };
+    } else {
+        request = rosteringResponse?.data?.request || {};
+    }
     // console.log("Client data:", client);
     // console.log("Ranked staff:", rankedStaff);
 
@@ -171,10 +198,21 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
         return selectedClient?.address || 'N/A';
     };
     // console.log(selectedClient)
+   useEffect(() => {
+    if (!isManualResponse) return;
+
+    let allRecords = rosteringResponse?.history || [];
+    allRecords = allRecords
+        .sort((a, b) => new Date(b.date_of_service) - new Date(a.date_of_service))
+        .slice(0, 10);
+
+    setTimesheetHistory(allRecords);
+}, [isManualResponse, rosteringResponse]);
+
     useEffect(() => {
         const fetchTimesheetHistory = async () => {
             if (!selectedClient || !visualCareCreds) return;
-
+            if (isManualResponse) return; 
             setLoadingHistory(true);
             try {
                 // 🕓 Dynamic date range (last 10 days)
@@ -218,7 +256,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
 
         fetchTimesheetHistory();
     }, [selectedClient, visualCareCreds]);
-    // console.log("time sheet history", timesheetHistory)
+    console.log("time sheet history", timesheetHistory)
     const ClockIcon = () => (
         <div
             style={{
@@ -335,19 +373,19 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                                         <p className="staff-details">
                                             <strong>Date of Service:</strong>{' '}
                                             <span style={{ color: 'black' }}>
-                                                {item.DateOfService || 'N/A'}
+                                                {item.DateOfService || item?.date_of_service || 'N/A'}
                                             </span>
                                         </p>
                                         <p className="staff-details">
                                             <strong>Worker Name:</strong>{' '}
                                             <span style={{ color: 'black' }}>
-                                                {item.WorkerName ?? 'N/A'}
+                                                {item.WorkerName || item?.worker_name ||  'N/A'}
                                             </span>
                                         </p>
                                         <p className="staff-details">
                                             <strong>Minutes:</strong>{' '}
                                             <span style={{ color: 'black' }}>
-                                                {item.Minutes ?? 'N/A'}
+                                                {item.Minutes || item?.minutes || 'N/A'}
                                             </span>
                                         </p>
                                     </div>
