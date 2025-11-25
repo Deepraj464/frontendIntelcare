@@ -219,15 +219,15 @@ const HomePage = () => {
 
         // Step 2: Ask AI
         const userEmail = user?.email
-        const response = axios.post(
-          `/tlcClientProfitibility/ask_ai?userEmail=${userEmail}`,
+        const response = await axios.post(
+          `https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/tlcClientProfitibility/ask_ai?userEmail=${userEmail}`,
           {
             question: finalQuery,
             payload: tlcClientProfitabilityPayload
           }
         )
 
-
+       console.log("response of tlc client profit ask ai ",response)
         const botReply =
           response.data?.ai_answer ||
           response.data?.answer ||
