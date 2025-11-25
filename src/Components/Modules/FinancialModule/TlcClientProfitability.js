@@ -33,7 +33,7 @@ const TlcClientProfitability = (props) => {
     const [directFinalTable, setDirectFinalTable] = useState(null);
     const [selectedActor, setSelectedActor] = useState("NDIS");
     const [syncEnabled, setSyncEnabled] = useState(false);
-
+    const [payload, setPayload] = useState(null);
     const BASE_URL = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net";
 
     const handleUpload = async () => {
@@ -61,7 +61,7 @@ const TlcClientProfitability = (props) => {
 
 
     const handleFinalAnalysis = async () => {
-        console.log("props.tlcClientProfitabilityPayload in handleFinal analysis",props.tlcClientProfitabilityPayload)
+        console.log("props.tlcClientProfitabilityPayload in handleFinal analysis",props?.tlcClientProfitabilityPayload)
         try {
             console.log("🔄 Starting final analysis request...");
             const analyzeRes = await fetch(
@@ -69,7 +69,7 @@ const TlcClientProfitability = (props) => {
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ payload: props.tlcClientProfitabilityPayload })
+                    body: JSON.stringify({ payload: props?.tlcClientProfitabilityPayload})
                 }
             );
 
@@ -134,11 +134,12 @@ const TlcClientProfitability = (props) => {
 
             // Save AI payload
             if (prepareData.payload && onPrepareAiPayload) {
-                onPrepareAiPayload(prepareData.payload);
+                onPrepareAiPayload(prepareData?.payload);
+                setPayload(prepareData?.payload)
             }
 
             // Final server analysis
-            await handleFinalAnalysis();
+            await handleFinalAnalysis(prepareData.payload);
 
         } catch (err) {
             console.error("❌ ERROR IN handleAnalyse:", err);
