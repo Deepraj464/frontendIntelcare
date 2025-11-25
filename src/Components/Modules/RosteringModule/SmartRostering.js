@@ -129,7 +129,6 @@ const SmartRostering = (props) => {
 
         // If manual metrics exist → do NOT load VC metrics
         if (manualMetrics) {
-            setRosteringMetrics(manualMetrics);
             return;
         }
 
@@ -401,6 +400,11 @@ const SmartRostering = (props) => {
             setPromptLoading(false);
         }
     };
+    useEffect(() => {
+        if (manualMetrics) {
+            setRosteringMetrics(manualMetrics);
+        }
+    }, [manualMetrics]);
 
 
     // if (unauthorized) {
@@ -457,17 +461,23 @@ const SmartRostering = (props) => {
                     <div className="rostering-stats-row">
                         <div className="rostering-stat-card">
                             <p>Shift Coverage %</p>
-                            <span className="rostering-circle rostering-green">{rosteringMetrics?.shift_coverage ? rosteringMetrics?.shift_coverage : 0}</span>
+                            <span className="rostering-circle rostering-green">{rosteringMetrics?.shift_coverage ?? 0}</span>
                         </div>
 
                         <div className="rostering-stat-card">
                             <p>At-Risk Shifts</p>
-                            <span className="rostering-circle rostering-orange">{manualMetrics ? rosteringMetrics?.Unallocated_shift : unallocatedClients.length}</span>
+                            <span className="rostering-circle rostering-orange">
+                                {manualMetrics
+                                    ? (rosteringMetrics?.Unallocated_shift ?? 0)
+                                    : (unallocatedClients?.length ?? 0)
+                                }
+                            </span>
+
                         </div>
 
                         <div className="rostering-stat-card">
                             <p>Staff Utilisation %</p>
-                            <span className="rostering-circle rostering-green">{rosteringMetrics?.staff_utilisation ? rosteringMetrics?.staff_utilisation : 0}</span>
+                            <span className="rostering-circle rostering-green">{rosteringMetrics?.staff_utilisation ?? 0}</span>
                         </div>
                         <div style={{ borderRadius: '8px', border: '0.76px dashed #6548FF' }}>
                             <div
