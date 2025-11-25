@@ -212,7 +212,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
     useEffect(() => {
         const fetchTimesheetHistory = async () => {
             if (!selectedClient || !visualCareCreds) return;
-
+            if (isManualResponse) return; 
             setLoadingHistory(true);
             try {
                 // 🕓 Dynamic date range (last 10 days)
@@ -256,7 +256,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
 
         fetchTimesheetHistory();
     }, [selectedClient, visualCareCreds]);
-    // console.log("time sheet history", timesheetHistory)
+    console.log("time sheet history", timesheetHistory)
     const ClockIcon = () => (
         <div
             style={{
@@ -373,19 +373,19 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                                         <p className="staff-details">
                                             <strong>Date of Service:</strong>{' '}
                                             <span style={{ color: 'black' }}>
-                                                {item.DateOfService || 'N/A'}
+                                                {item.DateOfService || item?.date_of_service || 'N/A'}
                                             </span>
                                         </p>
                                         <p className="staff-details">
                                             <strong>Worker Name:</strong>{' '}
                                             <span style={{ color: 'black' }}>
-                                                {item.WorkerName ?? 'N/A'}
+                                                {item.WorkerName || item?.worker_name ||  'N/A'}
                                             </span>
                                         </p>
                                         <p className="staff-details">
                                             <strong>Minutes:</strong>{' '}
                                             <span style={{ color: 'black' }}>
-                                                {item.Minutes ?? 'N/A'}
+                                                {item.Minutes || item?.minutes || 'N/A'}
                                             </span>
                                         </p>
                                     </div>
