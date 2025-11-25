@@ -60,8 +60,9 @@ const TlcClientProfitability = (props) => {
     };
 
 
-    const handleFinalAnalysis = async () => {
+    const handleFinalAnalysis = async (finalPayload) => {
         console.log("props.tlcClientProfitabilityPayload in handleFinal analysis",props?.tlcClientProfitabilityPayload)
+        console.log("finalPayload",finalPayload)
         try {
             console.log("🔄 Starting final analysis request...");
             const analyzeRes = await fetch(
@@ -69,7 +70,7 @@ const TlcClientProfitability = (props) => {
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ payload: props?.tlcClientProfitabilityPayload})
+                    body: JSON.stringify({ payload: finalPayload })
                 }
             );
 
