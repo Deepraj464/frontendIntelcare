@@ -26,6 +26,7 @@ const SmartRostering = (props) => {
     const [loadingClients, setLoadingClients] = useState(true);
     const [loading, setLoading] = useState(false);
     const [promptLoading, setPromptLoading] = useState(false);
+    const [manualMetrics, setManualMetrics] = useState(null);
 
     const today = new Date();
     const options = { day: "2-digit", month: "short", year: "numeric" };
@@ -49,6 +50,36 @@ const SmartRostering = (props) => {
             sex: client.sex || "N/A",
         };
     };
+    console.log("selectedFile", selectedFile)
+    const runManualMetrics = async () => {
+        try {
+            const form = new FormData();
+            selectedFile.forEach(f => form.append("files", f));
+
+            const res = await axios.post(
+                `${API_BASE}/api/manualMetricsAndHistory`,
+                form // ❌ NO custom headers
+            );
+
+            console.log("res in runManualMetrics", res);
+
+            const m = res.data;
+
+            const mm = {
+                shift_coverage: m?.shift_coverage_percent,
+                Unallocated_shift: m?.at_risk_unallocated_count,
+                staff_utilisation: m?.staff_utilisation_percent,
+            };
+
+            setManualMetrics(mm);
+
+        } catch (err) {
+            console.error("❌ Manual Metrics Error:", err);
+        }
+    };
+
+    console.log("manual metrics", manualMetrics)
+    console.log("rosteringMetrics",rosteringMetrics)
 
     useEffect(() => {
         const fetchVisualCareCreds = async () => {
@@ -80,9 +111,15 @@ const SmartRostering = (props) => {
     }, [userEmail]);
 
     useEffect(() => {
-        const fetchMetrics = async () => {
-            if (!visualCareCreds) return;
+        if (!visualCareCreds) return;
 
+        // If manual metrics exist → do NOT load VC metrics
+        if (manualMetrics) {
+            setRosteringMetrics(manualMetrics);
+            return;
+        }
+
+        const fetchMetrics = async () => {
             const { user, key, secret } = visualCareCreds;
             try {
                 const res = await axios.get(`${API_BASE}/api/getFortnightMetrics`, {
@@ -91,13 +128,12 @@ const SmartRostering = (props) => {
 
                 if (res.data?.success) {
                     const data = res.data.metrics;
-                    // Normalize naming for your UI cards
+
                     setRosteringMetrics({
                         shift_coverage: data.shift_coverage_pct,
                         Unallocated_shift: data.unallocated_shifts,
                         staff_utilisation: data.staff_utilization_pct,
                     });
-
                 }
             } catch (err) {
                 console.error("❌ Error fetching fortnight metrics:", err);
@@ -105,7 +141,8 @@ const SmartRostering = (props) => {
         };
 
         fetchMetrics();
-    }, [visualCareCreds]);
+    }, [visualCareCreds, manualMetrics]);
+
 
     // console.log("rosteringResponse",rosteringMetrics)
     // 🔹 Fetch unallocated shifts from API
@@ -296,6 +333,7 @@ const SmartRostering = (props) => {
                 });
 
                 setScreen(2); // go to details view
+                await runManualMetrics();
                 return;
             }
 
@@ -328,7 +366,9 @@ const SmartRostering = (props) => {
                     : "-",
                 prefSkillsDescription: response?.data?.preferred_skill_descriptions
             });
-
+            if (userEmail === "kris@curki.ai") {
+                selectedClient = maskClientForKris(selectedClient);
+            }
             setScreen(2);
 
         } catch (error) {
@@ -399,7 +439,7 @@ const SmartRostering = (props) => {
 
                         <div className="rostering-stat-card">
                             <p>At-Risk Shifts</p>
-                            <span className="rostering-circle rostering-orange">{unallocatedClients.length}</span>
+                            <span className="rostering-circle rostering-orange">{manualMetrics ? rosteringMetrics?.Unallocated_shift : unallocatedClients.length}</span>
                         </div>
 
                         <div className="rostering-stat-card">

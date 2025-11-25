@@ -9,7 +9,7 @@ import clockCircleIcon from "../../../Images/clock circle.png"
 import clickHandIcon from "../../../Images/clock hand.png"
 import star_icon from "../../../Images/rostering_star.png"
 const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient, visualCareCreds }) => {
-    // console.log("rostering response", rosteringResponse)
+    console.log("rostering response", rosteringResponse)
     console.log("selectedClient", selectedClient)
     const [selected, setSelected] = useState([]);
     const [showSuccess, setShowSuccess] = useState(false);
@@ -198,6 +198,17 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
         return selectedClient?.address || 'N/A';
     };
     // console.log(selectedClient)
+   useEffect(() => {
+    if (!isManualResponse) return;
+
+    let allRecords = rosteringResponse?.history || [];
+    allRecords = allRecords
+        .sort((a, b) => new Date(b.date_of_service) - new Date(a.date_of_service))
+        .slice(0, 10);
+
+    setTimesheetHistory(allRecords);
+}, [isManualResponse, rosteringResponse]);
+
     useEffect(() => {
         const fetchTimesheetHistory = async () => {
             if (!selectedClient || !visualCareCreds) return;
