@@ -9,8 +9,8 @@ import clockCircleIcon from "../../../Images/clock circle.png"
 import clickHandIcon from "../../../Images/clock hand.png"
 import star_icon from "../../../Images/rostering_star.png"
 const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient, visualCareCreds, userEmail }) => {
-    console.log("rostering response", rosteringResponse)
-    console.log("selectedClient", selectedClient)
+    // console.log("rostering response", rosteringResponse)
+    // console.log("selectedClient", selectedClient)
     const [selected, setSelected] = useState([]);
     const [showSuccess, setShowSuccess] = useState(false);
     const [broadcasting, setBroadcasting] = useState(false);
@@ -335,9 +335,17 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                                 {client.Phone1 || client.phone || selectedClient?.phone || 'N/A'}
                             </span></p>
                             <p>Plan Start Date: <span style={{ color: 'black' }}>
-                                {client.ServiceStart || client.plan_start_date || request.shift_date || selectedClient?.date || 'N/A'}
+                                {client.ServiceStart || client.plan_start_date || request.shift_date}
                             </span></p>
-
+                           
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', paddingLeft: '54px', gap: '42px', paddingTop: '20px', paddingBottom: '20px', borderBottom: '1px solid #E4E4E4' }}>
+                           <p>Start Time: <span style={{ color: 'black' }}>
+                                {selectedClient.startTime}
+                            </span></p>
+                            <p>End Time: <span style={{ color: 'black' }}>
+                                {selectedClient.endTime}
+                            </span></p>
                         </div>
                         <div style={{ display: 'flex', flexWrap: 'wrap', paddingLeft: '54px', gap: '42px', paddingTop: '20px', paddingBottom: '20px', borderBottom: '1px solid #E4E4E4' }}>
                             <p>Address: <span style={{ color: 'black' }}>
