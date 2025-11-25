@@ -19,7 +19,6 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
     const [showClashing, setShowClashing] = useState(false);
     // console.log("rosteringResponse",rosteringResponse) 
     // Handle both response structures (direct rostering vs filler+rostering)
-    const isFillerResponse = rosteringResponse?.filler;
     const clashingList = rosteringResponse?.preffered_worker_clashing_roster || [];
     const formatDateTime = (isoString) => {
         if (!isoString) return "N/A";
@@ -38,22 +37,50 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
         return date.toLocaleString("en-AU", options);
     };
 
-    const client = isFillerResponse
-        ? rosteringResponse?.filler?.match?.matched_record || {}
-        : rosteringResponse?.data?.client || {};
+    const isFillerResponse = rosteringResponse?.filler;
 
-    // console.log('Client',selectedClient.prefSkillsDescription);
-    const rankedStaff = isFillerResponse
-        ? rosteringResponse?.rostering_summary?.final_ranked || []
-        : rosteringResponse?.data?.final_ranked || [];
+    const isManualResponse =
+        rosteringResponse?.parsed_client_profile &&
+        rosteringResponse?.final_ranked &&
+        !rosteringResponse?.data;
 
-    // Extract request details
-    const request = isFillerResponse
-        ? rosteringResponse?.filler?.llm?.inputs || {}
-        : rosteringResponse?.data?.request || {};
+    // CLIENT
+    let client = {};
+    if (isFillerResponse) {
+        client = rosteringResponse?.filler?.match?.matched_record || {};
+    } else if (isManualResponse) {
+        client = {
+            client_name: rosteringResponse?.parsed_client_profile?.client_name || "Unknown",
+            required_skills: rosteringResponse?.parsed_client_profile?.required_skills || [],
+            gender: rosteringResponse?.parsed_client_profile?.preferences?.gender || "any"
+        };
+    } else {
+        client = rosteringResponse?.data?.client || {};
+    }
 
-    const message = rosteringResponse?.message || "";
+    // STAFF
+    let rankedStaff = [];
+    if (isFillerResponse) {
+        rankedStaff = rosteringResponse?.rostering_summary?.final_ranked || [];
+    } else if (isManualResponse) {
+        rankedStaff = rosteringResponse?.final_ranked || [];
+    } else {
+        rankedStaff = rosteringResponse?.data?.final_ranked || [];
+    }
 
+    // REQUEST
+    let request = {};
+    if (isFillerResponse) {
+        request = rosteringResponse?.filler?.llm?.inputs || {};
+    } else if (isManualResponse) {
+        request = {
+            shift_date: rosteringResponse?.parsed_shift?.date || null,
+            start_time: rosteringResponse?.parsed_shift?.start_time || null,
+            duration_minutes: rosteringResponse?.parsed_shift?.duration_minutes || 0
+        };
+    } else {
+        request = rosteringResponse?.data?.request || {};
+    }
     // console.log("Client data:", client);
     // console.log("Ranked staff:", rankedStaff);
 
