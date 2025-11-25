@@ -64,8 +64,8 @@
   }
   
   .rostering-upload-card {
-    border:0.76px dashed #6548FF;
-    border-radius: 8px;
+    border-top: 0.76px dashed #6548FF;
+    border-radius: 0px 0px 8px 8px;
     padding: 20px;
     background: #F0EDF6;
     display: flex;

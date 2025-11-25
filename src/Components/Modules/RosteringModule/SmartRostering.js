@@ -447,9 +447,9 @@ const SmartRostering = (props) => {
                             <p>Staff Utilisation %</p>
                             <span className="rostering-circle rostering-green">{rosteringMetrics?.staff_utilisation}</span>
                         </div>
-                        <div>
+                        <div style={{borderRadius:'8px', border:'0.76px dashed #6548FF'}}>
                             <div
-                                style={{ fontFamily: 'Inter', fontSize: '16px', cursor: 'pointer', marginBottom: '6px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', fontWeight: '500', color: '#6c4cdc' }}
+                                style={{ fontFamily: 'Inter', fontSize: '16px', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', fontWeight: '500', color: '#6c4cdc',padding:'6px 4px' }}
                                 onClick={() => {
                                     const link = document.createElement("a");
                                     link.href = "/templates/SmartRosteringTemplate.xlsx"; 
