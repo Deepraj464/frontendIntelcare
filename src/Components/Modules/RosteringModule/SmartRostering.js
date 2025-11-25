@@ -28,6 +28,17 @@ const SmartRostering = (props) => {
     const [loading, setLoading] = useState(false);
     const [promptLoading, setPromptLoading] = useState(false);
     const [manualMetrics, setManualMetrics] = useState(null);
+    const [currentIndex, setCurrentIndex] = useState(1);
+
+    const handleScroll = () => {
+        const container = document.getElementById("unallocated-scroll-container");
+        if (!container) return;
+
+        const cardWidth = 320;
+        const index = Math.floor(container.scrollLeft / cardWidth) + 1;
+
+        setCurrentIndex(Math.min(index, unallocatedClients.length));
+    };
 
     const today = new Date();
     const options = { day: "2-digit", month: "short", year: "numeric" };
@@ -37,6 +48,8 @@ const SmartRostering = (props) => {
     const visibleCount = 3;
     const [visualCareCreds, setVisualCareCreds] = useState(null);
     const [unauthorized, setUnauthorized] = useState(false);
+    const uploadDisabled = !!visualCareCreds;  // true when creds exist
+    console.log("unallocatedClients.length", unallocatedClients.length)
     const maskClientForKris = (client) => {
         if (!client) return client;
 
@@ -80,7 +93,7 @@ const SmartRostering = (props) => {
     };
 
     console.log("manual metrics", manualMetrics)
-    console.log("rosteringMetrics",rosteringMetrics)
+    console.log("rosteringMetrics", rosteringMetrics)
 
     useEffect(() => {
         const fetchVisualCareCreds = async () => {
@@ -216,16 +229,25 @@ const SmartRostering = (props) => {
     };
 
     const handleNext = () => {
-        if (startIndex + visibleCount < unallocatedClients.length) {
-            setStartIndex((prev) => prev + 1);
-        }
+        const container = document.getElementById("unallocated-scroll-container");
+        if (!container) return;
+
+        container.scrollBy({ left: 320, behavior: "smooth" });
+
+        setCurrentIndex(prev => Math.min(prev + 1, unallocatedClients.length));
     };
 
     const handlePrev = () => {
-        if (startIndex > 0) {
-            setStartIndex((prev) => prev - 1);
-        }
+        const container = document.getElementById("unallocated-scroll-container");
+        if (!container) return;
+
+        container.scrollBy({ left: -320, behavior: "smooth" });
+
+        setCurrentIndex(prev => Math.max(prev - 1, 1));
     };
+
+
+
 
     const visibleClients = unallocatedClients.slice(startIndex, startIndex + visibleCount);
 
@@ -447,21 +469,42 @@ const SmartRostering = (props) => {
                             <p>Staff Utilisation %</p>
                             <span className="rostering-circle rostering-green">{rosteringMetrics?.staff_utilisation}</span>
                         </div>
-                        <div style={{borderRadius:'8px', border:'0.76px dashed #6548FF'}}>
+                        <div style={{ borderRadius: '8px', border: '0.76px dashed #6548FF' }}>
                             <div
-                                style={{ fontFamily: 'Inter', fontSize: '16px', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', fontWeight: '500', color: '#6c4cdc',padding:'6px 4px' }}
+                                style={{
+                                    fontFamily: 'Inter',
+                                    fontSize: '16px',
+                                    cursor: uploadDisabled ? 'not-allowed' : 'pointer',
+                                    opacity: uploadDisabled ? 0.5 : 1,
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    fontWeight: '500',
+                                    color: '#6c4cdc',
+                                    padding: '6px 4px'
+                                }}
                                 onClick={() => {
+                                    if (uploadDisabled) return;  // 🔥 Stop click when creds exist
                                     const link = document.createElement("a");
-                                    link.href = "/templates/SmartRosteringTemplate.xlsx"; 
-                                    link.download = "Smart Rostering Template.xlsx"; 
+                                    link.href = "/templates/SmartRosteringTemplate.xlsx";
+                                    link.download = "Smart Rostering Template.xlsx";
                                     document.body.appendChild(link);
                                     link.click();
                                     document.body.removeChild(link);
                                 }}
                             >
-                                Download Template <LuDownload size={20}/>
+                                Download Template <LuDownload size={20} />
                             </div>
-                            <div className="rostering-upload-card">
+
+                            <div
+                                className="rostering-upload-card"
+                                style={{
+                                    opacity: uploadDisabled ? 0.5 : 1,
+                                    pointerEvents: uploadDisabled ? "none" : "auto",
+                                    cursor: uploadDisabled ? "not-allowed" : "pointer"
+                                }}
+                            >
                                 <div>
                                     {selectedFile.map((file, index) => (
                                         <div key={index} style={{ border: '1px solid #6c4cdc', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', padding: '8px 10px', marginBottom: '4px', width: '100%' }}>
@@ -479,6 +522,7 @@ const SmartRostering = (props) => {
                                         </div>
                                     ))}
                                 </div>
+
                                 {!selectedFile.length && (
                                     <>
                                         <div className="upload-icon">
@@ -488,8 +532,17 @@ const SmartRostering = (props) => {
                                         <small>Format: .xlsx, .csv, .xls only</small>
                                     </>
                                 )}
+
                                 <div style={{ marginTop: "12px" }}>
-                                    <label htmlFor="rostering-file-upload" className="rostering-upload-label">
+                                    <label
+                                        htmlFor="rostering-file-upload"
+                                        className="rostering-upload-label"
+                                        style={{
+                                            background: uploadDisabled ? "#d3d3d3" : "",
+                                            color: uploadDisabled ? "#888" : "",
+                                            cursor: uploadDisabled ? "not-allowed" : "pointer"
+                                        }}
+                                    >
                                         Browse Files
                                         <input
                                             type="file"
@@ -498,14 +551,16 @@ const SmartRostering = (props) => {
                                             onChange={handleFileChange}
                                             style={{ display: "none" }}
                                             multiple
+                                            disabled={uploadDisabled}
                                         />
                                     </label>
                                 </div>
                             </div>
+
                         </div>
                     </div>
 
-                    <div className="unallocated-shifts-section" style={{ marginTop: "40px" }}>
+                    {visualCareCreds && <div className="unallocated-shifts-section" style={{ marginTop: "40px" }}>
                         <h3
                             style={{
                                 fontFamily: "Inter",
@@ -527,6 +582,7 @@ const SmartRostering = (props) => {
                                 {/* Scrollable Container */}
                                 <div
                                     id="unallocated-scroll-container"
+                                    onScroll={handleScroll}
                                     style={{
                                         position: "relative",
                                         width: "100%",
@@ -605,64 +661,49 @@ const SmartRostering = (props) => {
                                     }}
                                 >
                                     <button
-                                        onClick={() => {
-                                            const container = document.getElementById(
-                                                "unallocated-scroll-container"
-                                            );
-                                            container.scrollBy({ left: -320, behavior: "smooth" });
-                                            setStartIndex((prev) => Math.max(prev - 1, 0));
-                                        }}
-                                        disabled={startIndex === 0}
+                                        onClick={handlePrev}
+                                        disabled={currentIndex === 1}   // ⛔ Disable when at start
                                         style={{
                                             background: "#f1f0ff",
                                             border: "none",
                                             borderRadius: "50%",
                                             width: "30px",
                                             height: "30px",
-                                            cursor: "pointer",
-                                            opacity: startIndex === 0 ? 0.5 : 1,
+                                            cursor: currentIndex === 1 ? "not-allowed" : "pointer",
+                                            opacity: currentIndex === 1 ? 0.4 : 1,
                                             fontSize: "18px",
                                             color: '#6c4cdc',
                                         }}
                                     >
-                                        &#8249;
+                                        ‹
                                     </button>
 
                                     <span style={{ fontFamily: "Inter", fontSize: "14px" }}>
-                                        {Math.min(startIndex + visibleCount, unallocatedClients.length)} /{" "}
-                                        {unallocatedClients.length}
+                                        {currentIndex} / {unallocatedClients.length}
                                     </span>
 
                                     <button
-                                        onClick={() => {
-                                            const container = document.getElementById(
-                                                "unallocated-scroll-container"
-                                            );
-                                            container.scrollBy({ left: 320, behavior: "smooth" });
-                                            setStartIndex((prev) =>
-                                                Math.min(prev + 1, unallocatedClients.length - visibleCount)
-                                            );
-                                        }}
-                                        disabled={startIndex + visibleCount >= unallocatedClients.length}
+                                        onClick={handleNext}
+                                        disabled={currentIndex === unallocatedClients.length}  // ⛔ Disable when at last
                                         style={{
                                             background: "#f1f0ff",
                                             border: "none",
                                             borderRadius: "50%",
                                             width: "30px",
                                             height: "30px",
-                                            cursor: "pointer",
-                                            opacity:
-                                                startIndex + visibleCount >= unallocatedClients.length ? 0.5 : 1,
+                                            cursor: currentIndex === unallocatedClients.length ? "not-allowed" : "pointer",
+                                            opacity: currentIndex === unallocatedClients.length ? 0.4 : 1,
                                             fontSize: "18px",
                                             color: '#6c4cdc'
                                         }}
                                     >
-                                        &#8250;
+                                        ›
                                     </button>
                                 </div>
+
                             </>
                         )}
-                    </div>
+                    </div>}
 
 
 
