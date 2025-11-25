@@ -29,7 +29,7 @@ const SmartRostering = (props) => {
     const [promptLoading, setPromptLoading] = useState(false);
     const [manualMetrics, setManualMetrics] = useState(null);
     const [currentIndex, setCurrentIndex] = useState(1);
-
+    // console.log("unallocatedClients", unallocatedClients)
     const handleScroll = () => {
         const container = document.getElementById("unallocated-scroll-container");
         if (!container) return;
@@ -49,7 +49,7 @@ const SmartRostering = (props) => {
     const [visualCareCreds, setVisualCareCreds] = useState(null);
     const [unauthorized, setUnauthorized] = useState(false);
     const uploadDisabled = !!visualCareCreds;  // true when creds exist
-    console.log("unallocatedClients.length", unallocatedClients.length)
+    // console.log("unallocatedClients.length", unallocatedClients.length)
     const maskClientForKris = (client) => {
         if (!client) return client;
 
@@ -175,20 +175,40 @@ const SmartRostering = (props) => {
                     }
                 );
 
-
+                console.log("res in fetchUnallocatedShifts",res)
                 const grouped = res.data || {};
-                const allClients = grouped?.grouped.map((shift) => ({
-                    dateOfService: shift.date_of_service || "-",
-                    clientId: shift.client_id || "-",
-                    name: shift.client_name || "Unknown",
-                    sex: shift.sex || "-",
-                    phone: shift.phone || "-",
-                    email: shift.email?.trim() || "-",
-                    address: shift.address || "-",
-                    startTime: shift.start_time || "-",
-                    minutes: shift.minutes ? `${shift.minutes} min` : "-",
-                    prefSkillsDescription: shift?.prefSkillsDescription || []
-                }));
+                const allClients = grouped?.grouped.map((shift) => {
+                    const start = shift.start_time;              // "10:00"
+                    const mins = Number(shift.minutes) || 0;     // 360
+
+                    let endTime = "-";
+
+                    if (start && mins) {
+                        const [h, m] = start.split(":").map(Number);
+                        const startDate = new Date(2000, 0, 1, h, m); // dummy date
+
+                        const endDate = new Date(startDate.getTime() + mins * 60000);
+
+                        const endH = String(endDate.getHours()).padStart(2, "0");
+                        const endM = String(endDate.getMinutes()).padStart(2, "0");
+
+                        endTime = `${endH}:${endM}`;
+                    }
+                    return {
+                        dateOfService: shift.date_of_service || "-",
+                        clientId: shift.client_id || "-",
+                        name: shift.client_name || "Unknown",
+                        sex: shift.sex || "-",
+                        phone: shift.phone || "-",
+                        email: shift.email?.trim() || "-",
+                        address: shift.address || "-",
+                        startTime: start || "-",
+                        minutes: mins ? `${mins} min` : "-",
+                        endTime: endTime,  // <-- added
+                        prefSkillsDescription: shift?.prefSkillsDescription || []
+                    };
+                });
+
 
 
 
@@ -270,6 +290,7 @@ const SmartRostering = (props) => {
                 shift_date: client._real.date_of_service,
                 shift_start: client._real.start_time,
                 shift_minutes: client._real.minutes
+
             } : {
                 client_id: client.clientId,
                 shift_date: client.dateOfService,
@@ -653,6 +674,7 @@ const SmartRostering = (props) => {
                                                     <p style={{ marginBottom: '12px' }}><strong>Address:</strong> {client.address}</p>
                                                     <p style={{ marginBottom: '12px' }}><strong>Start Time:</strong> {client.startTime}</p>
                                                     <p style={{ marginBottom: '12px' }}><strong>Minutes:</strong> {client.minutes}</p>
+                                                    <p style={{ marginBottom: '12px' }}><strong>End Time:</strong> {client.endTime}</p>
                                                     {/* <p style={{ marginBottom: '12px' }}><strong>OnHoldType:</strong> {client.onHoldType}</p> */}
                                                     {/* <p><strong>OnHoldNote:</strong> {client.onHoldNote}</p> */}
                                                 </div>
