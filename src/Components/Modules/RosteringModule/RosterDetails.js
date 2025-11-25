@@ -8,7 +8,7 @@ import axios from "axios";
 import clockCircleIcon from "../../../Images/clock circle.png"
 import clickHandIcon from "../../../Images/clock hand.png"
 import star_icon from "../../../Images/rostering_star.png"
-const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient, visualCareCreds }) => {
+const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient, visualCareCreds, userEmail }) => {
     console.log("rostering response", rosteringResponse)
     console.log("selectedClient", selectedClient)
     const [selected, setSelected] = useState([]);
@@ -164,6 +164,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                     {
                         name: "Kris",
                         phone: "+61419015351",
+                        email: userEmail,
                         role: "RM"
                     }
                 ]
@@ -198,21 +199,21 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
         return selectedClient?.address || 'N/A';
     };
     // console.log(selectedClient)
-   useEffect(() => {
-    if (!isManualResponse) return;
+    useEffect(() => {
+        if (!isManualResponse) return;
 
-    let allRecords = rosteringResponse?.history || [];
-    allRecords = allRecords
-        .sort((a, b) => new Date(b.date_of_service) - new Date(a.date_of_service))
-        .slice(0, 10);
+        let allRecords = rosteringResponse?.history || [];
+        allRecords = allRecords
+            .sort((a, b) => new Date(b.date_of_service) - new Date(a.date_of_service))
+            .slice(0, 10);
 
-    setTimesheetHistory(allRecords);
-}, [isManualResponse, rosteringResponse]);
+        setTimesheetHistory(allRecords);
+    }, [isManualResponse, rosteringResponse]);
 
     useEffect(() => {
         const fetchTimesheetHistory = async () => {
             if (!selectedClient || !visualCareCreds) return;
-            if (isManualResponse) return; 
+            if (isManualResponse) return;
             setLoadingHistory(true);
             try {
                 // 🕓 Dynamic date range (last 10 days)
@@ -379,7 +380,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                                         <p className="staff-details">
                                             <strong>Worker Name:</strong>{' '}
                                             <span style={{ color: 'black' }}>
-                                                {item.WorkerName || item?.worker_name ||  'N/A'}
+                                                {item.WorkerName || item?.worker_name || 'N/A'}
                                             </span>
                                         </p>
                                         <p className="staff-details">
