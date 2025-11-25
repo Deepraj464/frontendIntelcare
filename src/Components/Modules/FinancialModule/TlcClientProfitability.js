@@ -61,6 +61,7 @@ const TlcClientProfitability = (props) => {
 
 
     const handleFinalAnalysis = async () => {
+        console.log("props.tlcClientProfitabilityPayload in handleFinal analysis",props.tlcClientProfitabilityPayload)
         try {
             console.log("🔄 Starting final analysis request...");
             const analyzeRes = await fetch(
