@@ -34,6 +34,7 @@ const TlcClientProfitability = (props) => {
     const [selectedActor, setSelectedActor] = useState("NDIS");
     const [syncEnabled, setSyncEnabled] = useState(false);
     const [payload, setPayload] = useState(null);
+   
     const BASE_URL = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net";
 
     const handleUpload = async () => {
@@ -61,8 +62,8 @@ const TlcClientProfitability = (props) => {
 
 
     const handleFinalAnalysis = async (finalPayload) => {
-        console.log("props.tlcClientProfitabilityPayload in handleFinal analysis",props?.tlcClientProfitabilityPayload)
-        console.log("finalPayload",finalPayload)
+        console.log("props.tlcClientProfitabilityPayload in handleFinal analysis", props?.tlcClientProfitabilityPayload)
+        console.log("finalPayload", finalPayload)
         try {
             console.log("🔄 Starting final analysis request...");
             const analyzeRes = await fetch(
@@ -278,126 +279,176 @@ const TlcClientProfitability = (props) => {
             />
         );
     };
-    useEffect(() => {
-        if (!responseData?.direct_service) return;
+useEffect(() => {
+    if (!responseData?.direct_service) return;
 
-        const summary = responseData.direct_service.tables.by_reference;
-        const details = responseData.direct_service.tables.detail;
+    const summary = responseData.direct_service.tables.by_reference;
+    const details = responseData.direct_service.tables.detail;
 
-        const summaryCols = summary.columns || [];
-        const summaryRows = summary.rows || [];
-        const detailCols = details.columns || [];
-        const detailRows = details.rows || [];
+    const summaryCols = summary.columns || [];
+    const summaryRows = summary.rows || [];
+    const detailCols = details.columns || [];
+    const detailRows = details.rows || [];
 
-        // Normalize keys so "Participant" → "participant"
-        const normalizeObjKeys = (obj) => {
-            const normalized = {};
-            Object.keys(obj || {}).forEach(k => {
-                const key = k?.toString()?.trim().toLowerCase();
-                normalized[key] = obj[k];
-            });
-            return normalized;
-        };
+    // Normalize keys
+    const normalizeObjKeys = (obj) => {
+        const normalized = {};
+        Object.keys(obj || {}).forEach(k => {
+            normalized[k.trim().toLowerCase()] = obj[k];
+        });
+        return normalized;
+    };
 
-        // Find a column index using case-insensitive matching
-        const findIndex = (cols, keywords) =>
-            cols.findIndex(c =>
-                keywords.some(k =>
-                    c?.toString?.().toLowerCase().includes(k.toLowerCase())
-                )
-            );
+    const findIndex = (cols, keywords) =>
+        cols.findIndex(c =>
+            keywords.some(k =>
+                c?.toString?.().toLowerCase().includes(k.toLowerCase())
+            )
+        );
 
-        // Find required columns
-        const sNdisIndex = findIndex(summaryCols, ["ndis", "reference"]);
-        const sPartIndex = findIndex(summaryCols, ["participant"]);
+    const sNdisIndex = findIndex(summaryCols, ["ndis", "reference"]);
+    const sPartIndex = findIndex(summaryCols, ["participant"]);
 
-        const dNdisIndex = findIndex(detailCols, ["ndis", "reference"]);
-        const dPartIndex = findIndex(detailCols, ["participant"]);
+    const dNdisIndex = findIndex(detailCols, ["ndis", "reference"]);
+    const dPartIndex = findIndex(detailCols, ["participant"]);
 
-        if (sNdisIndex < 0 || sPartIndex < 0 || dNdisIndex < 0 || dPartIndex < 0) {
-            console.error("🏳️ Required key columns missing.");
-            return;
+    if (sNdisIndex < 0 || sPartIndex < 0 || dNdisIndex < 0 || dPartIndex < 0) {
+        console.error("🏳️ Required key columns missing.");
+        return;
+    }
+
+    // Convert row → array by column order
+    const toRowArray = (obj, cols) => {
+        const norm = normalizeObjKeys(obj);
+        return cols.map(c => norm[c.toLowerCase()] ?? "");
+    };
+
+    // Identify detail-only columns
+    const detailOnlyCols = detailCols.filter(c => !summaryCols.includes(c));
+
+    // ---------------------------
+    // BUILD DETAIL MAP
+    // ---------------------------
+    const detailMap = {};
+
+    detailRows.forEach(dr => {
+        const norm = normalizeObjKeys(dr);
+
+        // Skip if detail is actually same as summary (happens when no extra columns)
+        if (detailOnlyCols.length === 0) return;
+
+        const ndis =
+            dr[detailCols[dNdisIndex]] ??
+            dr[dNdisIndex] ??
+            norm[detailCols[dNdisIndex].toLowerCase()] ??
+            "";
+
+        const part =
+            dr[detailCols[dPartIndex]] ??
+            dr[dPartIndex] ??
+            norm[detailCols[dPartIndex].toLowerCase()] ??
+            "";
+
+        const key = `${ndis}___${part}`;
+
+        if (!detailMap[key]) detailMap[key] = [];
+        detailMap[key].push(toRowArray(dr, detailCols));
+    });
+
+    // ---------------------------
+    // REMOVE DUPLICATE SUMMARY ROWS
+    // ---------------------------
+    const seenParents = new Set();
+    const uniqueSummaryRows = [];
+
+    summaryRows.forEach(sr => {
+        const parent = toRowArray(sr, summaryCols);
+
+        const sNdis =
+            sr[summaryCols[sNdisIndex]] ??
+            sr[sNdisIndex] ??
+            parent[sNdisIndex] ??
+            "";
+
+        const sPart =
+            sr[summaryCols[sPartIndex]] ??
+            sr[sPartIndex] ??
+            parent[sPartIndex] ??
+            "";
+
+        const key = `${sNdis}___${sPart}`;
+
+        if (!seenParents.has(key)) {
+            seenParents.add(key);
+            uniqueSummaryRows.push(sr);
         }
+    });
 
-        // Convert row-object into array aligned to column order
-        const toRowArray = (obj, cols) => {
-            const norm = normalizeObjKeys(obj);
-            return cols.map(c => norm[c.toLowerCase()] ?? "");
+    // ---------------------------
+    // MERGE SUMMARY + DETAIL
+    // ---------------------------
+    const finalRows = uniqueSummaryRows.map(sr => {
+        const parent = toRowArray(sr, summaryCols);
+
+        const sNdis =
+            sr[summaryCols[sNdisIndex]] ??
+            sr[sNdisIndex] ??
+            parent[sNdisIndex] ??
+            "";
+
+        const sPart =
+            sr[summaryCols[sPartIndex]] ??
+            sr[sPartIndex] ??
+            parent[sPartIndex] ??
+            "";
+
+        const key = `${sNdis}___${sPart}`;
+
+        return {
+            parent,
+            children: detailMap[key] || [],
+            participant: sPart,
+            ndis: sNdis
         };
+    });
 
-        // ------------------------------
-        // BUILD DETAIL MAP (JOIN KEY = NDIS + Participant)
-        // ------------------------------
-        const detailMap = {};
+    // ---------------------------
+    // FILTER VALUES
+    // ---------------------------
+    const regions = new Set();
+    const depts = new Set();
 
-        detailRows.forEach(dr => {
-            const norm = normalizeObjKeys(dr);
+    const regionIdx = findIndex(detailCols, ["region"]);
+    const deptIdx = findIndex(detailCols, ["department", "dept"]);
 
-            const ndis = norm[detailCols[dNdisIndex].toLowerCase()] || "";
-            const part = norm[detailCols[dPartIndex].toLowerCase()] || "";
+    detailRows.forEach(dr => {
+        const n = normalizeObjKeys(dr);
 
-            const key = `${ndis}___${part}`;
+        if (regionIdx >= 0) {
+            const r = n[detailCols[regionIdx].toLowerCase()];
+            if (r) regions.add(r);
+        }
+        if (deptIdx >= 0) {
+            const d = n[detailCols[deptIdx].toLowerCase()];
+            if (d) depts.add(d);
+        }
+    });
 
-            if (!detailMap[key]) detailMap[key] = [];
-            detailMap[key].push(toRowArray(dr, detailCols));
-        });
+    // ---------------------------
+    // SET FINAL OUTPUT
+    // ---------------------------
+    setDirectFinalTable({
+        columns: summaryCols,
+        rows: finalRows,
+        detailCols,
+        regions: [...regions],
+        departments: [...depts]
+    });
 
-        // ------------------------------
-        // MERGE SUMMARY + DETAIL ROWS
-        // ------------------------------
-        const finalRows = summaryRows.map(sr => {
-            const parent = toRowArray(sr, summaryCols);
-
-            const sNdis = parent[sNdisIndex];
-            const sPart = parent[sPartIndex];
-
-            const key = `${sNdis}___${sPart}`;
-
-            return {
-                parent,
-                children: detailMap[key] || [],
-                participant: sPart,
-                ndis: sNdis
-            };
-        });
-
-        // ------------------------------
-        // EXTRACT REGIONS + DEPARTMENTS (for filters)
-        // ------------------------------
-        const regions = new Set();
-        const depts = new Set();
-
-        const regionIdx = findIndex(detailCols, ["region"]);
-        const deptIdx = findIndex(detailCols, ["department", "dept"]);
-
-        detailRows.forEach(dr => {
-            const n = normalizeObjKeys(dr);
-
-            if (regionIdx >= 0) {
-                const r = n[detailCols[regionIdx].toLowerCase()];
-                if (r) regions.add(r);
-            }
-
-            if (deptIdx >= 0) {
-                const d = n[detailCols[deptIdx].toLowerCase()];
-                if (d) depts.add(d);
-            }
-        });
-
-        // ------------------------------
-        // FINAL OUTPUT
-        // ------------------------------
-        setDirectFinalTable({
-            columns: summaryCols,
-            rows: finalRows,
-            detailCols,
-            regions: [...regions],
-            departments: [...depts]
-        });
-
-    }, [responseData]);
+}, [responseData]);
 
 
+console.log("directFinalTable",directFinalTable)
 
     return (
         <div className="page-containersss">
@@ -780,6 +831,8 @@ const TlcClientProfitability = (props) => {
                                 isSummaryDetailMode={true}
                                 availableRegions={directFinalTable.regions}
                                 availableDepartments={directFinalTable.departments}
+                                summaryTable={responseData.direct_service.tables.by_reference}
+                                detailsTable={responseData.direct_service.tables.detail}
                             />
                         )}
 
