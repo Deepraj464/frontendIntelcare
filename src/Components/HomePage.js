@@ -85,7 +85,7 @@ const HomePage = () => {
     tlcClientProfitability: [
       "Whats total Gross for Plan Management Clearing Account",
       "who are the top 5 most profitable participants, and what are their total revenue, total costs and margin %?",
-      "Whats the Total Operating Revenue for NSW",
+      "Whats the Total Net Operating Revenue for NSW",
       "Top 5 Participants per Department"
     ],
     smart: [
