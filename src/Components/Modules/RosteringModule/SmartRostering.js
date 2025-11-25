@@ -9,6 +9,7 @@ import fileIcon from '../../../Images/FileIcon.png';
 import axios from "axios";
 import { MdOutlineHistory } from "react-icons/md";
 import RosterHistory from "./RosterHistory";
+import { LuDownload } from "react-icons/lu";
 
 const API_BASE = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net";
 
@@ -353,9 +354,9 @@ const SmartRostering = (props) => {
                             </ul>
                         </div>
                     </div>
-                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:'30px'}}>
-                    <div className="rostering-date">{formattedDate}</div>
-                    <button style={{padding:'10px 20px',backgroundColor:'#6c4cdc',border:'none',borderRadius:'4px',outline:'none',color:'white',fontSize:'16px',fontFamily:'Inter',fontWeight:'500',cursor:'pointer',display:'flex',alignItems:'center',gap:'4px'}} onClick={()=>setScreen(3)}>History <MdOutlineHistory size={18} color="white"/></button>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '30px' }}>
+                        <div className="rostering-date">{formattedDate}</div>
+                        <button style={{ padding: '10px 20px', backgroundColor: '#6c4cdc', border: 'none', borderRadius: '4px', outline: 'none', color: 'white', fontSize: '16px', fontFamily: 'Inter', fontWeight: '500', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }} onClick={() => setScreen(3)}>History <MdOutlineHistory size={18} color="white" /></button>
                     </div>
 
                     <div className="rostering-stats-row">
@@ -373,45 +374,60 @@ const SmartRostering = (props) => {
                             <p>Staff Utilisation %</p>
                             <span className="rostering-circle rostering-green">{rosteringMetrics?.staff_utilisation}</span>
                         </div>
-                        <div className="rostering-upload-card">
-                            <div>
-                                {selectedFile.map((file, index) => (
-                                    <div key={index} style={{ border: '1px solid #6c4cdc', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', padding: '8px 10px', marginBottom: '4px', width: '100%' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                                            <div className="file-icon">
-                                                <img src={fileIcon} height={15} width={10} alt="Zip" />
-                                            </div>
-                                            <div style={{ fontSize: '12px', fontFamily: 'Inter', fontWeight: '600', marginRight: '10px' }}>
-                                                {file.name.length > 20 ? file.name.slice(0, 15) + "..." : file.name}
-                                            </div>
-                                        </div>
-                                        <div className="remove-btn" onClick={() => removeFile(index)}>
-                                            <RiDeleteBin6Line size={16} color="red" />
-                                        </div>
-                                    </div>
-                                ))}
+                        <div>
+                            <div
+                                style={{ fontFamily: 'Inter', fontSize: '16px', cursor: 'pointer', marginBottom: '6px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', fontWeight: '500', color: '#6c4cdc' }}
+                                onClick={() => {
+                                    const link = document.createElement("a");
+                                    link.href = "/templates/SmartRosteringTemplate.xlsx"; 
+                                    link.download = "Smart Rostering Template.xlsx"; 
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                }}
+                            >
+                                Download Template <LuDownload size={20}/>
                             </div>
-                            {!selectedFile.length && (
-                                <>
-                                    <div className="upload-icon">
-                                        <FiUploadCloud color="#6C4CDC" />
-                                    </div>
-                                    <p>Browse Files</p>
-                                    <small>Format: .xlsx, .csv, .xls only</small>
-                                </>
-                            )}
-                            <div style={{ marginTop: "12px" }}>
-                                <label htmlFor="rostering-file-upload" className="rostering-upload-label">
-                                    Browse Files
-                                    <input
-                                        type="file"
-                                        id="rostering-file-upload"
-                                        accept=".xlsx,.xls,.csv"
-                                        onChange={handleFileChange}
-                                        style={{ display: "none" }}
-                                        multiple
-                                    />
-                                </label>
+                            <div className="rostering-upload-card">
+                                <div>
+                                    {selectedFile.map((file, index) => (
+                                        <div key={index} style={{ border: '1px solid #6c4cdc', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', padding: '8px 10px', marginBottom: '4px', width: '100%' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                <div className="file-icon">
+                                                    <img src={fileIcon} height={15} width={10} alt="Zip" />
+                                                </div>
+                                                <div style={{ fontSize: '12px', fontFamily: 'Inter', fontWeight: '600', marginRight: '10px' }}>
+                                                    {file.name.length > 20 ? file.name.slice(0, 15) + "..." : file.name}
+                                                </div>
+                                            </div>
+                                            <div className="remove-btn" onClick={() => removeFile(index)}>
+                                                <RiDeleteBin6Line size={16} color="red" />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                {!selectedFile.length && (
+                                    <>
+                                        <div className="upload-icon">
+                                            <FiUploadCloud color="#6C4CDC" />
+                                        </div>
+                                        <p>Browse Files</p>
+                                        <small>Format: .xlsx, .csv, .xls only</small>
+                                    </>
+                                )}
+                                <div style={{ marginTop: "12px" }}>
+                                    <label htmlFor="rostering-file-upload" className="rostering-upload-label">
+                                        Browse Files
+                                        <input
+                                            type="file"
+                                            id="rostering-file-upload"
+                                            accept=".xlsx,.xls,.csv"
+                                            onChange={handleFileChange}
+                                            style={{ display: "none" }}
+                                            multiple
+                                        />
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -606,7 +622,7 @@ const SmartRostering = (props) => {
                     visualCareCreds={visualCareCreds}
                 />
             )}
-            {screen===3 && (
+            {screen === 3 && (
                 <RosterHistory
                     setScreen={setScreen}
                     userEmail={userEmail}

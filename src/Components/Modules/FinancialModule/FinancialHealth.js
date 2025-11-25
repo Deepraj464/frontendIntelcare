@@ -15,6 +15,7 @@ import ChartsDisplay from "../../ChartDisplay";
 import Plot from "react-plotly.js";
 import response from "./response_api_only";
 import PreviewDataSection from "./PreviewDataSection";
+import { LuDownload } from "react-icons/lu";
 
 const FinancialHealth = (props) => {
   const [financialReportFiles, setFinancialReportFiles] = useState([]);
@@ -653,11 +654,26 @@ const FinancialHealth = (props) => {
             </div>
           </div>
           <div>
+
             <div
               className="uploader-grid"
               style={{ display: "flex", justifyContent: "center" }}
             >
+             
               <div style={{ width: "50%" }}>
+              <div
+                style={{ fontFamily: 'Inter', fontSize: '16px', cursor: 'pointer', marginBottom: '6px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', fontWeight: '500', color: '#6c4cdc' }}
+                onClick={() => {
+                  const link = document.createElement("a");
+                  link.href = "/templates/FinancialTemplate.xlsx";
+                  link.download = "Financial Template.xlsx";
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+              >
+                Download Template <LuDownload size={20}/>
+              </div>
                 <UploadFinancialFiles
                   files={financialReportFiles}
                   setFiles={setFinancialReportFiles}
