@@ -373,7 +373,7 @@ const SmartRostering = (props) => {
                             <p>Staff Utilisation %</p>
                             <span className="rostering-circle rostering-green">{rosteringMetrics?.staff_utilisation}</span>
                         </div>
-                        {/* <div className="rostering-upload-card">
+                        <div className="rostering-upload-card">
                             <div>
                                 {selectedFile.map((file, index) => (
                                     <div key={index} style={{ border: '1px solid #6c4cdc', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', padding: '8px 10px', marginBottom: '4px', width: '100%' }}>
@@ -413,7 +413,7 @@ const SmartRostering = (props) => {
                                     />
                                 </label>
                             </div>
-                        </div> */}
+                        </div>
                     </div>
 
                     <div className="unallocated-shifts-section" style={{ marginTop: "40px" }}>
