@@ -335,7 +335,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                                 {client.Phone1 || client.phone || selectedClient?.phone || 'N/A'}
                             </span></p>
                             <p>Plan Start Date: <span style={{ color: 'black' }}>
-                                {client.ServiceStart || client.plan_start_date || request.shift_date}
+                                {client.ServiceStart || client.plan_start_date || request.shift_date || 'N/A'}
                             </span></p>
                            
                         </div>
