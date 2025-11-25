@@ -117,7 +117,7 @@ const SmartRostering = (props) => {
                 }
             } catch (err) {
                 console.error("❌ Error fetching VisualCare creds:", err);
-                alert("Failed to load VisualCare credentials.");
+                // alert("Failed to load VisualCare credentials.");
             }
         };
 
@@ -403,23 +403,23 @@ const SmartRostering = (props) => {
     };
 
 
-    if (unauthorized) {
-        return (
-            <div style={{
-                textAlign: "center",
-                padding: "120px 20px",
-                fontFamily: "Inter, sans-serif",
-                color: "#1f2937"
-            }}>
-                <h2 style={{ fontSize: "24px", marginBottom: "12px", color: "#6C4CDC" }}>
-                    Access Restricted 🚫
-                </h2>
-                <p style={{ fontSize: "16px", color: "#555" }}>
-                    Sorry, your account (<strong>{userEmail}</strong>) is not authorized to view this page.
-                </p>
-            </div>
-        );
-    }
+    // if (unauthorized) {
+    //     return (
+    //         <div style={{
+    //             textAlign: "center",
+    //             padding: "120px 20px",
+    //             fontFamily: "Inter, sans-serif",
+    //             color: "#1f2937"
+    //         }}>
+    //             <h2 style={{ fontSize: "24px", marginBottom: "12px", color: "#6C4CDC" }}>
+    //                 Access Restricted 🚫
+    //             </h2>
+    //             <p style={{ fontSize: "16px", color: "#555" }}>
+    //                 Sorry, your account (<strong>{userEmail}</strong>) is not authorized to view this page.
+    //             </p>
+    //         </div>
+    //     );
+    // }
 
     return (
         <>
@@ -457,7 +457,7 @@ const SmartRostering = (props) => {
                     <div className="rostering-stats-row">
                         <div className="rostering-stat-card">
                             <p>Shift Coverage %</p>
-                            <span className="rostering-circle rostering-green">{rosteringMetrics?.shift_coverage ?? rosteringMetrics?.shift_coverage}</span>
+                            <span className="rostering-circle rostering-green">{rosteringMetrics?.shift_coverage ? rosteringMetrics?.shift_coverage : 0}</span>
                         </div>
 
                         <div className="rostering-stat-card">
@@ -467,7 +467,7 @@ const SmartRostering = (props) => {
 
                         <div className="rostering-stat-card">
                             <p>Staff Utilisation %</p>
-                            <span className="rostering-circle rostering-green">{rosteringMetrics?.staff_utilisation}</span>
+                            <span className="rostering-circle rostering-green">{rosteringMetrics?.staff_utilisation ? rosteringMetrics?.staff_utilisation : 0}</span>
                         </div>
                         <div style={{ borderRadius: '8px', border: '0.76px dashed #6548FF' }}>
                             <div
