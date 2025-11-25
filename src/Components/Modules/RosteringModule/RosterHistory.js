@@ -164,61 +164,43 @@ const RosterHistory = (props) => {
     };
 
     // === fetch chat messages for chosen assignment and map to old message shape
-const fetchChatMessages = async (conversationIdBase, staffId, phone) => {
+const fetchChatMessages = async (recordId, staffId, phone) => {
     try {
-        const clean = (p) => (p || "").replace(/\D/g, "").slice(-10);
+        // Backend conversation ID format:
+        // conversationId = `${recordId}-${staffId}`
+        const conversationId = `${recordId}-${staffId}`;
 
-        const recordId = conversationIdBase;
+        console.log("Fetching conversation:", conversationId);
 
-        // 1) Broadcast conversation (RM → staff)
-        const convBroadcast = `${recordId}-${staffId}`;
-
-        // 2) Chat conversation (staff ↔ RM)
-        const convChat = `${recordId}-${clean(phone)}`;
-
-        console.log("Fetching:", convBroadcast, convChat);
-
-        // Fetch both
-        const [broadcastRes, chatRes] = await Promise.all([
-            axios.get(`${API_BASE}/api/getChatHistory/${convBroadcast}`),
-            axios.get(`${API_BASE}/api/getChatHistory/${convChat}`)
-        ]);
-
-        const bMsgs = broadcastRes.data.messages || [];
-        const cMsgs = chatRes.data.messages || [];
-
-        // Merge
-        const combined = [...bMsgs, ...cMsgs];
-        console.log("combine messages",combined)
-        // Sort by timestamp (broadcast always at top if same)
-        combined.sort((a, b) => {
-            const t1 = new Date(a.time).getTime();
-            const t2 = new Date(b.time).getTime();
-            if (t1 === t2) {
-                // Broadcast first if same
-                if (a.id?.includes("broadcast")) return -1;
-                if (b.id?.includes("broadcast")) return 1;
-            }
-            return t1 - t2;
-        });
+        const res = await axios.get(`${API_BASE}/api/getChatHistory/${conversationId}`);
+        
+        const messagesArr = res.data.messages || [];
 
         // Convert to UI format
-        const msgs = combined.map(m => ({
-            id: m.id || m._rid || Date.now() + Math.random(),
-            text: m.message || "",
-            time: m.time
-                ? new Date(m.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-                : "",
-            sender: (() => {
-                if (m.id?.includes("broadcast")) return "other";
-                if (m.fromRole === "SW") return "other";
-                if (m.fromRole === "RM") return "me";
-                return "other";
-            })()
-        }));
+        const msgs = messagesArr.map((m, index) => {
+    const isBroadcast =
+        m.fromRole === "RM" &&
+        m.toRole === "SW" &&
+        m.message?.toLowerCase().includes("open shift");
+
+    return {
+        id: `${conversationId}-${index}`,
+        text: m.message || "",
+        time: m.time
+            ? new Date(m.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            : "",
+        sender: isBroadcast
+            ? "other"   // ALWAYS left side
+            : m.fromRole === "RM"
+                ? "me"  // RM chat message
+                : "other"  // staff message
+    };
+});
+
 
         setMessages(msgs);
 
+        // auto scroll
         if (messageEndRef.current) {
             messageEndRef.current.scrollIntoView({ behavior: "smooth" });
         }
@@ -231,6 +213,8 @@ const fetchChatMessages = async (conversationIdBase, staffId, phone) => {
         return [];
     }
 };
+
+
 
 
     // === send message (RM) — matches old UI: appends locally after successful POST
