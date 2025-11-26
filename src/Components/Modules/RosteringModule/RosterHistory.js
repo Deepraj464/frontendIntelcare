@@ -168,14 +168,14 @@ const fetchChatMessages = async (recordId, staffId, phone) => {
     try {
         // Backend conversation ID format:
         // conversationId = `${recordId}-${staffId}`
-        const conversationId = `${recordId}-${staffId}`;
+        const conversationId = `${recordId}`;
 
         console.log("Fetching conversation:", conversationId);
 
         const res = await axios.get(`${API_BASE}/api/getChatHistory/${conversationId}`);
         
         const messagesArr = res.data.messages || [];
-
+        console.log("Raw messagesArr:", messagesArr);
         // Convert to UI format
         const msgs = messagesArr.map((m, index) => {
     const isBroadcast =
