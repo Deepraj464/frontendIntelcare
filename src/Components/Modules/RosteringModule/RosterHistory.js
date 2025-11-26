@@ -170,12 +170,12 @@ const RosterHistory = (props) => {
             // conversationId = `${recordId}-${staffId}`
             const conversationId = `${recordId}`;
 
-            console.log("Fetching conversation:", conversationId);
+            // console.log("Fetching conversation:", conversationId);
 
             const res = await axios.get(`${API_BASE}/api/getChatHistory/${conversationId}`);
 
             const messagesArr = res.data.messages || [];
-            console.log("Raw messagesArr:", messagesArr);
+            // console.log("Raw messagesArr:", messagesArr);
             // Convert to UI format
             const msgs = messagesArr.map((m, index) => {
                 const isBroadcast =
@@ -202,7 +202,7 @@ const RosterHistory = (props) => {
 
             // FILTER NOW
             const staffPhoneClean = (phone || "").replace(/\D/g, "");
-            console.log("msgs before filter", msgs);
+            // console.log("msgs before filter", msgs);
             const filtered = msgs.filter(m => {
                 const fp = (m.rawFromPhone || "").replace(/\D/g, "");
                 const tp = (m.rawToPhone || "").replace(/\D/g, "");
@@ -212,7 +212,7 @@ const RosterHistory = (props) => {
 
                 return false;
             });
-            console.log("msgs after filter", filtered);
+            // console.log("msgs after filter", filtered);
             setMessages(filtered);
  
             // auto scroll
