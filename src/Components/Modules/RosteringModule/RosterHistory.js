@@ -164,55 +164,70 @@ const RosterHistory = (props) => {
     };
 
     // === fetch chat messages for chosen assignment and map to old message shape
-const fetchChatMessages = async (recordId, staffId, phone) => {
-    try {
-        // Backend conversation ID format:
-        // conversationId = `${recordId}-${staffId}`
-        const conversationId = `${recordId}`;
+    const fetchChatMessages = async (recordId, staffId, phone) => {
+        try {
+            // Backend conversation ID format:
+            // conversationId = `${recordId}-${staffId}`
+            const conversationId = `${recordId}`;
 
-        console.log("Fetching conversation:", conversationId);
+            // console.log("Fetching conversation:", conversationId);
 
-        const res = await axios.get(`${API_BASE}/api/getChatHistory/${conversationId}`);
-        
-        const messagesArr = res.data.messages || [];
-        console.log("Raw messagesArr:", messagesArr);
-        // Convert to UI format
-        const msgs = messagesArr.map((m, index) => {
-    const isBroadcast =
-        m.fromRole === "RM" &&
-        m.toRole === "SW" &&
-        m.message?.toLowerCase().includes("open shift");
+            const res = await axios.get(`${API_BASE}/api/getChatHistory/${conversationId}`);
 
-    return {
-        id: `${conversationId}-${index}`,
-        text: m.message || "",
-        time: m.time
-            ? new Date(m.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-            : "",
-        sender: isBroadcast
-            ? "other"   // ALWAYS left side
-            : m.fromRole === "RM"
-                ? "me"  // RM chat message
-                : "other"  // staff message
-    };
-});
+            const messagesArr = res.data.messages || [];
+            // console.log("Raw messagesArr:", messagesArr);
+            // Convert to UI format
+            const msgs = messagesArr.map((m, index) => {
+                const isBroadcast =
+                    m.fromRole === "RM" &&
+                    m.toRole === "SW" &&
+                    m.message?.toLowerCase().includes("open shift");
 
+                return {
+                    id: `${conversationId}-${index}`,
+                    text: m.message || "",
+                    time: m.time
+                        ? new Date(m.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                        : "",
+                    sender: isBroadcast
+                        ? "other"
+                        : m.fromRole === "RM"
+                            ? "me"
+                            : "other",
 
-        setMessages(msgs);
+                    rawFromPhone: m.fromPhone,
+                    rawToPhone: m.toPhone
+                };
+            });
 
-        // auto scroll
-        if (messageEndRef.current) {
-            messageEndRef.current.scrollIntoView({ behavior: "smooth" });
+            // FILTER NOW
+            const staffPhoneClean = (phone || "").replace(/\D/g, "");
+            // console.log("msgs before filter", msgs);
+            const filtered = msgs.filter(m => {
+                const fp = (m.rawFromPhone || "").replace(/\D/g, "");
+                const tp = (m.rawToPhone || "").replace(/\D/g, "");
+
+                if (fp === staffPhoneClean) return true;  // staff → RM
+                if (tp === staffPhoneClean) return true;  // RM → staff
+
+                return false;
+            });
+            // console.log("msgs after filter", filtered);
+            setMessages(filtered);
+ 
+            // auto scroll
+            if (messageEndRef.current) {
+                messageEndRef.current.scrollIntoView({ behavior: "smooth" });
+            }
+
+            return msgs;
+
+        } catch (err) {
+            console.error("Failed to fetch chat messages:", err);
+            setMessages([]);
+            return [];
         }
-
-        return msgs;
-
-    } catch (err) {
-        console.error("Failed to fetch chat messages:", err);
-        setMessages([]);
-        return [];
-    }
-};
+    };
 
 
 
@@ -358,16 +373,16 @@ const fetchChatMessages = async (recordId, staffId, phone) => {
     };
 
     // old UI open assignment behavior preserved
-const onOpenAssignment = async (a) => {
-    setSelectedAssignment(a);
-    setOpenPanel(true);
+    const onOpenAssignment = async (a) => {
+        setSelectedAssignment(a);
+        setOpenPanel(true);
 
-    const recordId = a.originalRecord?.id;
-    const staffId = a.originalStaffObject?.staffId;
-    const phone = a.originalStaffObject?.phone;
+        const recordId = a.originalRecord?.id;
+        const staffId = a.originalStaffObject?.staffId;
+        const phone = a.originalStaffObject?.phone;
 
-    await fetchChatMessages(recordId, staffId, phone);
-};
+        await fetchChatMessages(recordId, staffId, phone);
+    };
 
 
     // Build staffInfoList in same order & same labels as old static file (but using selectedAssignment.originalStaffObject)
