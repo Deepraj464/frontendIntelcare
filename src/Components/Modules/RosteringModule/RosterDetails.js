@@ -98,6 +98,8 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
 
     // Controller 2: Broadcast shift to selected staff
     console.log("client", client)
+    console.log("rankedStaff", rankedStaff)
+    console.log("selected", selected)
     const handleBroadcast = async () => {
         if (selected.length === 0) {
             alert("Please select at least one staff to broadcast.");
@@ -109,7 +111,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
         try {
             // Get selected staff from rankedStaff
             const selectedStaff = selected.map(index => rankedStaff[index]);
-            console.log("selectedStaff", selectedStaff)
+            // console.log("selectedStaff", selectedStaff)
             const payload = {
                 clientData: {
                     // ✔ Correct client ID
@@ -147,7 +149,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                 staffList: selectedStaff.map(s => ({
                     staffId: s.id || s.staffId,
                     name: s.name,
-                    phone: "+61419015351",
+                    phone: s?.phone,
                     email: s.email,
                     gender: s.gender || s.sex,
                     location: s.location,
