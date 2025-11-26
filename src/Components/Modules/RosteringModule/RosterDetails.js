@@ -163,7 +163,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                 rosteringManagers: [
                     {
                         name: "Kris",
-                        phone: "+61419015351",
+                        // phone: "+61419015351",
                         email: userEmail,
                         role: "RM"
                     }
@@ -173,7 +173,8 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
 
             console.log("📤 Broadcast Payload:", payload);
 
-            const response = await axios.post(`${API_BASE}/api/sampleBroadcast`, payload);
+            // const response = await axios.post(`${API_BASE}/api/sampleBroadcast`, payload);
+            const response = await axios.post(`https://53131f52d265.ngrok-free.app/api/sampleBroadcast`, payload);
 
             setShowSuccess(true);
 
