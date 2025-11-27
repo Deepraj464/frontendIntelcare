@@ -309,7 +309,10 @@ const SmartRostering = (props) => {
                 { headers: { "Content-Type": "application/json" } }
             );
 
-        //    console.log("Smart Rostering Response:", response.data);
+            console.log("Smart Rostering Response:", response.data);
+            if (userEmail) {
+                await incrementAnalysisCount(userEmail, "smart-rostering", response?.data?.llm_cost?.total_usd);
+            }
             // ⏳ Only now switch to screen 2 after data is ready
             if (response.data?.data?.final_ranked?.length > 0) {
                 setRosteringResponse(response?.data);
@@ -393,7 +396,13 @@ const SmartRostering = (props) => {
                 { prompt: query, userEmail },
                 { headers: { "Content-Type": "application/json" } }
             );
-
+            console.log("response in prompt based rostering", response)
+            const promptCost = response?.data?.filler?.llm_cost?.total_usd || 0;
+            const rosteringCost = response?.data?.rostering_llm_cost?.total_usd || 0;
+            const totalCost = promptCost + rosteringCost;
+            if (userEmail) {
+                await incrementAnalysisCount(userEmail, "prompt-smart-rostering", totalCost);
+            }
             const rankedStaff = response.data?.rostering_summary?.final_ranked || [];
             if (!rankedStaff.length) {
                 alert("No staff found.");
