@@ -10,6 +10,7 @@ import clickHandIcon from "../../../Images/clock hand.png"
 import star_icon from "../../../Images/rostering_star.png"
 const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient, visualCareCreds, userEmail }) => {
     // console.log("rostering response", rosteringResponse)
+
     // console.log("selectedClient", selectedClient)
     const [selected, setSelected] = useState([]);
     const [showSuccess, setShowSuccess] = useState(false);
@@ -165,12 +166,12 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                 rosteringManagers: [
                     {
                         name: "Kris",
-                        // phone: "+61419015351",
                         email: userEmail,
                         role: "RM"
                     }
                 ]
             };
+
 
 
             console.log("📤 Broadcast Payload:", payload);
@@ -339,10 +340,10 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                             <p>Plan Start Date: <span style={{ color: 'black' }}>
                                 {client.ServiceStart || client.plan_start_date || request.shift_date || 'N/A'}
                             </span></p>
-                           
+
                         </div>
                         <div style={{ display: 'flex', flexWrap: 'wrap', paddingLeft: '54px', gap: '42px', paddingTop: '20px', paddingBottom: '20px', borderBottom: '1px solid #E4E4E4' }}>
-                           <p>Start Time: <span style={{ color: 'black' }}>
+                            <p>Start Time: <span style={{ color: 'black' }}>
                                 {selectedClient.startTime}
                             </span></p>
                             <p>End Time: <span style={{ color: 'black' }}>

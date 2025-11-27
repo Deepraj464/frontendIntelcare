@@ -10,6 +10,7 @@ import axios from "axios";
 import { MdOutlineHistory } from "react-icons/md";
 import RosterHistory from "./RosterHistory";
 import { LuDownload } from "react-icons/lu";
+import incrementAnalysisCount from "../FinancialModule/TLcAnalysisCount";
 
 const API_BASE = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net";
 
@@ -175,7 +176,7 @@ const SmartRostering = (props) => {
                     }
                 );
 
-                console.log("res in fetchUnallocatedShifts",res)
+                console.log("res in fetchUnallocatedShifts", res)
                 const grouped = res.data || {};
                 const allClients = grouped?.grouped.map((shift) => {
                     const start = shift.start_time;              // "10:00"
@@ -308,7 +309,7 @@ const SmartRostering = (props) => {
                 { headers: { "Content-Type": "application/json" } }
             );
 
-
+        //    console.log("Smart Rostering Response:", response.data);
             // ⏳ Only now switch to screen 2 after data is ready
             if (response.data?.data?.final_ranked?.length > 0) {
                 setRosteringResponse(response?.data);
@@ -349,7 +350,9 @@ const SmartRostering = (props) => {
                     form,
                     { headers: { "Content-Type": "multipart/form-data" } }
                 );
-
+                if (userEmail) {
+                    await incrementAnalysisCount(userEmail, "manual-smart-rostering", manualResponse?.data?.llm_cost?.total_usd);
+                }
                 // console.log("📌 Manual Roster Response:", manualResponse.data);
 
                 // handle manual response
