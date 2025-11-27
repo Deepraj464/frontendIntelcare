@@ -116,7 +116,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
             const payload = {
                 clientData: {
                     // ✔ Correct client ID
-                    ClientId: selectedClient.clientId,
+                    ClientId: isManualResponse ? Date.now() : selectedClient.clientId,
 
                     // ✔ Correct name
                     PreferredName: selectedClient.name,
