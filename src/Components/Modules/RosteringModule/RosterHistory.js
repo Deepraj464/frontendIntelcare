@@ -96,12 +96,17 @@ const RosterHistory = (props) => {
     // === helper: format time range similar to earlier logic
     const formatTimeRange = (record) => {
         try {
-            const baseDate = record.createdAt ? record.createdAt.split("T")[0] : new Date().toISOString().split("T")[0];
+            const isValidDate = (d) => d instanceof Date && !isNaN(d);
+
+            const baseDate = record.createdAt
+                ? record.createdAt.split("T")[0]
+                : new Date().toISOString().split("T")[0];
+
             let start;
-            if (record.startTime && record.startTime.length <= 5) { // "08:00"
+
+            if (record.startTime && record.startTime.length <= 5) {
                 start = new Date(`${baseDate}T${record.startTime}:00`);
             } else if (record.startTime) {
-                // fallback if startTime is already ISO-ish
                 start = new Date(record.startTime);
             } else {
                 start = new Date(record.createdAt || Date.now());
@@ -110,12 +115,17 @@ const RosterHistory = (props) => {
             const minutes = Number(record.minutes) || 0;
             const end = minutes > 0 ? new Date(start.getTime() + minutes * 60000) : null;
 
-            const fmt = d => d ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "TBD";
+            const fmt = d =>
+                isValidDate(d)
+                    ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                    : "Not Mentioned";
+
             return end ? `${fmt(start)} - ${fmt(end)}` : fmt(start);
         } catch (e) {
-            return "TBD";
+            return "Not Mentioned";
         }
     };
+
 
     // === When a client is selected: fetch their full history and build assignmentsData exactly like old structure
     const fetchClientHistory = async (clientId) => {
@@ -214,7 +224,7 @@ const RosterHistory = (props) => {
             });
             // console.log("msgs after filter", filtered);
             setMessages(filtered);
- 
+
             // auto scroll
             if (messageEndRef.current) {
                 messageEndRef.current.scrollIntoView({ behavior: "smooth" });
