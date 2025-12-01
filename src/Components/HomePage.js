@@ -68,13 +68,13 @@ const HomePage = () => {
   const isTlcPage = selectedRole === "Payroll Analysis";
   const isSmartRosteringPage = selectedRole === 'Smart Rostering'
   const isTlcClientProfitabilityPage = selectedRole === "Clients Profitability";
+  const isHRAskAiPage = selectedRole === "Smart Onboarding (Staff)";
   const [tlcClientProfitabilityPayload, setTlcClientProfitabilityPayload] = useState(null);
   const [Suggestions, setSuggestions] = useState([]);
   const [manualAskAiFile, setManualAskAiFile] = useState(null);
+  const [manualResumeZip, setManualResumeZip] = useState(null);
   const handleModalOpen = () => setModalVisible(true);
   const handleModalClose = () => setModalVisible(false);
-
-  console.log("manualAskAiFile in homepage", manualAskAiFile)
   const moduleSuggestions = {
     tlc: [
       "Which 10 employees in NDIS have the highest overtime hours and overtime $ as a percentage of their total hours and pay?",
@@ -156,6 +156,42 @@ const HomePage = () => {
 
     try {
       // 🟢 SMART ROSTERING MODE
+      // 🟣 ASK-AI FOR RESUME ZIP (Smart Onboarding / HR Module)
+      if (isHRAskAiPage) {
+        try {
+          const form = new FormData();
+          form.append("resume_zip_file", manualResumeZip);
+          form.append("question", finalQuery);
+
+          const response = await axios.post(
+            "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net/api/askAi",
+            form,
+            { headers: { "Content-Type": "multipart/form-data" } }
+          );
+
+          console.log("Resume Ask-AI Response: ", response.data);
+
+          const botReply =
+            response.data?.results?.answer ||
+            response.data?.answer ||
+            JSON.stringify(response.data, null, 2);
+
+          setMessages(prev =>
+            prev.map(msg => (msg.temp ? { sender: "bot", text: botReply } : msg))
+          );
+
+          return;
+        } catch (error) {
+          console.error("Resume Ask-AI Error:", error);
+          setMessages(prev =>
+            prev.map(msg =>
+              msg.temp ? { sender: "bot", text: "Ask-AI for resumes failed." } : msg
+            )
+          );
+          return;
+        }
+      }
+
       if (isSmartRosteringPage) {
         if (manualAskAiFile) {
           const form = new FormData();
@@ -227,7 +263,7 @@ const HomePage = () => {
           }
         )
 
-       console.log("response of tlc client profit ask ai ",response)
+        console.log("response of tlc client profit ask ai ", response)
         const botReply =
           response.data?.ai_answer ||
           response.data?.answer ||
@@ -484,7 +520,7 @@ const HomePage = () => {
                 </div>
 
                 <div style={{ display: selectedRole === "Smart Onboarding (Staff)" ? "block" : "none" }}>
-                  <HRAnalysis handleClick={handleClick} selectedRole="Smart Onboarding (Staff)" setShowFeedbackPopup={setShowFeedbackPopup} user={user} />
+                  <HRAnalysis handleClick={handleClick} selectedRole="Smart Onboarding (Staff)" setShowFeedbackPopup={setShowFeedbackPopup} user={user} setManualResumeZip={setManualResumeZip} />
                 </div>
 
                 <div style={{ display: selectedRole === "Client Profitability & Service" ? "block" : "none" }}>
