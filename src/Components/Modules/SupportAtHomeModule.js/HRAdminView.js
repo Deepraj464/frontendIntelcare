@@ -15,11 +15,12 @@ const HRAdminView = ({
   user
 }) => {
   const [selectedFile, setSelectedFile] = useState([]);
+  const [selectedJd, setSelectedJd] = useState([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeTab, setActiveTab] = useState("Resume Screening");
   const [showResults, setShowResults] = useState(false);
   const [selectedCandidates, setSelectedCandidates] = useState(new Set());
-  console.log("user in HRAdminView",user);
+  console.log("user in HRAdminView", user);
   const handleAnalyze = async () => {
     if (!selectedFile) {
       alert("Please select a file first!");
@@ -186,25 +187,35 @@ const HRAdminView = ({
           <div className="upload-section-container">
             {/* <h1 className="page-title">Resume Screening</h1> */}
             <p className="page-subtitle">
-              Upload your Zip folder with multiple staff resumes
+              Upload Job Description and Zip folder with multiple staff resumes
             </p>
 
             <div className="uploader-grid"
               style={{ display: 'flex', justifyContent: 'center' }}>
-              <div style={{ width: '75%' }}>
-                <UploadFiles
-                  files={selectedFile}
-                  setFiles={setSelectedFile}
-                  title='Resume Screening'
-                  subtitle='Upload multiple .zip, .rar file'
-                  fileformat=".zip, .rar"
-                  removeFile={(index) => {
-                    setSelectedFile(prev => prev.filter((_, i) => i !== index));
-                  }}
-                  multiple={true}
-                  isProcessing={isAnalyzing}
-                />
-              </div>
+              <UploadFiles
+                files={selectedJd}
+                setFiles={setSelectedJd}
+                title='Job Description'
+                subtitle='Upload .doc or .pdf file'
+                fileformat=".docx, .doc, .pdf"
+                removeFile={(index) => {
+                  setSelectedJd(prev => prev.filter((_, i) => i !== index));
+                }}
+                multiple={false}
+                isProcessing={isAnalyzing}
+              />
+              <UploadFiles
+                files={selectedFile}
+                setFiles={setSelectedFile}
+                title='Resumes'
+                subtitle='Upload .zip, .rar file'
+                fileformat=".zip, .rar"
+                removeFile={(index) => {
+                  setSelectedFile(prev => prev.filter((_, i) => i !== index));
+                }}
+                multiple={false}
+                isProcessing={isAnalyzing}
+              />
             </div>
 
             <button
@@ -295,9 +306,9 @@ const HRAdminView = ({
         )}
         {activeTab === "Screening Test Creation" && <ScreeningTestCreation />}
         {activeTab === "Staff Compliance Check" && <StaffComplianceDashboard />}
-        </div>
+      </div>
       <div className="content-areasss">
-        {activeTab === "Staff Onboarding" && <AdminCourseCreation user={user}/>}
+        {activeTab === "Staff Onboarding" && <AdminCourseCreation user={user} />}
         {activeTab === "Document Verfication" && <AdminDocumentVerification />}
       </div>
     </div>
