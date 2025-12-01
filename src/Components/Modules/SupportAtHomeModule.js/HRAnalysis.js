@@ -68,7 +68,7 @@ const HRAnalysis = (props) => {
             </div>
 
             <div>
-                {role === "Admin" ? <HRAdminView role={role} selectedRole={props.selectedRole} user={props?.user}/> : <HRStaffView role={role} user={props?.user}/>}
+                {role === "Admin" ? <HRAdminView role={role} selectedRole={props.selectedRole} user={props?.user} setManualResumeZip={props?.setManualResumeZip}/> : <HRStaffView role={role} user={props?.user}/>}
             </div>
         </div>
     );
