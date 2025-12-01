@@ -6,7 +6,7 @@ const SubscriptionStatus = (user, setShowPricingModal) => {
     if (!user) return;
 
     // ✅ Only check subscription for this email
-    if (user?.email === "noah@caringways.com.au" || user?.email === "utkarsh@curki.ai" || user?.email === "kris@curki.ai") {
+    if (user?.email === "noah@caringways.com.au" || user?.email === "utkarsh@curki.ai" || user?.email === "kris@curki.ai" || user?.email === "gjavier@tenderlovingcaredisability.com.au") {
       setShowPricingModal(false);
       return;
     }
