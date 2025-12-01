@@ -12,7 +12,8 @@ const HRAdminView = ({
   setShowFeedbackPopup,
   role,
   selectedRole,
-  user
+  user,
+  setManualResumeZip
 }) => {
   const [selectedFile, setSelectedFile] = useState([]);
   const [selectedJd, setSelectedJd] = useState([]);
@@ -23,40 +24,12 @@ const HRAdminView = ({
   const [candidates, setCandidates] = useState([]);
   const [progress, setProgress] = useState(0);
 
-  console.log("user in HRAdminView", user);
-  // const handleAnalyze = async () => {
-  //   if (!selectedFile) {
-  //     alert("Please select a file first!");
-  //     return;
-  //   }
-  //   setIsAnalyzing(true);
-
-  //   try {
-  //     if (handleClick) {
-  //       await handleClick();
-  //     }
-
-  //     // Simulate analysis delay
-  //     await new Promise((resolve) => setTimeout(resolve, 3000));
-
-  //     setShowResults(true);
-  //     setIsAnalyzing(false);
-
-  //     if (setShowFeedbackPopup) {
-  //       setShowFeedbackPopup(true);
-  //     }
-  //   } catch (error) {
-  //     console.error("Analysis failed:", error);
-  //     setIsAnalyzing(false);
-  //     alert("Analysis failed. Please try again.");
-  //   }
-  // };
   const handleAnalyze = async () => {
     if (!selectedFile.length || !selectedJd.length) {
       alert("Please upload both Resume ZIP and Job Description PDF.");
       return;
     }
-
+    setManualResumeZip(selectedFile[0]);
     setIsAnalyzing(true);
     setProgress(1);
 
@@ -153,68 +126,6 @@ const HRAdminView = ({
     setSelectedCandidates(new Set());
   };
 
-  // const candidates = [
-  //   {
-  //     id: 1,
-  //     name: "Robert Drowski",
-  //     score: 8,
-  //     experience: "2 years",
-  //     skills: [
-  //       "Medication Administration",
-  //       "Manual Handling Competency",
-  //       "First Aid & CPR Certification",
-  //       "Infection Control Training",
-  //     ],
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Sarah Johnson",
-  //     score: 9,
-  //     experience: "3 years",
-  //     skills: [
-  //       "Dementia Care Training",
-  //       "Positive Behaviour Support (PBS)",
-  //       "Mental Health First Aid",
-  //       "Wound Care & Pressure Injury Management",
-  //     ],
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Michael Chen",
-  //     score: 7,
-  //     experience: "1.5 years",
-  //     skills: [
-  //       "PEG Feeding & Enteral Nutrition",
-  //       "Catheter & Continence Care",
-  //       "Diabetes Management",
-  //       "Palliative & End-of-Life Care",
-  //     ],
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "Emily Rodriguez",
-  //     score: 8,
-  //     experience: "4 years",
-  //     skills: [
-  //       "Falls Prevention & Risk Assessment",
-  //       "NDIS Worker Screening Check",
-  //       "NDIS Orientation Module",
-  //       "Certificate III/IV in Individual Support",
-  //     ],
-  //   },
-  //   {
-  //     id: 5,
-  //     name: "David Thompson",
-  //     score: 9,
-  //     experience: "5 years",
-  //     skills: [
-  //       "Care Documentation Systems (Procura, AutumnCare, Lumary, Carelink+)",
-  //       "NDIS Practice Standards Knowledge",
-  //       "Restrictive Practices & Safeguarding Compliance",
-  //       "Assistive Technology Proficiency",
-  //     ],
-  //   },
-  // ];
 
 
   return (
