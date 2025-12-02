@@ -11,7 +11,8 @@ import axios from "axios";
 const API_BASE = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net";
 
 const RosterHistory = (props) => {
-    const userEmail = props?.userEmail
+    // const userEmail = props?.userEmail
+    const userEmail = "kris@curki.ai"
     // === state kept as original
     const [selected, setSelected] = useState(null);
     const today = new Date();
@@ -399,10 +400,7 @@ const RosterHistory = (props) => {
     const staffInfoList = [
         {
             label: "Name",
-            value: maskDetailsIfKris(
-                selectedAssignment?.originalStaffObject?.name,
-                "name"
-            )
+            value: selectedAssignment?.originalStaffObject?.name
         },
 
         {
@@ -417,18 +415,12 @@ const RosterHistory = (props) => {
 
         {
             label: "Email",
-            value: maskDetailsIfKris(
-                selectedAssignment?.originalStaffObject?.email,
-                "email"
-            )
+            value: selectedAssignment?.originalStaffObject?.email
         },
 
         {
             label: "Phone",
-            value: maskDetailsIfKris(
-                selectedAssignment?.originalStaffObject?.phone,
-                "phone"
-            )
+            value: selectedAssignment?.originalStaffObject?.phone
         },
 
         {
@@ -448,7 +440,7 @@ const RosterHistory = (props) => {
 
         {
             label: "Location",
-            value: maskDetailsIfKris(
+            value:
                 (() => {
                     const loc = selectedAssignment?.originalStaffObject?.location;
                     if (!loc) return "Address not available";
@@ -463,9 +455,7 @@ const RosterHistory = (props) => {
 
                     const fullAddress = parts.join(", ");
                     return fullAddress;
-                })(),
-                "address"
-            )
+                })()
         },
 
         {
@@ -511,9 +501,9 @@ const RosterHistory = (props) => {
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: "column", gap: '8px', marginTop: '6px' }}>
-                                <div className="rostering-client-name">{maskDetailsIfKris(c.name, "name")}</div>
-                                <div className="rostering-client-info"><FiMapPin /> {maskDetailsIfKris(c.address, "address")}</div>
-                                <div className="rostering-client-info"><FiPhone /> {maskDetailsIfKris(c.phone, "phone")}</div>
+                                <div className="rostering-client-name">{c.name}</div>
+                                <div className="rostering-client-info"><FiMapPin /> {c.address}</div>
+                                <div className="rostering-client-info"><FiPhone /> {c.phone}</div>
                             </div>
                         </div>
                     ))}
@@ -586,7 +576,7 @@ const RosterHistory = (props) => {
                                                         onClick={() => onOpenAssignment(a)}
                                                     >
 
-                                                        <div style={{ fontSize: '14px', fontWeight: '500', fontFamily: 'Inter', marginBottom: '8px', textAlign: 'left' }}>{maskDetailsIfKris(a.carer, "name")}</div>
+                                                        <div style={{ fontSize: '14px', fontWeight: '500', fontFamily: 'Inter', marginBottom: '8px', textAlign: 'left' }}>{a.carer}</div>
                                                         <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-start', gap: '4px', marginBottom: '4px' }}>
                                                             <AiFillClockCircle color="white" />
                                                             <div style={{ fontSize: '14px', textAlign: 'left' }}>{a.time}</div>
