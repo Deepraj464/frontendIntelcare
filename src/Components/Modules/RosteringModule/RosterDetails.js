@@ -9,17 +9,12 @@ import clockCircleIcon from "../../../Images/clock circle.png"
 import clickHandIcon from "../../../Images/clock hand.png"
 import star_icon from "../../../Images/rostering_star.png"
 const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient, visualCareCreds, userEmail }) => {
-    // console.log("rostering response", rosteringResponse)
-
-    // console.log("selectedClient", selectedClient)
     const [selected, setSelected] = useState([]);
     const [showSuccess, setShowSuccess] = useState(false);
     const [broadcasting, setBroadcasting] = useState(false);
     const [timesheetHistory, setTimesheetHistory] = useState([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
     const [showClashing, setShowClashing] = useState(false);
-    // console.log("rosteringResponse",rosteringResponse) 
-    // Handle both response structures (direct rostering vs filler+rostering)
     const clashingList = rosteringResponse?.preffered_worker_clashing_roster || [];
     const formatDateTime = (isoString) => {
         if (!isoString) return "N/A";
@@ -82,9 +77,6 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
     } else {
         request = rosteringResponse?.data?.request || {};
     }
-    // console.log("Client data:", client);
-    // console.log("Ranked staff:", rankedStaff);
-
     const handleSelect = (id) => {
         if (selected.includes(id)) {
             setSelected(selected.filter((s) => s !== id));
@@ -96,11 +88,6 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
             }
         }
     };
-
-    // Controller 2: Broadcast shift to selected staff
-    console.log("client", client)
-    console.log("rankedStaff", rankedStaff)
-    console.log("selected", selected)
     const handleBroadcast = async () => {
         if (selected.length === 0) {
             alert("Please select at least one staff to broadcast.");
@@ -520,8 +507,14 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
 
                                     {/* Role Description */}
                                     <p className="staff-details" style={{ fontWeight: "400" }}>
-                                        Role: <span style={{ color: "black" }}>{staff.role_description || "N/A"}</span>
+                                        Role:{" "}
+                                        <span style={{ color: "black" }}>
+                                            {Array.isArray(staff.roles)
+                                                ? staff.roles.join(", ")
+                                                : staff.role_description || "N/A"}
+                                        </span>
                                     </p>
+
 
                                     {/* Award Description (if not null) */}
                                     {staff.award_desc && (
@@ -532,7 +525,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
 
                                     {/* Location */}
                                     <p className="staff-details" style={{ fontWeight: "400" }}>
-                                        Location: <span style={{ color: "black" }}>{staff.location?.address || "N/A"}</span>
+                                        Location: <span style={{ color: "black" }}>{staff?.location?.address || staff?.location || "N/A"}</span>
                                     </p>
 
                                     {/* Skill Descriptions */}

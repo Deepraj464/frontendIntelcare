@@ -353,6 +353,7 @@ const SmartRostering = (props) => {
                     form,
                     { headers: { "Content-Type": "multipart/form-data" } }
                 );
+                console.log("manualResponse", manualResponse);
                 if (userEmail) {
                     await incrementAnalysisCount(userEmail, "manual-smart-rostering", manualResponse?.data?.llm_cost?.total_usd);
                 }
@@ -421,9 +422,9 @@ const SmartRostering = (props) => {
                     : "-",
                 prefSkillsDescription: response?.data?.preferred_skill_descriptions
             });
-            if (userEmail === "kris@curki.ai") {
-                selectedClient = maskClientForKris(selectedClient);
-            }
+            // if (userEmail === "kris@curki.ai") {
+            //     selectedClient = maskClientForKris(selectedClient);
+            // }
             setScreen(2);
 
         } catch (error) {
