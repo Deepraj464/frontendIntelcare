@@ -529,9 +529,9 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                                     )}
 
                                     {/* Location */}
-                                    <p className="staff-details" style={{ fontWeight: "400" }}>
+                                    {staff?.location?.address && <p className="staff-details" style={{ fontWeight: "400" }}>
                                         Location: <span style={{ color: "black" }}>{staff?.location?.address || staff?.location || "N/A"}</span>
-                                    </p>
+                                    </p>}
 
                                     {/* Skill Descriptions */}
                                     {staff?.skills && staff?.skills.length > 0 && (
