@@ -9,6 +9,7 @@ import clockCircleIcon from "../../../Images/clock circle.png"
 import clickHandIcon from "../../../Images/clock hand.png"
 import star_icon from "../../../Images/rostering_star.png"
 const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient, visualCareCreds, userEmail }) => {
+    // console.log("rosteringResponse", rosteringResponse);
     const [selected, setSelected] = useState([]);
     const [showSuccess, setShowSuccess] = useState(false);
     const [broadcasting, setBroadcasting] = useState(false);
@@ -161,7 +162,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
 
 
 
-            console.log("📤 Broadcast Payload:", payload);
+            console.log("Broadcast Payload:", payload);
 
             const response = await axios.post(`${API_BASE}/api/sampleBroadcast`, payload);
 
@@ -247,7 +248,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
 
         fetchTimesheetHistory();
     }, [selectedClient, visualCareCreds]);
-    console.log("time sheet history", timesheetHistory)
+    // console.log("time sheet history", timesheetHistory)
     const ClockIcon = () => (
         <div
             style={{
@@ -501,9 +502,11 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                                     </p>
 
                                     {/* Experience Years */}
-                                    <p className="staff-details" style={{ fontWeight: "400" }}>
-                                        Experience: <span style={{ color: "black" }}>{staff.experience_years ? `${staff.experience_years} years` : "N/A"}</span>
-                                    </p>
+                                    {isManualResponse && <p className="staff-details" style={{ fontWeight: "400" }}>
+                                        Experience: <span style={{ color: "black" }}>{staff.experience_years !== undefined && staff.experience_years !== null
+                                            ? `${staff.experience_years} years`
+                                            : "N/A"}</span>
+                                    </p>}
 
                                     {/* Role Description */}
                                     <p className="staff-details" style={{ fontWeight: "400" }}>
@@ -511,9 +514,11 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                                         <span style={{ color: "black" }}>
                                             {Array.isArray(staff.roles)
                                                 ? staff.roles.join(", ")
-                                                : staff.role_description || "N/A"}
+                                                : staff.roles || staff.role || "N/A"}
                                         </span>
                                     </p>
+
+
 
 
                                     {/* Award Description (if not null) */}
@@ -524,9 +529,9 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                                     )}
 
                                     {/* Location */}
-                                    <p className="staff-details" style={{ fontWeight: "400" }}>
+                                    {staff?.location?.address && <p className="staff-details" style={{ fontWeight: "400" }}>
                                         Location: <span style={{ color: "black" }}>{staff?.location?.address || staff?.location || "N/A"}</span>
-                                    </p>
+                                    </p>}
 
                                     {/* Skill Descriptions */}
                                     {staff?.skills && staff?.skills.length > 0 && (

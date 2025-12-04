@@ -15,9 +15,7 @@ import incrementAnalysisCount from "../FinancialModule/TLcAnalysisCount";
 const API_BASE = "https://curki-test-prod-auhyhehcbvdmh3ef.canadacentral-01.azurewebsites.net";
 
 const SmartRostering = (props) => {
-    // console.log("props in smart rostering", props)
     const userEmail = props?.user?.email
-    // const userEmail = "kris@curki.ai"
     const [screen, setScreen] = useState(1);
     const [query, setQuery] = useState("");
     const [selectedFile, setSelectedFile] = useState([]);
