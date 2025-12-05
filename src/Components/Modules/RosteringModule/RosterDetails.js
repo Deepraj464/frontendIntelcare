@@ -248,7 +248,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
 
         fetchTimesheetHistory();
     }, [selectedClient, visualCareCreds]);
-    // console.log("time sheet history", timesheetHistory)
+    console.log("rankedStaff length",rankedStaff?.length)
     const ClockIcon = () => (
         <div
             style={{
