@@ -16,6 +16,11 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
     const [timesheetHistory, setTimesheetHistory] = useState([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
     const [showClashing, setShowClashing] = useState(false);
+    const [prompt, setPrompt] = useState("");
+    const [refining, setRefining] = useState(false);
+    const [refinedStaff, setRefinedStaff] = useState([]);
+    const [rankedStaffState, setRankedStaffState] = useState([]);
+
     const clashingList = rosteringResponse?.preffered_worker_clashing_roster || [];
     const formatDateTime = (isoString) => {
         if (!isoString) return "N/A";
@@ -64,6 +69,9 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
     } else {
         rankedStaff = rosteringResponse?.data?.final_ranked || [];
     }
+    useEffect(() => {
+        setRankedStaffState(rankedStaff);
+    }, [rosteringResponse]);
 
     // REQUEST
     let request = {};
@@ -175,6 +183,50 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
             setBroadcasting(false);
         }
     };
+    const handleRefine = async () => {
+        if (!prompt.trim()) {
+            alert("Please enter a prompt.");
+            return;
+        }
+
+        const main = rosteringResponse?.rosteringMainResponse;
+        if (!main) {
+            alert("No rostering main response found.");
+            return;
+        }
+
+        const { candidates_enriched, final_ranked, client } = main;
+
+        const payload = {
+            payload: {
+                candidates_enriched,
+                final_ranked,
+                client,
+                prompt
+            }
+        };
+
+        try {
+            setRefining(true);
+            const response = await axios.post(`${API_BASE}/rostering-refine`, payload);
+
+            if (response.data?.success) {
+                const refined = response.data.refinement.final_ranked;
+
+                if (Array.isArray(refined)) {
+                    setRankedStaffState(refined); 
+                    setRefinedStaff([]);          
+                    setSelected([]);             
+                }
+
+            }
+        } catch (err) {
+            console.error("Refinement API Error:", err);
+            alert("Refinement failed.");
+        } finally {
+            setRefining(false);
+        }
+    };
 
 
     // Helper function to format address
@@ -207,7 +259,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
             if (isManualResponse) return;
             setLoadingHistory(true);
             try {
-                // 🕓 Dynamic date range (last 10 days)
+                //Dynamic date range (last 10 days)
                 const today = new Date();
                 const tenDaysAgo = new Date(today);
                 tenDaysAgo.setDate(today.getDate() - 10);
@@ -248,7 +300,7 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
 
         fetchTimesheetHistory();
     }, [selectedClient, visualCareCreds]);
-    console.log("rankedStaff length",rankedStaff?.length)
+    console.log("rankedStaff length", rankedStaff?.length)
     const ClockIcon = () => (
         <div
             style={{
@@ -408,8 +460,8 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                 </h3>
 
                 <div className="roster-staff-cards">
-                    {rankedStaff.length > 0 ? (
-                        rankedStaff.map((staff, index) => {
+                    {rankedStaffState.length > 0 ? (
+                        rankedStaffState.map((staff, index) => {
                             // if (!staff.eliminated_reason || staff.eliminated_reason.length === 0) {
                             //     staff.eliminated_reason = [
                             //         "Worked extra night shifts throughout the week due to a last-minute schedule change and staff shortage."
@@ -518,9 +570,6 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                                         </span>
                                     </p>
 
-
-
-
                                     {/* Award Description (if not null) */}
                                     {staff.award_desc && (
                                         <p className="staff-details" style={{ fontWeight: "400", fontSize: "13px" }}>
@@ -616,6 +665,26 @@ const RosterDetails = ({ setScreen, rosteringResponse, API_BASE, selectedClient,
                     )}
                 </div>
             )}
+            <div className="refine-container">
+                <label className="refine-label">
+                    Refine Staff Suggestions:
+                </label>
+
+                <textarea
+                    className="refine-textarea"
+                    placeholder="Enter your refinement prompt… (e.g. 'Give me only female workers')"
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                />
+
+                <button
+                    className="refine-btn"
+                    onClick={handleRefine}
+                    disabled={refining}
+                >
+                    {refining ? "Refining…" : "Refine Results"}
+                </button>
+            </div>
 
             {/* Broadcast Button */}
             <button
