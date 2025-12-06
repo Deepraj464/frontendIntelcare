@@ -317,3 +317,108 @@
   font-size: 14px;
   color: #000;
 }
+/* Container for the refine section */
+.refine-container {
+    margin-top: -25px;
+    margin-bottom: 25px;
+}
+
+/* Label styling */
+.refine-label {
+    font-weight: 600;
+    font-size: 15px;
+    display: block;
+    margin-bottom: 10px;
+}
+
+/* Textarea styling */
+.refine-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    resize: vertical;
+    outline: none;
+}
+
+.refine-textarea:focus {
+    border-color: #6C4CDC;
+    box-shadow: 0 0 4px rgba(108, 76, 220, 0.3);
+}
+
+/* Button styling */
+.refine-btn {
+    margin-top: 12px;
+    padding: 10px 18px;
+    background-color: #6C4CDC;
+    color: white;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: 0.2s ease;
+}
+
+.refine-btn:hover:not([disabled]) {
+    background-color: #5a3cc7;
+}
+
+.refine-btn[disabled] {
+    background-color: #9b87e5;
+    cursor: not-allowed;
+}
+/* ===== Refined Results Styling ===== */
+
+.refined-results-wrapper {
+    margin-top: 40px;
+}
+
+.refined-results-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #6C4CDC;
+    margin-bottom: 16px;
+}
+
+/* Use the exact same layout as roster-staff-cards */
+.refined-staff-cards {
+    display: grid;
+    grid-template-columns: 32% 32% 32%;
+    column-gap: 2%;
+    row-gap: 12px;
+}
+
+/* Same design as original cards but unified height */
+.refined-staff-card {
+    background: #ffffff;
+    border: 1px solid #e2d9ff;
+    border-radius: 14px;
+    padding: 18px 20px;
+    min-height: 160px; /* 🔥 This fixes uneven card height */
+    box-shadow: 0 2px 8px rgba(108, 76, 220, 0.06);
+    transition: all 0.25s ease;
+}
+
+.refined-staff-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(108, 76, 220, 0.18);
+}
+
+.refined-staff-card .staff-details {
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: #555;
+}
+
+.refined-reason-box {
+    background: #f9f7ff;
+    border-left: 3px solid #6C4CDC;
+    padding: 8px;
+    border-radius: 6px;
+    margin-top: 8px;
+    font-size: 13px;
+}
+
